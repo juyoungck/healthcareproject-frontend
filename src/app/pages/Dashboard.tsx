@@ -18,7 +18,7 @@ import {
   MessageSquare,
   Calendar
 } from 'lucide-react';
-import VideoPTPage from './VideoPTPage';
+import DietPage from './DietPage';
 
 /**
  * 컴포넌트 Props 타입 정의
@@ -38,6 +38,17 @@ const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 type TabType = 'home' | 'exercise' | 'diet' | 'pt' | 'board';
 
 /**
+ * 탭별 타이틀
+ */
+const TAB_TITLES: Record<TabType, string> = {
+  home: '운동운동',
+  exercise: '운동',
+  diet: '식단',
+  pt: '화상PT',
+  board: '게시판',
+};
+
+/**
  * Dashboard 컴포넌트
  * 메인 대시보드 UI 렌더링
  */
@@ -46,7 +57,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
    * 현재 활성 탭 상태
    */
   const [activeTab, setActiveTab] = useState<TabType>('home');
-  
+
   /**
    * 오늘 날짜 인덱스 (0: 일요일 ~ 6: 토요일)
    */
@@ -67,26 +78,6 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   ];
 
   /**
-   * 탭별 헤더 타이틀
-   */
-  const getHeaderTitle = (): string => {
-    switch (activeTab) {
-      case 'home':
-        return '운동운동';
-      case 'exercise':
-        return '운동';
-      case 'diet':
-        return '식단';
-      case 'pt':
-        return '화상PT';
-      case 'board':
-        return '게시판';
-      default:
-        return '운동운동';
-    }
-  };
-  
-  /**
    * 홈 탭 콘텐츠 렌더링
    */
   const renderHomeContent = () => (
@@ -94,7 +85,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       {/* 운동/식단 계획 생성 박스 */}
       <div className="plan-grid">
         {/* 운동 계획 생성 카드 */}
-        <button className="plan-card" onClick={() => setActiveTab('exercise')}>
+        <button className="plan-card">
           <div className="plan-card-content">
             <Dumbbell className="plan-card-icon workout" />
             <p className="plan-card-title">운동 계획 생성</p>
@@ -102,7 +93,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         </button>
         
         {/* 식단 계획 생성 카드 */}
-        <button className="plan-card" onClick={() => setActiveTab('diet')}>
+        <button className="plan-card">
           <div className="plan-card-content">
             <Utensils className="plan-card-icon diet" />
             <p className="plan-card-title">식단 계획 생성</p>
@@ -111,7 +102,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       </div>
 
       {/* 화상회의 예약 확인 바 */}
-      <div className="video-call-bar" onClick={() => setActiveTab('pt')}>
+      <div className="video-call-bar">
         <div className="video-call-content">
           <div className="video-call-left">
             <Video className="video-call-icon" />
@@ -177,39 +168,6 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       </div>
     </>
   );
-  
-  /**
-   * 운동 탭 콘텐츠 렌더링
-   */
-  const renderExerciseContent = () => (
-    <div className="pt-empty-state">
-      <Dumbbell className="pt-empty-icon" style={{ color: 'var(--color-workout)' }} />
-      <h3 className="pt-empty-title">운동 페이지</h3>
-      <p className="pt-empty-desc">운동 기능은 준비 중입니다</p>
-    </div>
-  );
-
-  /**
-   * 식단 탭 콘텐츠 렌더링
-   */
-  const renderDietContent = () => (
-    <div className="pt-empty-state">
-      <Utensils className="pt-empty-icon" style={{ color: 'var(--color-diet)' }} />
-      <h3 className="pt-empty-title">식단 페이지</h3>
-      <p className="pt-empty-desc">식단 기능은 준비 중입니다</p>
-    </div>
-  );
-
-  /**
-   * 게시판 탭 콘텐츠 렌더링
-   */
-  const renderBoardContent = () => (
-    <div className="pt-empty-state">
-      <MessageSquare className="pt-empty-icon" style={{ color: 'var(--color-gray-500)' }} />
-      <h3 className="pt-empty-title">게시판 페이지</h3>
-      <p className="pt-empty-desc">게시판 기능은 준비 중입니다</p>
-    </div>
-  );
 
   /**
    * 탭별 콘텐츠 렌더링
@@ -218,16 +176,16 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     switch (activeTab) {
       case 'home':
         return renderHomeContent();
-      case 'exercise':
-        return renderExerciseContent();
       case 'diet':
-        return renderDietContent();
+        return <DietPage />;
+      case 'exercise':
+        return <div className="tab-placeholder">운동 페이지 준비 중</div>;
       case 'pt':
-        return <VideoPTPage />;
+        return <div className="tab-placeholder">화상PT 페이지 준비 중</div>;
       case 'board':
-        return renderBoardContent();
+        return <div className="tab-placeholder">게시판 페이지 준비 중</div>;
       default:
-        return renderHomeContent();
+        return null;
     }
   };
 
@@ -239,8 +197,8 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           {/* 좌측 로고 아이콘 */}
           <Dumbbell className="app-logo-icon" />
           
-          {/* 중앙 타이틀 */}
-          <h1 className="app-title">{getHeaderTitle()}</h1>
+          {/* 중앙 타이틀 - 탭에 따라 변경 */}
+          <h1 className="app-title">{TAB_TITLES[activeTab]}</h1>
           
           {/* 우측 마이페이지 버튼 */}
           <button className="app-profile-btn" onClick={onLogout}>
