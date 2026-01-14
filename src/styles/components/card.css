@@ -1,0 +1,141 @@
+/**
+ * card.css
+ * 카드 컴포넌트 스타일
+ * 운동/식단 계획 생성 박스, 화상회의 예약 확인 바 등
+ */
+
+/**
+ * ===========================================
+ * 기본 카드 스타일
+ * ===========================================
+ */
+
+.card {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-200);
+}
+
+/**
+ * ===========================================
+ * 계획 생성 카드 (운동/식단)
+ * ===========================================
+ */
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.plan-card {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-200);
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.plan-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.plan-card:active {
+  transform: scale(0.98);
+}
+
+.plan-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.plan-card-icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: var(--spacing-md);
+}
+
+.plan-card-icon.workout {
+  color: var(--color-workout);
+}
+
+.plan-card-icon.diet {
+  color: var(--color-diet);
+}
+
+.plan-card-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+/**
+ * ===========================================
+ * 화상회의 예약 확인 바
+ * ===========================================
+ */
+
+.video-call-bar {
+  margin-top: var(--spacing-lg);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-200);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.video-call-bar:hover {
+  border-color: var(--color-pt);
+  box-shadow: var(--shadow-md);
+}
+
+.video-call-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.video-call-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.video-call-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--color-pt);
+}
+
+.video-call-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+.video-call-subtitle {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: 2px;
+}
+
+.video-call-count {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-400);
+}

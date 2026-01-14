@@ -1,0 +1,198 @@
+/**
+ * variables.css
+ * 공통 CSS 변수 정의
+ * 앱 전체에서 사용되는 색상, 간격, 레이아웃 값을 중앙에서 관리
+ */
+
+:root {
+  /**
+   * ===========================================
+   * 레이아웃 관련 변수
+   * ===========================================
+   */
+  
+  /**
+   * 앱 최대 너비
+   * 모바일 앱처럼 세로형 UI 유지
+   * 데스크탑에서도 동일한 비율 적용
+   */
+  --app-max-width: 520px;
+  
+  /**
+   * 헤더 및 네비게이션 높이
+   */
+  --header-height: 56px;
+  --bottom-nav-height: 64px;
+  
+  /**
+   * ===========================================
+   * 간격 시스템 (Spacing)
+   * ===========================================
+   * 일관된 간격을 위한 변수
+   * 4px 단위 기반
+   */
+  --spacing-2xs: 0.125rem;  /* 2px */
+  --spacing-xs: 0.25rem;    /* 4px */
+  --spacing-sm: 0.5rem;     /* 8px */
+  --spacing-md: 0.75rem;    /* 12px */
+  --spacing-lg: 1rem;       /* 16px */
+  --spacing-xl: 1.5rem;     /* 24px */
+  --spacing-2xl: 2rem;      /* 32px */
+  --spacing-3xl: 3rem;      /* 48px */
+  
+  /**
+   * ===========================================
+   * 브랜드 색상 (Brand Colors)
+   * ===========================================
+   */
+  
+  /**
+   * 프라이머리 색상 (파란색 계열)
+   */
+  --color-primary: #2563eb;
+  --color-primary-light: #eff6ff;
+  --color-primary-dark: #1d4ed8;
+  --color-primary-hover: #3b82f6;
+  
+  /**
+   * ===========================================
+   * 기능별 색상 (Functional Colors)
+   * ===========================================
+   */
+  
+  /* 운동 관련 색상 (파란색) */
+  --color-workout: #2563eb;
+  --color-workout-light: #dbeafe;
+  
+  /* 식단 관련 색상 (초록색) */
+  --color-diet: #16a34a;
+  --color-diet-light: #dcfce7;
+  
+  /* 화상PT 관련 색상 (보라색) */
+  --color-pt: #9333ea;
+  --color-pt-light: #f3e8ff;
+  --color-pt-dark: #7c22ce;
+  
+  /**
+   * 상태 색상
+   */
+  --color-success: #16a34a;
+  --color-success-light: #dcfce7;
+  --color-error: #dc2626;
+  --color-error-light: #fee2e2;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-info: #0891b2;
+  --color-info-light: #cffafe;
+  
+  /**
+   * 화상PT 상태별 색상
+   */
+  --color-live: #dc2626;        /* 진행중 - 빨간색 */
+  --color-live-light: #fee2e2;
+  --color-reserved: #f59e0b;    /* 예약중 - 주황색 */
+  --color-reserved-light: #fef3c7;
+  --color-private: #6b7280;     /* 비공개 - 회색 */
+  --color-private-light: #f3f4f6;
+  
+  /**
+   * ===========================================
+   * 그레이스케일 (Grayscale)
+   * ===========================================
+   */
+  --color-white: #ffffff;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-black: #000000;
+  
+  /**
+   * ===========================================
+   * 테두리 둥글기 (Border Radius)
+   * ===========================================
+   */
+  --border-radius-xs: 0.25rem;   /* 4px */
+  --border-radius-sm: 0.5rem;    /* 8px */
+  --border-radius-md: 0.75rem;   /* 12px */
+  --border-radius-lg: 1rem;      /* 16px */
+  --border-radius-xl: 1.5rem;    /* 24px */
+  --border-radius-full: 9999px;  /* 완전 원형 */
+  
+  /**
+   * ===========================================
+   * 그림자 효과 (Box Shadow)
+   * ===========================================
+   */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /**
+   * ===========================================
+   * 폰트 설정 (Typography)
+   * ===========================================
+   */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+                 'Helvetica Neue', Arial, 'Noto Sans KR', sans-serif;
+  
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /**
+   * ===========================================
+   * 트랜지션 (Transitions)
+   * ===========================================
+   */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+  
+  /**
+   * ===========================================
+   * Z-인덱스 (Z-Index)
+   * ===========================================
+   */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-tooltip: 600;
+  
+  /**
+   * ===========================================
+   * 소셜 로그인 색상
+   * ===========================================
+   */
+  --color-kakao: #fee500;
+  --color-kakao-text: #000000;
+  --color-naver: #03c75a;
+  --color-naver-text: #ffffff;
+  --color-google: #ffffff;
+  --color-google-text: #000000;
+  --color-google-border: #dadce0;
+}

@@ -1,0 +1,31 @@
+/**
+ * index.css
+ * 스타일 진입점 파일
+ * 모든 CSS 파일을 순서대로 import
+ */
+
+/* 기본 설정 */
+@import './fonts.css';
+@import './tailwind.css';
+@import './variables.css';
+@import './theme.css';
+
+/* 공통 스타일 */
+@import './common/reset.css';
+@import './common/base.css';
+@import './common/buttons.css';
+@import './common/forms.css';
+@import './common/modal.css';
+
+/* 레이아웃 */
+@import './layout.css';
+
+/* 페이지별 스타일 */
+@import './pages/landing.css';
+@import './pages/videopt.css';
+
+/* 컴포넌트별 스타일 */
+@import './components/card.css';
+@import './components/calendar.css';
+@import './components/navigation.css';
+@import './components/videocall.css';

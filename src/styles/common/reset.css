@@ -1,0 +1,143 @@
+/**
+ * reset.css
+ * CSS 초기화 스타일
+ * 브라우저 기본 스타일 제거 및 일관된 기본값 설정
+ */
+
+/**
+ * 모든 요소에 box-sizing: border-box 적용
+ * padding과 border가 width에 포함되도록 설정
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/**
+ * 기본 마진/패딩 제거
+ */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/**
+ * HTML 및 Body 설정
+ */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-gray-900);
+  background-color: var(--color-gray-50);
+}
+
+/**
+ * 이미지 기본 설정
+ */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/**
+ * 폼 요소 폰트 상속
+ */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/**
+ * 텍스트 요소
+ */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+/**
+ * 링크 기본 스타일 제거
+ */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/**
+ * 리스트 기본 스타일 제거
+ */
+ul,
+ol {
+  list-style: none;
+}
+
+/**
+ * 테이블 기본 스타일
+ */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/**
+ * 버튼 기본 스타일 제거
+ */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/**
+ * 입력 필드 기본 스타일
+ */
+input,
+textarea {
+  outline: none;
+  border: none;
+  background: transparent;
+}
+
+/**
+ * 스크롤바 스타일 (웹킷 브라우저)
+ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: var(--border-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-400);
+}

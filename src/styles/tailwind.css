@@ -1,0 +1,10 @@
+/**
+ * tailwind.css
+ * Tailwind CSS 설정
+ * 기본 Tailwind 유틸리티 클래스 import
+ */
+
+@import 'tailwindcss' source(none);
+@source '../**/*.{js,ts,jsx,tsx}';
+
+@import 'tw-animate-css';

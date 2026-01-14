@@ -1,0 +1,69 @@
+/**
+ * navigation.css
+ * 하단 네비게이션 버튼 스타일
+ * PWA 방식 5개 탭 (홈/운동/식단/화상PT/게시판)
+ */
+
+/**
+ * ===========================================
+ * 네비게이션 버튼
+ * ===========================================
+ */
+
+/**
+ * 네비게이션 버튼 기본 스타일
+ * - 아이콘과 라벨을 세로로 배치
+ * - 비활성 상태는 회색
+ * - 활성 상태는 파란색
+ */
+.nav-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) 0;
+  color: var(--color-gray-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+/**
+ * 네비게이션 버튼 호버 상태
+ */
+.nav-button:hover {
+  color: var(--color-primary);
+}
+
+/**
+ * 네비게이션 버튼 활성 상태
+ * 현재 선택된 탭 표시
+ */
+.nav-button.active {
+  color: var(--color-primary);
+}
+
+/**
+ * 네비게이션 버튼 아이콘
+ */
+.nav-button-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/**
+ * 네비게이션 버튼 라벨
+ */
+.nav-button-label {
+  font-size: var(--font-size-xs);
+  margin-top: 4px;
+  font-weight: var(--font-weight-medium);
+}
+
+/**
+ * 활성 상태 라벨 강조
+ */
+.nav-button.active .nav-button-label {
+  font-weight: var(--font-weight-semibold);
+}

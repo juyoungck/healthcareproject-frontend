@@ -1,0 +1,164 @@
+/**
+ * layout.css
+ * 레이아웃 관련 스타일
+ * 앱의 기본 구조 (컨테이너, 헤더, 메인, 네비게이션)
+ */
+
+/**
+ * ===========================================
+ * 앱 컨테이너
+ * ===========================================
+ */
+
+/**
+ * 앱 전체 컨테이너
+ * - 모든 화면에서 세로형 UI 유지
+ * - 최대 너비 480px로 제한하여 데스크탑에서도 모바일 앱처럼 표시
+ * - 화면 중앙 정렬
+ */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  background-color: var(--color-gray-50);
+  position: relative;
+}
+
+/**
+ * ===========================================
+ * 상단 헤더
+ * ===========================================
+ */
+
+/**
+ * 상단 고정 헤더
+ * - 화면 최상단에 고정
+ * - 중앙 정렬 (데스크탑 대응)
+ */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-max-width);
+  height: var(--header-height);
+  background-color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+  z-index: var(--z-fixed);
+}
+
+/**
+ * 헤더 내부 콘텐츠
+ * 좌측: 로고 아이콘, 중앙: 타이틀, 우측: 프로필 버튼
+ */
+.app-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  height: 100%;
+}
+
+/**
+ * 헤더 로고 아이콘
+ */
+.app-logo-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--color-primary);
+}
+
+/**
+ * 헤더 타이틀
+ */
+.app-title {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+  color: var(--color-gray-900);
+}
+
+/**
+ * 헤더 프로필 버튼 (원형)
+ */
+.app-profile-btn {
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-gray-200);
+  border-radius: var(--border-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.app-profile-btn:hover {
+  background-color: var(--color-gray-300);
+}
+
+/**
+ * 프로필 버튼 내부 아이콘
+ */
+.app-profile-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-gray-600);
+}
+
+/**
+ * ===========================================
+ * 메인 콘텐츠 영역
+ * ===========================================
+ */
+
+/**
+ * 메인 콘텐츠 영역
+ * - 스크롤 가능
+ * - 헤더와 하단 네비게이션 사이 공간
+ */
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: calc(var(--header-height) + var(--spacing-lg));
+  padding-bottom: calc(var(--bottom-nav-height) + var(--spacing-lg));
+  padding-left: var(--spacing-lg);
+  padding-right: var(--spacing-lg);
+}
+
+/**
+ * ===========================================
+ * 하단 네비게이션
+ * ===========================================
+ */
+
+/**
+ * 하단 고정 네비게이션 바
+ * - 화면 최하단에 고정
+ * - 중앙 정렬 (데스크탑 대응)
+ */
+.app-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-max-width);
+  height: var(--bottom-nav-height);
+  background-color: var(--color-white);
+  border-top: 1px solid var(--color-gray-200);
+  z-index: var(--z-fixed);
+}
+
+/**
+ * 네비게이션 버튼 그리드
+ * 5개 버튼 균등 배치
+ */
+.app-bottom-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: 100%;
+}
