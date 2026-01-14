@@ -18,7 +18,7 @@ import {
   MessageSquare,
   Calendar
 } from 'lucide-react';
-import VideoPTPage from './VideoPTPage';
+import BoardPage from './BoardPage';
 
 /**
  * 컴포넌트 Props 타입 정의
@@ -48,6 +48,12 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<TabType>('home');
   
   /**
+   * 현재 로그인한 사용자 ID
+   * TODO: 실제 구현 시 인증 시스템에서 가져오기
+   */
+  const currentUserId = 1;
+  
+  /**
    * 오늘 날짜 인덱스 (0: 일요일 ~ 6: 토요일)
    */
   const today = new Date().getDay();
@@ -66,171 +72,6 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     { workout: false, diet: false, pt: false },
   ];
 
-  /**
-   * 탭별 헤더 타이틀
-   */
-  const getHeaderTitle = (): string => {
-    switch (activeTab) {
-      case 'home':
-        return '운동운동';
-      case 'exercise':
-        return '운동';
-      case 'diet':
-        return '식단';
-      case 'pt':
-        return '화상PT';
-      case 'board':
-        return '게시판';
-      default:
-        return '운동운동';
-    }
-  };
-  
-  /**
-   * 홈 탭 콘텐츠 렌더링
-   */
-  const renderHomeContent = () => (
-    <>
-      {/* 운동/식단 계획 생성 박스 */}
-      <div className="plan-grid">
-        {/* 운동 계획 생성 카드 */}
-        <button className="plan-card" onClick={() => setActiveTab('exercise')}>
-          <div className="plan-card-content">
-            <Dumbbell className="plan-card-icon workout" />
-            <p className="plan-card-title">운동 계획 생성</p>
-          </div>
-        </button>
-        
-        {/* 식단 계획 생성 카드 */}
-        <button className="plan-card" onClick={() => setActiveTab('diet')}>
-          <div className="plan-card-content">
-            <Utensils className="plan-card-icon diet" />
-            <p className="plan-card-title">식단 계획 생성</p>
-          </div>
-        </button>
-      </div>
-
-      {/* 화상회의 예약 확인 바 */}
-      <div className="video-call-bar" onClick={() => setActiveTab('pt')}>
-        <div className="video-call-content">
-          <div className="video-call-left">
-            <Video className="video-call-icon" />
-            <div>
-              <p className="video-call-title">화상 PT 예약</p>
-              <p className="video-call-subtitle">예약된 일정을 확인하세요</p>
-            </div>
-          </div>
-          <span className="video-call-count">0건</span>
-        </div>
-      </div>
-
-      {/* 주간 캘린더 */}
-      <div className="calendar-container">
-        <div className="calendar-header">
-          <h2 className="calendar-title">주간 활동</h2>
-          <button className="calendar-more-btn">
-            <Calendar size={16} />
-            <span>전체보기</span>
-          </button>
-        </div>
-        
-        <div className="calendar-grid">
-          {WEEK_DAYS.map((day, index) => (
-            <div key={index} className="calendar-day-column">
-              {/* 요일 라벨 */}
-              <span className={`calendar-day-label ${index === today ? 'today' : ''}`}>
-                {day}
-              </span>
-              
-              {/* 날짜 셀 */}
-              <div className={`calendar-day-cell ${index === today ? 'today' : ''}`}>
-                <div className="calendar-status-dots">
-                  {/* 운동 완료 상태 도트 */}
-                  <div className={`calendar-status-dot ${dailyStatus[index].workout ? 'workout' : ''}`} />
-                  
-                  {/* 식단 완료 상태 도트 */}
-                  <div className={`calendar-status-dot ${dailyStatus[index].diet ? 'diet' : ''}`} />
-                  
-                  {/* PT 완료 상태 도트 */}
-                  <div className={`calendar-status-dot ${dailyStatus[index].pt ? 'pt' : ''}`} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* 범례 */}
-        <div className="calendar-legend">
-          <div className="calendar-legend-item">
-            <div className="calendar-legend-dot workout" />
-            <span className="calendar-legend-label">운동</span>
-          </div>
-          <div className="calendar-legend-item">
-            <div className="calendar-legend-dot diet" />
-            <span className="calendar-legend-label">식단</span>
-          </div>
-          <div className="calendar-legend-item">
-            <div className="calendar-legend-dot pt" />
-            <span className="calendar-legend-label">화상PT</span>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-  
-  /**
-   * 운동 탭 콘텐츠 렌더링
-   */
-  const renderExerciseContent = () => (
-    <div className="pt-empty-state">
-      <Dumbbell className="pt-empty-icon" style={{ color: 'var(--color-workout)' }} />
-      <h3 className="pt-empty-title">운동 페이지</h3>
-      <p className="pt-empty-desc">운동 기능은 준비 중입니다</p>
-    </div>
-  );
-
-  /**
-   * 식단 탭 콘텐츠 렌더링
-   */
-  const renderDietContent = () => (
-    <div className="pt-empty-state">
-      <Utensils className="pt-empty-icon" style={{ color: 'var(--color-diet)' }} />
-      <h3 className="pt-empty-title">식단 페이지</h3>
-      <p className="pt-empty-desc">식단 기능은 준비 중입니다</p>
-    </div>
-  );
-
-  /**
-   * 게시판 탭 콘텐츠 렌더링
-   */
-  const renderBoardContent = () => (
-    <div className="pt-empty-state">
-      <MessageSquare className="pt-empty-icon" style={{ color: 'var(--color-gray-500)' }} />
-      <h3 className="pt-empty-title">게시판 페이지</h3>
-      <p className="pt-empty-desc">게시판 기능은 준비 중입니다</p>
-    </div>
-  );
-
-  /**
-   * 탭별 콘텐츠 렌더링
-   */
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'home':
-        return renderHomeContent();
-      case 'exercise':
-        return renderExerciseContent();
-      case 'diet':
-        return renderDietContent();
-      case 'pt':
-        return <VideoPTPage />;
-      case 'board':
-        return renderBoardContent();
-      default:
-        return renderHomeContent();
-    }
-  };
-
   return (
     <div className="app-container">
       {/* 상단 헤더 (고정) */}
@@ -240,7 +81,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           <Dumbbell className="app-logo-icon" />
           
           {/* 중앙 타이틀 */}
-          <h1 className="app-title">{getHeaderTitle()}</h1>
+          <h1 className="app-title">운동운동</h1>
           
           {/* 우측 마이페이지 버튼 */}
           <button className="app-profile-btn" onClick={onLogout}>
@@ -251,7 +92,98 @@ export default function Dashboard({ onLogout }: DashboardProps) {
 
       {/* 메인 콘텐츠 영역 */}
       <main className="app-main">
-        {renderTabContent()}
+        {activeTab === 'board' ? (
+          /* 게시판 탭 */
+          <BoardPage currentUserId={1} />
+        ) : (
+          /* 기존 홈 콘텐츠 */
+          <>
+            {/* 운동/식단 계획 생성 박스 */}
+            <div className="plan-grid">
+              {/* 운동 계획 생성 카드 */}
+              <button className="plan-card">
+                <div className="plan-card-content">
+                  <Dumbbell className="plan-card-icon workout" />
+                  <p className="plan-card-title">운동 계획 생성</p>
+                </div>
+              </button>
+              
+              {/* 식단 계획 생성 카드 */}
+              <button className="plan-card">
+                <div className="plan-card-content">
+                  <Utensils className="plan-card-icon diet" />
+                  <p className="plan-card-title">식단 계획 생성</p>
+                </div>
+              </button>
+            </div>
+
+            {/* 화상회의 예약 확인 바 */}
+            <div className="video-call-bar">
+              <div className="video-call-content">
+                <div className="video-call-left">
+                  <Video className="video-call-icon" />
+                  <div>
+                    <p className="video-call-title">화상 PT 예약</p>
+                    <p className="video-call-subtitle">예약된 일정을 확인하세요</p>
+                  </div>
+                </div>
+                <span className="video-call-count">0건</span>
+              </div>
+            </div>
+
+            {/* 주간 캘린더 */}
+            <div className="calendar-container">
+              <div className="calendar-header">
+                <h2 className="calendar-title">주간 활동</h2>
+                <button className="calendar-more-btn">
+                  <Calendar size={16} />
+                  <span>전체보기</span>
+                </button>
+              </div>
+              
+              <div className="calendar-grid">
+                {WEEK_DAYS.map((day, index) => (
+                  <div key={index} className="calendar-day-column">
+                    {/* 요일 라벨 */}
+                    <span className={`calendar-day-label ${index === today ? 'today' : ''}`}>
+                      {day}
+                    </span>
+                    
+                    {/* 날짜 셀 */}
+                    <div className={`calendar-day-cell ${index === today ? 'today' : ''}`}>
+                      <div className="calendar-status-dots">
+                        {/* 운동 완료 상태 도트 */}
+                        <div className={`calendar-status-dot ${dailyStatus[index].workout ? 'workout' : ''}`} />
+                        
+                        {/* 식단 완료 상태 도트 */}
+                        <div className={`calendar-status-dot ${dailyStatus[index].diet ? 'diet' : ''}`} />
+                        
+                        {/* PT 완료 상태 도트 */}
+                        <div className={`calendar-status-dot ${dailyStatus[index].pt ? 'pt' : ''}`} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* 범례 */}
+              <div className="calendar-legend">
+                <div className="calendar-legend-item">
+                  <div className="calendar-legend-dot workout" />
+                  <span className="calendar-legend-label">운동</span>
+                </div>
+                <div className="calendar-legend-item">
+                  <div className="calendar-legend-dot diet" />
+                  <span className="calendar-legend-label">식단</span>
+                </div>
+                <div className="calendar-legend-item">
+                  <div className="calendar-legend-dot pt" />
+                  <span className="calendar-legend-label">화상PT</span>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </main>
 
       {/* 하단 네비게이션 바 (고정) */}
