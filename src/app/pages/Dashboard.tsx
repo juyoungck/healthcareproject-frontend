@@ -19,6 +19,7 @@ import {
   Calendar
 } from 'lucide-react';
 import BoardPage from './BoardPage';
+import DietPage from './DietPage';
 
 /**
  * 컴포넌트 Props 타입 정의
@@ -38,6 +39,17 @@ const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 type TabType = 'home' | 'exercise' | 'diet' | 'pt' | 'board';
 
 /**
+ * 탭별 타이틀
+ */
+const TAB_TITLES: Record<TabType, string> = {
+  home: '운동운동',
+  exercise: '운동',
+  diet: '식단',
+  pt: '화상PT',
+  board: '게시판',
+};
+
+/**
  * Dashboard 컴포넌트
  * 메인 대시보드 UI 렌더링
  */
@@ -46,7 +58,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
    * 현재 활성 탭 상태
    */
   const [activeTab, setActiveTab] = useState<TabType>('home');
-  
+
   /**
    * 현재 로그인한 사용자 ID
    * TODO: 실제 구현 시 인증 시스템에서 가져오기
@@ -72,6 +84,118 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     { workout: false, diet: false, pt: false },
   ];
 
+  /**
+   * 홈 탭 콘텐츠 렌더링
+   */
+  const renderHomeContent = () => (
+    <>
+      {/* 운동/식단 계획 생성 박스 */}
+      <div className="plan-grid">
+        {/* 운동 계획 생성 카드 */}
+        <button className="plan-card">
+          <div className="plan-card-content">
+            <Dumbbell className="plan-card-icon workout" />
+            <p className="plan-card-title">운동 계획 생성</p>
+          </div>
+        </button>
+        
+        {/* 식단 계획 생성 카드 */}
+        <button className="plan-card">
+          <div className="plan-card-content">
+            <Utensils className="plan-card-icon diet" />
+            <p className="plan-card-title">식단 계획 생성</p>
+          </div>
+        </button>
+      </div>
+
+      {/* 화상회의 예약 확인 바 */}
+      <div className="video-call-bar">
+        <div className="video-call-content">
+          <div className="video-call-left">
+            <Video className="video-call-icon" />
+            <div>
+              <p className="video-call-title">화상 PT 예약</p>
+              <p className="video-call-subtitle">예약된 일정을 확인하세요</p>
+            </div>
+          </div>
+          <span className="video-call-count">0건</span>
+        </div>
+      </div>
+
+      {/* 주간 캘린더 */}
+      <div className="calendar-container">
+        <div className="calendar-header">
+          <h2 className="calendar-title">주간 활동</h2>
+          <button className="calendar-more-btn">
+            <Calendar size={16} />
+            <span>전체보기</span>
+          </button>
+        </div>
+        
+        <div className="calendar-grid">
+          {WEEK_DAYS.map((day, index) => (
+            <div key={index} className="calendar-day-column">
+              {/* 요일 라벨 */}
+              <span className={`calendar-day-label ${index === today ? 'today' : ''}`}>
+                {day}
+              </span>
+              
+              {/* 날짜 셀 */}
+              <div className={`calendar-day-cell ${index === today ? 'today' : ''}`}>
+                <div className="calendar-status-dots">
+                  {/* 운동 완료 상태 도트 */}
+                  <div className={`calendar-status-dot ${dailyStatus[index].workout ? 'workout' : ''}`} />
+                  
+                  {/* 식단 완료 상태 도트 */}
+                  <div className={`calendar-status-dot ${dailyStatus[index].diet ? 'diet' : ''}`} />
+                  
+                  {/* PT 완료 상태 도트 */}
+                  <div className={`calendar-status-dot ${dailyStatus[index].pt ? 'pt' : ''}`} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* 범례 */}
+        <div className="calendar-legend">
+          <div className="calendar-legend-item">
+            <div className="calendar-legend-dot workout" />
+            <span className="calendar-legend-label">운동</span>
+          </div>
+          <div className="calendar-legend-item">
+            <div className="calendar-legend-dot diet" />
+            <span className="calendar-legend-label">식단</span>
+          </div>
+          <div className="calendar-legend-item">
+            <div className="calendar-legend-dot pt" />
+            <span className="calendar-legend-label">화상PT</span>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
+  /**
+   * 탭별 콘텐츠 렌더링
+   */
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return renderHomeContent();
+      case 'diet':
+        return <DietPage />;
+      case 'exercise':
+        return <div className="tab-placeholder">운동 페이지 준비 중</div>;
+      case 'pt':
+        return <div className="tab-placeholder">화상PT 페이지 준비 중</div>;
+      case 'board':
+        return <div className="tab-placeholder">게시판 페이지 준비 중</div>;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="app-container">
       {/* 상단 헤더 (고정) */}
@@ -80,8 +204,8 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           {/* 좌측 로고 아이콘 */}
           <Dumbbell className="app-logo-icon" />
           
-          {/* 중앙 타이틀 */}
-          <h1 className="app-title">운동운동</h1>
+          {/* 중앙 타이틀 - 탭에 따라 변경 */}
+          <h1 className="app-title">{TAB_TITLES[activeTab]}</h1>
           
           {/* 우측 마이페이지 버튼 */}
           <button className="app-profile-btn" onClick={onLogout}>

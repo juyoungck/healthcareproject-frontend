@@ -1,0 +1,325 @@
+/**
+ * diet.css
+ * 식단 페이지 스타일
+ * - 검색바
+ * - 음식 카드 그리드
+ * - 음식 상세 모달
+ */
+
+/**
+ * ===========================================
+ * 식단 페이지 컨테이너
+ * ===========================================
+ */
+
+.diet-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/**
+ * ===========================================
+ * 검색바
+ * ===========================================
+ */
+
+.diet-search-container {
+  width: 100%;
+}
+
+/**
+ * 검색바 래퍼
+ */
+.diet-search-bar {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.diet-search-bar:focus-within {
+  border-color: var(--color-diet);
+  box-shadow: 0 0 0 3px var(--color-diet-light);
+}
+
+/**
+ * 검색 입력 필드
+ */
+.diet-search-input {
+  flex: 1;
+  height: 44px;
+  padding: 0 var(--spacing-lg);
+  font-size: var(--font-size-base);
+  color: var(--color-gray-900);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.diet-search-input::placeholder {
+  color: var(--color-gray-400);
+}
+
+/**
+ * 검색 버튼
+ */
+.diet-search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: var(--color-diet);
+  color: var(--color-white);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.diet-search-btn:hover {
+  background-color: var(--color-diet-hover);
+}
+
+.diet-search-btn:active {
+  background-color: var(--color-diet-active);
+}
+
+/**
+ * ===========================================
+ * 음식 카드 그리드
+ * ===========================================
+ */
+
+/**
+ * 2열 그리드
+ */
+.diet-food-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+/**
+ * 음식 카드
+ */
+.diet-food-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-200);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-food-card:hover {
+  border-color: var(--color-diet);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.diet-food-card:active {
+  transform: translateY(0);
+}
+
+/**
+ * 음식 이미지 래퍼
+ */
+.diet-food-image-wrapper {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: var(--color-gray-100);
+}
+
+/**
+ * 음식 이미지
+ */
+.diet-food-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-normal);
+}
+
+.diet-food-card:hover .diet-food-image {
+  transform: scale(1.05);
+}
+
+/**
+ * 음식 이름
+ */
+.diet-food-name {
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-800);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/**
+ * ===========================================
+ * 빈 상태
+ * ===========================================
+ */
+
+.diet-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+}
+
+.diet-empty-text {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/**
+ * ===========================================
+ * 음식 상세 모달 콘텐츠
+ * ===========================================
+ */
+
+/**
+ * 모달 콘텐츠 영역
+ */
+.food-detail-content {
+  padding: var(--spacing-xl);
+}
+
+/**
+ * 음식 이미지 래퍼
+ */
+.food-detail-image-wrapper {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  margin-bottom: var(--spacing-xl);
+  background-color: var(--color-gray-100);
+}
+
+/**
+ * 음식 이미지
+ */
+.food-detail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/**
+ * 칼로리 영역
+ */
+.food-detail-calories {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-md);
+}
+
+/**
+ * 칼로리 라벨 (100g당 / 100ml당)
+ */
+.food-detail-calories-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+/**
+ * 칼로리 메인 값
+ */
+.food-detail-calories-main {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+}
+
+/**
+ * 칼로리 숫자
+ */
+.food-detail-calories-value {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-diet);
+}
+
+/**
+ * 칼로리 단위
+ */
+.food-detail-calories-unit {
+  font-size: var(--font-size-lg);
+  color: var(--color-gray-500);
+}
+
+/**
+ * 영양소 영역
+ */
+.food-detail-nutrients {
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+/**
+ * 영양소 헤더
+ */
+.food-detail-nutrients-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-gray-100);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  text-align: center;
+}
+
+/**
+ * 영양소 그리드
+ */
+.food-detail-nutrients-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+}
+
+/**
+ * 개별 영양소
+ */
+.food-detail-nutrient {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/**
+ * 영양소 라벨
+ */
+.food-detail-nutrient-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}
+
+/**
+ * 영양소 값
+ */
+.food-detail-nutrient-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
+}

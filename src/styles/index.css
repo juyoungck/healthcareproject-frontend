@@ -23,6 +23,7 @@
 /* 페이지별 스타일 */
 @import './pages/landing.css';
 @import './pages/board.css';
+@import './pages/diet.css';
 
 /* 컴포넌트별 스타일 */
 @import './components/card.css';

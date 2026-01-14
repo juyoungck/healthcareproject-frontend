@@ -162,3 +162,20 @@
   grid-template-columns: repeat(5, 1fr);
   height: 100%;
 }
+/**
+ * ===========================================
+ * 탭 플레이스홀더
+ * ===========================================
+ */
+
+.tab-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  border: 1px dashed var(--color-gray-300);
+}

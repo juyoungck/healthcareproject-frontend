@@ -71,6 +71,8 @@
    */
   --color-diet: #16a34a;
   --color-diet-light: #dcfce7;
+  --color-diet-hover: #15803d;
+  --color-diet-active: #166534;
   
   /**
    * 화상PT 관련 색상 (보라색)

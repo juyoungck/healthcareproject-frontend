@@ -1,0 +1,256 @@
+/**
+ * exercise.css
+ * 운동 탭 페이지 스타일
+ * - 검색 바
+ * - 필터 칩
+ * - 운동 카드 그리드
+ */
+
+/**
+ * ===========================================
+ * 검색 바
+ * ===========================================
+ */
+
+/**
+ * 검색 바 컨테이너
+ */
+.exercise-search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-md);
+  transition: border-color var(--transition-fast);
+}
+
+.exercise-search-bar:focus-within {
+  border-color: var(--color-primary);
+}
+
+/**
+ * 검색 아이콘
+ */
+.exercise-search-icon {
+  color: var(--color-gray-400);
+  flex-shrink: 0;
+}
+
+/**
+ * 검색 입력 필드
+ */
+.exercise-search-input {
+  flex: 1;
+  font-size: var(--font-size-base);
+  color: var(--color-gray-900);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.exercise-search-input::placeholder {
+  color: var(--color-gray-400);
+}
+
+/**
+ * ===========================================
+ * 필터 섹션
+ * ===========================================
+ */
+
+/**
+ * 필터 섹션 컨테이너
+ */
+.exercise-filter-section {
+  margin-bottom: var(--spacing-md);
+}
+
+/**
+ * 필터 칩 컨테이너
+ */
+.exercise-filter-chips {
+  display: flex;
+  gap: var(--spacing-sm);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-xs);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.exercise-filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+/**
+ * 필터 칩 버튼
+ */
+.exercise-filter-chip {
+  flex-shrink: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.exercise-filter-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/**
+ * 부위 필터 활성 상태
+ */
+.exercise-filter-chip.active {
+  background-color: var(--color-workout);
+  border-color: var(--color-workout);
+  color: var(--color-white);
+}
+
+/**
+ * 난이도 필터 활성 상태
+ */
+.exercise-filter-chip.difficulty.active {
+  background-color: var(--color-gray-700);
+  border-color: var(--color-gray-700);
+  color: var(--color-white);
+}
+
+/**
+ * ===========================================
+ * 운동 목록
+ * ===========================================
+ */
+
+/**
+ * 운동 목록 컨테이너
+ */
+.exercise-list {
+  flex: 1;
+}
+
+/**
+ * 운동 카드 그리드 (2열)
+ */
+.exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+/**
+ * 운동 카드
+ */
+.exercise-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.exercise-card:active {
+  transform: scale(0.98);
+}
+
+/**
+ * 운동 카드 썸네일 영역
+ */
+.exercise-card-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  background-color: var(--color-gray-50);
+}
+
+/**
+ * 운동 카드 이모지 (임시 썸네일)
+ */
+.exercise-card-emoji {
+  font-size: 40px;
+}
+
+/**
+ * 운동 카드 정보 영역
+ */
+.exercise-card-info {
+  padding: var(--spacing-md);
+}
+
+/**
+ * 운동 카드 이름
+ */
+.exercise-card-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-sm);
+  text-align: left;
+}
+
+/**
+ * 운동 카드 태그 컨테이너
+ */
+.exercise-card-tags {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+/**
+ * 운동 카드 태그
+ */
+.exercise-card-tag {
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  border-radius: var(--border-radius-xs);
+}
+
+/**
+ * 부위 태그 스타일
+ */
+.exercise-card-tag.bodypart {
+  background-color: var(--color-workout-light);
+  color: var(--color-workout);
+}
+
+/**
+ * 난이도 태그 스타일
+ */
+.exercise-card-tag.difficulty {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-600);
+}
+
+
+/**
+ * 검색 결과 없음
+ */
+.exercise-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+}
+
+.exercise-empty-text {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
