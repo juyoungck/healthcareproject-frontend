@@ -60,15 +60,23 @@
    * ===========================================
    */
   
-  /* 운동 관련 색상 (파란색) */
+  /**
+   * 운동 관련 색상 (파란색)
+   */
   --color-workout: #2563eb;
   --color-workout-light: #dbeafe;
   
-  /* 식단 관련 색상 (초록색) */
+  /**
+   * 식단 관련 색상 (초록색)
+   */
   --color-diet: #16a34a;
   --color-diet-light: #dcfce7;
+  --color-diet-hover: #15803d;
+  --color-diet-active: #166534;
   
-  /* 화상PT 관련 색상 (보라색) */
+  /**
+   * 화상PT 관련 색상 (보라색)
+   */
   --color-pt: #9333ea;
   --color-pt-light: #f3e8ff;
   --color-pt-dark: #7c22ce;
