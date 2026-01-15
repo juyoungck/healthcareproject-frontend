@@ -1,0 +1,373 @@
+/**
+ * exercise-detail.css
+ * 운동 상세 페이지 스타일
+ * - 뒤로가기 바 (헤더 아래)
+ * - 썸네일 영역
+ * - 운동 정보 섹션
+ * - 유튜브 영상 썸네일
+ * - 대체 운동 카드
+ */
+
+/**
+ * 뒤로가기 바 컨테이너
+ */
+.exercise-detail-back-bar {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+/**
+ * 뒤로가기 버튼
+ */
+.exercise-detail-back {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  background-color: var(--color-gray-100);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.exercise-detail-back:hover {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-900);
+}
+
+/**
+ * ===========================================
+ * 메인 콘텐츠
+ * ===========================================
+ */
+
+/**
+ * 상세 페이지 메인 영역
+ */
+.exercise-detail-main {
+  padding-top: var(--header-height);
+  padding-bottom: calc(var(--bottom-nav-height) + var(--spacing-lg));
+  min-height: 100vh;
+  background-color: var(--color-gray-50);
+}
+
+/**
+ * ===========================================
+ * 썸네일 영역
+ * ===========================================
+ */
+
+/**
+ * 썸네일 컨테이너
+ */
+.exercise-detail-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+/**
+ * 썸네일 이모지 (임시)
+ */
+.exercise-detail-emoji {
+  font-size: 80px;
+}
+
+/**
+ * ===========================================
+ * 타이틀 섹션
+ * ===========================================
+ */
+
+/**
+ * 타이틀 섹션 컨테이너
+ */
+.exercise-detail-title-section {
+  padding: var(--spacing-lg);
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+/**
+ * 운동명
+ */
+.exercise-detail-name {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-sm);
+}
+
+/**
+ * 태그 컨테이너
+ */
+.exercise-detail-tags {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+/**
+ * ===========================================
+ * 콘텐츠 섹션
+ * ===========================================
+ */
+
+/**
+ * 섹션 컨테이너
+ */
+.exercise-detail-section {
+  padding: var(--spacing-lg);
+  background-color: var(--color-white);
+  margin-top: var(--spacing-sm);
+}
+
+/**
+ * 섹션 제목
+ */
+.exercise-detail-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-md);
+}
+
+/**
+ * 운동 설명
+ */
+.exercise-detail-description {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-700);
+  line-height: var(--line-height-relaxed);
+}
+
+/**
+ * ===========================================
+ * 운동 방법
+ * ===========================================
+ */
+
+/**
+ * 운동 방법 리스트
+ */
+.exercise-detail-instructions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/**
+ * 운동 방법 아이템
+ */
+.exercise-detail-instruction-item {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+}
+
+/**
+ * 순서 번호
+ */
+.exercise-detail-instruction-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  background-color: var(--color-workout);
+  border-radius: var(--border-radius-full);
+}
+
+/**
+ * 설명 텍스트
+ */
+.exercise-detail-instruction-text {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-700);
+  line-height: var(--line-height-relaxed);
+}
+
+/**
+ * ===========================================
+ * 주의사항
+ * ===========================================
+ */
+
+/**
+ * 주의사항 리스트
+ */
+.exercise-detail-cautions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/**
+ * 주의사항 아이템
+ */
+.exercise-detail-caution-item {
+  position: relative;
+  padding-left: var(--spacing-lg);
+  font-size: var(--font-size-base);
+  color: var(--color-gray-700);
+  line-height: var(--line-height-relaxed);
+}
+
+.exercise-detail-caution-item::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--color-warning);
+  font-weight: var(--font-weight-bold);
+}
+
+/**
+ * ===========================================
+ * 유튜브 영상
+ * ===========================================
+ */
+
+/**
+ * 영상 컨테이너
+ */
+.exercise-detail-video {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  background-color: var(--color-gray-900);
+}
+
+/**
+ * 영상 썸네일
+ */
+.exercise-detail-video-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/**
+ * 재생 버튼 오버레이
+ */
+.exercise-detail-video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: var(--border-radius-full);
+  transition: all var(--transition-fast);
+}
+
+.exercise-detail-video:hover .exercise-detail-video-play {
+  background-color: rgba(220, 38, 38, 0.9);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/**
+ * ===========================================
+ * 대체 운동
+ * ===========================================
+ */
+
+/**
+ * 대체 운동 컨테이너
+ */
+.exercise-detail-alternatives {
+  display: flex;
+  gap: var(--spacing-md);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-xs);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.exercise-detail-alternatives::-webkit-scrollbar {
+  display: none;
+}
+
+/**
+ * 대체 운동 카드
+ */
+.exercise-alternative-card {
+  flex-shrink: 0;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-alternative-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/**
+ * 대체 운동 썸네일
+ */
+.exercise-alternative-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  background-color: var(--color-white);
+}
+
+/**
+ * 대체 운동 이모지
+ */
+.exercise-alternative-emoji {
+  font-size: 32px;
+}
+
+/**
+ * 대체 운동 정보
+ */
+.exercise-alternative-info {
+  padding: var(--spacing-sm);
+  text-align: center;
+}
+
+/**
+ * 대체 운동 이름
+ */
+.exercise-alternative-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/**
+ * 대체 운동 난이도
+ */
+.exercise-alternative-difficulty {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}

@@ -18,7 +18,10 @@ import {
   MessageSquare,
   Calendar
 } from 'lucide-react';
+import ExerciseContent from '../components/exercise/ExerciseContent';
 import DietPage from './DietPage';
+import VideoPTPage from './VideoPTPage';
+import BoardPage from './BoardPage';
 
 /**
  * 컴포넌트 Props 타입 정의
@@ -26,6 +29,12 @@ import DietPage from './DietPage';
 interface DashboardProps {
   onLogout: () => void;
 }
+
+/**
+   * 현재 로그인한 사용자 ID
+   * TODO: 실제 구현 시 인증 시스템에서 가져오기
+   */
+  const currentUserId = 1;
 
 /**
  * 요일 데이터
@@ -38,17 +47,6 @@ const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 type TabType = 'home' | 'exercise' | 'diet' | 'pt' | 'board';
 
 /**
- * 탭별 타이틀
- */
-const TAB_TITLES: Record<TabType, string> = {
-  home: '운동운동',
-  exercise: '운동',
-  diet: '식단',
-  pt: '화상PT',
-  board: '게시판',
-};
-
-/**
  * Dashboard 컴포넌트
  * 메인 대시보드 UI 렌더링
  */
@@ -57,7 +55,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
    * 현재 활성 탭 상태
    */
   const [activeTab, setActiveTab] = useState<TabType>('home');
-
+  
   /**
    * 오늘 날짜 인덱스 (0: 일요일 ~ 6: 토요일)
    */
@@ -77,6 +75,26 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     { workout: false, diet: false, pt: false },
   ];
 
+  /**
+   * 탭별 헤더 타이틀
+   */
+  const getHeaderTitle = (): string => {
+    switch (activeTab) {
+      case 'home':
+        return '운동운동';
+      case 'exercise':
+        return '운동';
+      case 'diet':
+        return '식단';
+      case 'pt':
+        return '화상PT';
+      case 'board':
+        return '게시판';
+      default:
+        return '운동운동';
+    }
+  };
+  
   /**
    * 홈 탭 콘텐츠 렌더링
    */
@@ -176,16 +194,16 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     switch (activeTab) {
       case 'home':
         return renderHomeContent();
+      case 'exercise':
+        return <ExerciseContent />;
       case 'diet':
         return <DietPage />;
-      case 'exercise':
-        return <div className="tab-placeholder">운동 페이지 준비 중</div>;
       case 'pt':
-        return <div className="tab-placeholder">화상PT 페이지 준비 중</div>;
+        return <VideoPTPage />;
       case 'board':
-        return <div className="tab-placeholder">게시판 페이지 준비 중</div>;
+        return <BoardPage />;
       default:
-        return null;
+        return renderHomeContent();
     }
   };
 
@@ -197,8 +215,8 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           {/* 좌측 로고 아이콘 */}
           <Dumbbell className="app-logo-icon" />
           
-          {/* 중앙 타이틀 - 탭에 따라 변경 */}
-          <h1 className="app-title">{TAB_TITLES[activeTab]}</h1>
+          {/* 중앙 타이틀 */}
+          <h1 className="app-title">{getHeaderTitle()}</h1>
           
           {/* 우측 마이페이지 버튼 */}
           <button className="app-profile-btn" onClick={onLogout}>

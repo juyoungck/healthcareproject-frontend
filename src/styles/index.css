@@ -22,9 +22,14 @@
 
 /* 페이지별 스타일 */
 @import './pages/landing.css';
+@import './pages/exercise.css';
+@import './pages/exercise-detail.css';
 @import './pages/diet.css';
+@import './pages/videopt.css';
+@import './pages/board.css';
 
 /* 컴포넌트별 스타일 */
 @import './components/card.css';
 @import './components/calendar.css';
 @import './components/navigation.css';
+@import './components/videocall.css';
