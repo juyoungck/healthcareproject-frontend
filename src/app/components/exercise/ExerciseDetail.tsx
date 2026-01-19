@@ -12,9 +12,9 @@
  * 주의: 헤더/네비게이션은 Dashboard에서 관리
  */
 
-import { useMemo } from 'react';
-import { ArrowLeft, Play } from 'lucide-react';
-import { ExerciseDetail, DUMMY_EXERCISE_DETAILS } from '../../../data/exercises';
+import { useMemo, useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { DUMMY_EXERCISE_DETAILS } from '../../../data/exercises';
 
 /**
  * 컴포넌트 Props 타입 정의
@@ -34,6 +34,16 @@ export default function ExerciseDetailContent({
   onBack,
   onSelectExercise,
 }: ExerciseDetailContentProps) {
+  /**
+   * exerciseId 변경 시 스크롤 맨 위로
+   */
+  useEffect(() => {
+    const appMain = document.querySelector('.app-main');
+    if (appMain) {
+      appMain.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [exerciseId]);
+
   /**
    * 현재 운동 데이터 찾기
    */
@@ -123,21 +133,13 @@ export default function ExerciseDetailContent({
       {/* 유튜브 영상 */}
       <div className="exercise-detail-section">
         <h2 className="exercise-detail-section-title">운동 영상</h2>
-        <a 
-          href={exercise.youtubeUrl} 
-          target="_blank" 
-          rel="noopener noreferrer"
+        <iframe
           className="exercise-detail-video"
-        >
-          <img 
-            src={exercise.youtubeThumb} 
-            alt={`${exercise.name} 영상`}
-            className="exercise-detail-video-thumb"
-          />
-          <div className="exercise-detail-video-play">
-            <Play size={48} fill="white" />
-          </div>
-        </a>
+          src={exercise.youtubeUrl.replace('watch?v=', 'embed/')}
+          title={`${exercise.name} 영상`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
       </div>
 
       {/* 대체 운동 */}
