@@ -8,7 +8,7 @@
 
 import { useState } from 'react';
 import { X, Dumbbell, Utensils, Video, FileText } from 'lucide-react';
-import { DailyStatus } from './WeekCalendar';
+import { DailyStatus } from '../../../types/calendar';
 
 /**
  * 탭 타입 정의

@@ -5,47 +5,45 @@
  * - 날짜 클릭 시 상세 팝업 표시
  * - 전체보기 클릭 시 월간 캘린더로 이동
  * - 스와이프/드래그로 주 이동
- * - 메모 저장 시 마커 반영
  */
 
 import { useState } from 'react';
 import { Calendar } from 'lucide-react';
-import { calendarDummyData, getDateKey } from '../../../data/calendardata';
-import WeekCalendarPopup from './WeekCalendarPopup';
+import { DailyStatus, DailyRecord } from '../../../types/calendar';
+import { WEEK_DAYS } from '../../../constants/calendar';
+import {
+  getDateKey,
+  isToday,
+  getWeekStartDate,
+  getWeekDates,
+  getWeekOfMonth,
+} from '../../../utils/calendar';
+import { calendarDummyData } from '../../../data/calendars';
+import CalendarPopup from './CalendarPopup';
 
 /**
- * 상태 타입 정의
- */
-export type StatusType = 'none' | 'scheduled' | 'failed' | 'incomplete' | 'complete';
-
-/**
- * 일일 상태 타입
- */
-export interface DailyStatus {
-  workout: StatusType;
-  diet: StatusType;
-  pt: StatusType;
-  memo: StatusType;
-}
-
-/**
+ * ===========================================
  * Props 타입 정의
+ * ===========================================
  */
+
 interface WeekCalendarProps {
+  /** 월간 캘린더 이동 핸들러 */
   onNavigateToMonth?: () => void;
+  /** 운동 상세 페이지 이동 핸들러 */
   onNavigateToWorkout?: () => void;
+  /** 식단 상세 페이지 이동 핸들러 */
   onNavigateToDiet?: () => void;
+  /** 화상PT 상세 페이지 이동 핸들러 */
   onNavigateToPT?: () => void;
 }
 
 /**
- * 요일 데이터
- */
-const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
-
-/**
+ * ===========================================
  * WeekCalendar 컴포넌트
+ * ===========================================
  */
+
 export default function WeekCalendar({
   onNavigateToMonth,
   onNavigateToWorkout,
@@ -53,106 +51,81 @@ export default function WeekCalendar({
   onNavigateToPT,
 }: WeekCalendarProps) {
   /**
-   * 선택된 날짜 인덱스 (팝업 표시용)
+   * ===========================================
+   * 상태 관리
+   * ===========================================
    */
+
+  /** 선택된 날짜 인덱스 (팝업용) */
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
 
-  /**
-   * 현재 주 기준 날짜 (해당 주의 일요일)
-   */
+  /** 주 시작일 (일요일) */
   const [weekStartDate, setWeekStartDate] = useState<Date>(() => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const sunday = new Date(today);
-    sunday.setDate(today.getDate() - dayOfWeek);
-    return sunday;
+    return getWeekStartDate(new Date());
   });
 
-  /**
-   * 터치 시작 X 좌표
-   */
+  /** 터치 시작 X 좌표 (스와이프용) */
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  /**
-   * 마우스 시작 X 좌표
-   */
+  /** 마우스 시작 X 좌표 (드래그용) */
   const [mouseStartX, setMouseStartX] = useState<number | null>(null);
 
+  /** 캘린더 데이터 (메모 저장용 로컬 상태) */
+  const [localCalendarData, setLocalCalendarData] = useState<Record<string, DailyRecord>>(calendarDummyData);
+
   /**
-   * 캘린더 데이터 상태 (메모 저장용)
+   * ===========================================
+   * 파생 데이터
+   * ===========================================
    */
-  const [localCalendarData, setLocalCalendarData] = useState(calendarDummyData);
+
+  /** 현재 주의 7일 배열 */
+  const weekDates = getWeekDates(weekStartDate);
+
+  /** 주차 표시 텍스트 (예: "1월 2주차") */
+  const weekLabel = getWeekOfMonth(weekStartDate);
 
   /**
-   * 오늘 날짜
+   * ===========================================
+   * 이벤트 핸들러 - 날짜 선택
+   * ===========================================
    */
-  const today = new Date();
-  const todayString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
 
   /**
-   * 오늘인지 확인
-   */
-  const isToday = (date: Date): boolean => {
-    return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` === todayString;
-  };
-
-  /**
-   * 주간 날짜 배열 생성
-   */
-  const getWeekDates = (): Date[] => {
-    const dates: Date[] = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(weekStartDate);
-      date.setDate(weekStartDate.getDate() + i);
-      dates.push(date);
-    }
-    return dates;
-  };
-
-  /**
-   * 주차 계산
-   */
-  const getWeekOfMonth = (): string => {
-    const wednesday = new Date(weekStartDate);
-    wednesday.setDate(weekStartDate.getDate() + 3);
-
-    const month = wednesday.getMonth() + 1;
-    const firstDayOfMonth = new Date(wednesday.getFullYear(), wednesday.getMonth(), 1);
-    const firstDayWeek = firstDayOfMonth.getDay();
-    const weekNumber = Math.ceil((wednesday.getDate() + firstDayWeek) / 7);
-
-    return `${month}월 ${weekNumber}주차`;
-  };
-
-  /**
-   * 이번 주 날짜 배열
-   */
-  const weekDates = getWeekDates();
-
-  /**
-   * 날짜 셀 클릭 핸들러
+   * 날짜 클릭 시 팝업 열기
    */
   const handleDayClick = (index: number) => {
     setSelectedDayIndex(index);
   };
 
   /**
-   * 팝업 닫기 핸들러
+   * 팝업 닫기
    */
   const handleClosePopup = () => {
     setSelectedDayIndex(null);
   };
 
   /**
-   * 메모 저장 핸들러
+   * ===========================================
+   * 이벤트 핸들러 - 메모 저장
+   * ===========================================
+   */
+
+  /**
+   * 메모 저장 및 상태 업데이트
    */
   const handleSaveMemo = (dateKey: string, memoText: string) => {
-    setLocalCalendarData(prev => ({
+    setLocalCalendarData((prev) => ({
       ...prev,
       [dateKey]: {
         ...prev[dateKey],
         status: {
-          ...(prev[dateKey]?.status || { workout: 'none', diet: 'none', pt: 'none', memo: 'none' }),
+          ...(prev[dateKey]?.status || {
+            workout: 'none',
+            diet: 'none',
+            pt: 'none',
+            memo: 'none',
+          }),
           memo: memoText.trim() ? 'complete' : 'none',
         },
         memo: memoText.trim() || undefined,
@@ -161,7 +134,13 @@ export default function WeekCalendar({
   };
 
   /**
-   * 전체보기 버튼 클릭 핸들러
+   * ===========================================
+   * 이벤트 핸들러 - 네비게이션
+   * ===========================================
+   */
+
+  /**
+   * 전체보기 클릭 시 월간 캘린더로 이동
    */
   const handleMoreClick = () => {
     if (onNavigateToMonth) {
@@ -188,17 +167,25 @@ export default function WeekCalendar({
   };
 
   /**
-   * 터치 시작 핸들러
+   * ===========================================
+   * 이벤트 핸들러 - 스와이프/드래그
+   * ===========================================
+   */
+
+  /**
+   * 터치 시작
    */
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.touches[0].clientX);
   };
 
   /**
-   * 터치 종료 핸들러
+   * 터치 종료 시 스와이프 판정
    */
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX === null) return;
+
+    /* 팝업 열려있으면 스와이프 무시 */
     if (selectedDayIndex !== null) {
       setTouchStartX(null);
       return;
@@ -217,17 +204,19 @@ export default function WeekCalendar({
   };
 
   /**
-   * 마우스 다운 핸들러
+   * 마우스 다운
    */
   const handleMouseDown = (e: React.MouseEvent) => {
     setMouseStartX(e.clientX);
   };
 
   /**
-   * 마우스 업 핸들러
+   * 마우스 업 시 드래그 판정
    */
   const handleMouseUp = (e: React.MouseEvent) => {
     if (mouseStartX === null) return;
+
+    /* 팝업 열려있으면 드래그 무시 */
     if (selectedDayIndex !== null) {
       setMouseStartX(null);
       return;
@@ -245,11 +234,17 @@ export default function WeekCalendar({
   };
 
   /**
-   * 마우스 떠남 핸들러
+   * 마우스가 컨테이너 벗어나면 드래그 취소
    */
   const handleMouseLeave = () => {
     setMouseStartX(null);
   };
+
+  /**
+   * ===========================================
+   * 렌더링
+   * ===========================================
+   */
 
   return (
     <div
@@ -260,30 +255,37 @@ export default function WeekCalendar({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
     >
-      {/* 캘린더 헤더 */}
+      {/* 헤더 */}
       <div className="week-calendar-header">
         <h2 className="week-calendar-title">주간 활동</h2>
-        <span className="week-calendar-week-label">{getWeekOfMonth()}</span>
+        <span className="week-calendar-week-label">{weekLabel}</span>
         <button className="week-calendar-more-btn" onClick={handleMoreClick}>
           <Calendar size={16} />
           <span>전체보기</span>
         </button>
       </div>
 
-      {/* 캘린더 그리드 */}
+      {/* 날짜 그리드 */}
       <div className="week-calendar-grid">
         {weekDates.map((date, index) => {
           const dateKey = getDateKey(date);
           const record = localCalendarData[dateKey];
-          const status = record?.status || { workout: 'none', diet: 'none', pt: 'none', memo: 'none' };
+          const status: DailyStatus = record?.status || {
+            workout: 'none',
+            diet: 'none',
+            pt: 'none',
+            memo: 'none',
+          };
 
           return (
             <div key={index} className="week-calendar-day-column">
-              {/* 날짜(요일) 라벨 */}
+              {/* 날짜 라벨 */}
               <span className={`week-calendar-day-label ${isToday(date) ? 'today' : ''}`}>
                 {date.getDate()}
                 <span
-                  className={`week-calendar-weekday ${index === 0 ? 'sunday' : index === 6 ? 'saturday' : ''}`}
+                  className={`week-calendar-weekday ${
+                    index === 0 ? 'sunday' : index === 6 ? 'saturday' : ''
+                  }`}
                 >
                   ({WEEK_DAYS[index]})
                 </span>
@@ -291,7 +293,9 @@ export default function WeekCalendar({
 
               {/* 날짜 셀 */}
               <button
-                className={`week-calendar-day-cell ${isToday(date) ? 'today' : ''} ${selectedDayIndex === index ? 'selected' : ''}`}
+                className={`week-calendar-day-cell ${isToday(date) ? 'today' : ''} ${
+                  selectedDayIndex === index ? 'selected' : ''
+                }`}
                 onClick={() => handleDayClick(index)}
               >
                 <div className="week-calendar-status-dots">
@@ -328,11 +332,13 @@ export default function WeekCalendar({
 
       {/* 팝업 */}
       {selectedDayIndex !== null && (
-        <WeekCalendarPopup
+        <CalendarPopup
           date={weekDates[selectedDayIndex]}
-          record={localCalendarData[getDateKey(weekDates[selectedDayIndex])] || {
-            status: { workout: 'none', diet: 'none', pt: 'none', memo: 'none' }
-          }}
+          record={
+            localCalendarData[getDateKey(weekDates[selectedDayIndex])] || {
+              status: { workout: 'none', diet: 'none', pt: 'none', memo: 'none' },
+            }
+          }
           onClose={handleClosePopup}
           onNavigateToWorkout={onNavigateToWorkout}
           onNavigateToDiet={onNavigateToDiet}
