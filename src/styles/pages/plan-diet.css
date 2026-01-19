@@ -24,6 +24,7 @@
   max-width: var(--app-max-width);
   margin: 0 auto;
   background-color: var(--color-gray-50);
+  overflow-y: auto;
 }
 
 /**

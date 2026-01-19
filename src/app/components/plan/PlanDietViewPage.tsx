@@ -2,7 +2,7 @@
  * PlanDietViewPage.tsx
  * 주간 식단 계획 보기 페이지
  * - 요일별 탭
- * - 끼니별 탭 (아침/점심/저녁/간식/간식2)
+ * - 끼니별 탭 (아침/점심/저녁/간식/간식2) - 하단 푸터 내 배치
  * - 메뉴 리스트 및 체크 기능
  * - 하단 재생성 버튼
  */
@@ -225,30 +225,6 @@ export default function PlanDietViewPage({
         })}
       </div>
 
-      {/* 끼니 탭 */}
-      <div className="diet-view-meal-tabs">
-        {MEAL_TABS.map(mealType => {
-          const isSelected = selectedMealType === mealType;
-          const hasMeals = hasMealsForType(mealType);
-          const completionRate = getMealTypeCompletionRate(mealType);
-          
-          return (
-            <button
-              key={mealType}
-              className={`diet-view-meal-tab ${isSelected ? 'selected' : ''} ${hasMeals ? 'has-meals' : ''} ${completionRate === 100 ? 'completed' : ''}`}
-              onClick={() => setSelectedMealType(mealType)}
-            >
-              <span className="diet-view-meal-tab-label">
-                {MEAL_TYPE_LABELS[mealType]}
-              </span>
-              {hasMeals && completionRate === 100 && (
-                <Check size={10} className="diet-view-meal-tab-check" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
       {/* 메뉴 리스트 */}
       <main className="diet-view-content">
         {filteredMeals.length > 0 ? (
@@ -307,8 +283,33 @@ export default function PlanDietViewPage({
         )}
       </main>
 
-      {/* 하단 재생성 버튼 */}
+      {/* 하단 고정 영역 (끼니 탭 + 재생성 버튼) */}
       <footer className="diet-view-footer">
+        {/* 끼니 탭 */}
+        <div className="diet-view-meal-tabs">
+          {MEAL_TABS.map(mealType => {
+            const isSelected = selectedMealType === mealType;
+            const hasMeals = hasMealsForType(mealType);
+            const completionRate = getMealTypeCompletionRate(mealType);
+            
+            return (
+              <button
+                key={mealType}
+                className={`diet-view-meal-tab ${isSelected ? 'selected' : ''} ${hasMeals ? 'has-meals' : ''} ${completionRate === 100 ? 'completed' : ''}`}
+                onClick={() => setSelectedMealType(mealType)}
+              >
+                <span className="diet-view-meal-tab-label">
+                  {MEAL_TYPE_LABELS[mealType]}
+                </span>
+                {hasMeals && completionRate === 100 && (
+                  <Check size={10} className="diet-view-meal-tab-check" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 재생성 버튼 */}
         <button 
           className="diet-view-regenerate-btn"
           onClick={() => setShowRegenerateModal(true)}
