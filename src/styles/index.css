@@ -27,6 +27,8 @@
 @import './pages/diet.css';
 @import './pages/videopt.css';
 @import './pages/board.css';
+@import './pages/plan-exercise.css';
+@import './pages/plan-diet.css';
 
 /* 컴포넌트별 스타일 */
 @import './components/card.css';

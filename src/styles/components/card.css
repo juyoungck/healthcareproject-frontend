@@ -29,6 +29,13 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md);
   margin-top: var(--spacing-lg);
+  align-items: start;
+}
+
+/* 두 카드 너비/높이 고정 - 텍스트 길어도 비율 유지 */
+.plan-grid > * {
+  min-width: 0;
+  min-height: 0;
 }
 
 .plan-card {
@@ -80,6 +87,82 @@
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-sm);
   color: var(--color-gray-700);
+}
+
+/**
+ * ===========================================
+ * 저장된 계획 카드 (오늘의 운동/식단)
+ * ===========================================
+ */
+
+.plan-card.has-plan {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: var(--spacing-md);
+}
+
+.plan-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.plan-card-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+}
+
+.plan-card-arrow {
+  color: var(--color-gray-400);
+}
+
+.plan-card-body {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex: 1;
+}
+
+.plan-card.has-plan .plan-card-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.plan-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.plan-card-category {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}
+
+.plan-card.rest-day .plan-card-category {
+  color: var(--color-gray-500);
+}
+
+.plan-card.rest-day .plan-card-icon {
+  color: var(--color-gray-400);
 }
 
 /**
@@ -138,4 +221,418 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-gray-400);
+}
+
+/**
+ * ===========================================
+ * 오늘의 운동 카드 (대시보드)
+ * ===========================================
+ */
+
+.today-exercise-card {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-200);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.today-exercise-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.today-exercise-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.today-exercise-arrow {
+  color: var(--color-gray-400);
+}
+
+.today-exercise-category {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.today-exercise-category-icon {
+  color: var(--color-primary);
+  width: 16px;
+  height: 16px;
+}
+
+.today-exercise-category-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.today-exercise-category-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.today-exercise-category-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-2xs);
+}
+
+/**
+ * 오늘의 운동 리스트
+ */
+.today-exercise-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.today-exercise-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.today-exercise-item:hover {
+  border-color: var(--color-gray-300);
+  background-color: var(--color-white);
+}
+
+.today-exercise-item:active {
+  transform: scale(0.98);
+}
+
+.today-exercise-item.completed {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+.today-exercise-item-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--border-radius-xs);
+  color: var(--color-white);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.today-exercise-item-check:hover {
+  border-color: var(--color-primary);
+}
+
+.today-exercise-item.completed .today-exercise-item-check {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.today-exercise-item-check-empty {
+  width: 100%;
+  height: 100%;
+}
+
+.today-exercise-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.today-exercise-item-name {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.today-exercise-item.completed .today-exercise-item-name {
+  color: var(--color-primary);
+}
+
+.today-exercise-item-detail {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-2xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.today-exercise-item-arrow {
+  color: var(--color-gray-400);
+  flex-shrink: 0;
+}
+
+/**
+ * 오늘의 운동 - 휴식일
+ */
+.today-exercise-card.rest-day {
+  cursor: pointer;
+}
+
+.today-exercise-rest {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+}
+
+.today-exercise-rest-icon {
+  color: var(--color-gray-400);
+  width: 24px;
+  height: 24px;
+}
+
+.today-exercise-rest-info {
+  flex: 1;
+}
+
+.today-exercise-rest-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-700);
+}
+
+.today-exercise-rest-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-2xs);
+}
+
+/**
+ * ===========================================
+ * 오늘의 식단 카드 (대시보드)
+ * ===========================================
+ */
+
+.today-diet-card {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-200);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.today-diet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.today-diet-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-diet);
+}
+
+.today-diet-arrow {
+  color: var(--color-gray-400);
+}
+
+.today-diet-category {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.today-diet-category-icon {
+  color: var(--color-diet);
+  width: 16px;
+  height: 16px;
+}
+
+.today-diet-category-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.today-diet-category-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.today-diet-category-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-2xs);
+}
+
+/**
+ * 오늘의 식단 리스트
+ */
+.today-diet-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.today-diet-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.today-diet-item.completed {
+  background-color: var(--color-diet-light);
+  border-color: var(--color-diet);
+}
+
+.today-diet-item-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--border-radius-xs);
+  color: var(--color-white);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.today-diet-item-check:hover {
+  border-color: var(--color-diet);
+}
+
+.today-diet-item.completed .today-diet-item-check {
+  background-color: var(--color-diet);
+  border-color: var(--color-diet);
+}
+
+.today-diet-item-check-empty {
+  width: 100%;
+  height: 100%;
+}
+
+.today-diet-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.today-diet-item-name {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.today-diet-item.completed .today-diet-item-name {
+  color: var(--color-diet);
+}
+
+.today-diet-item-detail {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-2xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.today-diet-item.more {
+  justify-content: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-gray-100);
+  cursor: pointer;
+}
+
+.today-diet-item-more-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-diet);
+  font-weight: var(--font-weight-medium);
+}
+
+/**
+ * 오늘의 식단 - 휴식일
+ */
+.today-diet-card.rest-day {
+  cursor: pointer;
+}
+
+.today-diet-rest {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+}
+
+.today-diet-rest-icon {
+  color: var(--color-gray-400);
+  width: 24px;
+  height: 24px;
+}
+
+.today-diet-rest-info {
+  flex: 1;
+}
+
+.today-diet-rest-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-700);
+}
+
+.today-diet-rest-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-2xs);
 }
