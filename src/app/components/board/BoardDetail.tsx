@@ -21,45 +21,14 @@ import {
   X,
   AlertTriangle
 } from 'lucide-react';
-
-/**
- * 댓글 타입 정의
- */
-interface Comment {
-  id: number;
-  authorId: number;
-  author: string;
-  content: string;
-  date: string;
-  replies: Reply[];
-}
-
-/**
- * 대댓글 타입 정의
- */
-interface Reply {
-  id: number;
-  authorId: number;
-  author: string;
-  content: string;
-  date: string;
-}
-
-/**
- * 게시글 상세 타입 정의
- */
-interface PostDetail {
-  id: number;
-  category: 'free' | 'question' | 'info';
-  title: string;
-  content: string;
-  images: string[];
-  author: string;
-  authorId: number;
-  date: string;
-  views: number;
-  comments: Comment[];
-}
+import { 
+  Comment, 
+  Reply, 
+  PostDetail, 
+  CATEGORY_LABELS, 
+  REPORT_REASONS, 
+  DUMMY_POST_DETAIL 
+} from '../../../data/boards';
 
 /**
  * Props 타입 정의
@@ -71,76 +40,6 @@ interface BoardDetailProps {
   onEdit: () => void;
   onDelete: () => void;
 }
-
-/**
- * 카테고리 라벨 매핑
- */
-const CATEGORY_LABELS: Record<string, string> = {
-  free: '자유',
-  question: '질문',
-  info: '정보'
-};
-
-/**
- * 신고 사유 목록
- */
-const REPORT_REASONS = [
-  '스팸/광고',
-  '욕설/비방',
-  '음란물',
-  '개인정보 노출',
-  '기타'
-];
-
-/**
- * 더미 데이터 (API 연동 전 테스트용)
- * TODO: 실제 API 연동 시 제거
- */
-const DUMMY_POST: PostDetail = {
-  id: 1,
-  category: 'free',
-  title: '오늘 운동 인증합니다! 헬스장 다녀왔어요',
-  content: `안녕하세요! 오늘도 열심히 운동하고 왔습니다.
-
-오늘 루틴은 가슴/삼두 위주로 진행했어요.
-- 벤치프레스 4세트
-- 인클라인 덤벨프레스 4세트
-- 케이블 크로스오버 3세트
-- 트라이셉스 푸시다운 4세트
-
-다들 화이팅하세요! 💪`,
-  images: [],
-  author: '운동러버',
-  authorId: 1,
-  date: '2025-01-14 14:30',
-  views: 42,
-  comments: [
-    {
-      id: 1,
-      authorId: 2,
-      author: '헬린이',
-      content: '대단하시네요! 저도 열심히 해야겠어요',
-      date: '2025-01-14 15:00',
-      replies: [
-        {
-          id: 11,
-          authorId: 1,
-          author: '운동러버',
-          content: '감사합니다! 화이팅이에요 💪',
-          date: '2025-01-14 15:10'
-        }
-      ]
-    },
-    {
-      id: 2,
-      authorId: 3,
-      author: '피트니스킹',
-      content: '벤치프레스 무게는 얼마로 하셨나요?',
-      date: '2025-01-14 16:20',
-      replies: []
-    }
-  ]
-};
 
 /**
  * BoardDetail 컴포넌트
@@ -155,7 +54,7 @@ export default function BoardDetail({
   /**
    * 상태 관리
    */
-  const [post, setPost] = useState<PostDetail>(DUMMY_POST);
+  const [post, setPost] = useState<PostDetail>(DUMMY_POST_DETAIL);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');

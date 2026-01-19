@@ -1,34 +1,34 @@
 /**
- * ExerciseDetailContent.tsx
- * 운동 상세 콘텐츠 컴포넌트
- * - 뒤로가기 바
- * - 운동 썸네일 이미지
- * - 운동명 및 태그
- * - 운동 방법 및 상세 설명
- * - 주의사항
- * - 유튜브 영상 썸네일
- * - 대체 운동 추천
- * 
- * 주의: 헤더/네비게이션은 Dashboard에서 관리
+ * exercises.ts
+ * 운동 데이터 및 타입 정의
+ * TODO: API 연동 시 DUMMY_EXERCISES 제거
  */
-
-import { useMemo } from 'react';
-import { ArrowLeft, Play } from 'lucide-react';
 
 /**
  * 운동 부위 타입
  */
-type BodyPart = '상체' | '하체' | '전신' | '코어';
+export type BodyPart = '전체' | '상체' | '하체' | '전신' | '코어';
 
 /**
  * 난이도 타입
  */
-type Difficulty = '초급' | '중급' | '고급';
+export type Difficulty = '전체' | '초급' | '중급' | '고급';
+
+/**
+ * 운동 데이터 타입
+ */
+export interface Exercise {
+  id: number;
+  name: string;
+  bodyPart: Exclude<BodyPart, '전체'>;
+  difficulty: Exclude<Difficulty, '전체'>;
+  thumbnail: string;
+}
 
 /**
  * 운동 상세 데이터 타입
  */
-interface ExerciseDetail {
+export interface ExerciseDetail {
   id: number;
   name: string;
   bodyPart: BodyPart;
@@ -42,19 +42,48 @@ interface ExerciseDetail {
 }
 
 /**
- * 컴포넌트 Props 타입 정의
+ * 부위 필터 옵션
  */
-interface ExerciseDetailContentProps {
-  exerciseId: number;
-  onBack: () => void;
-  onSelectExercise: (id: number) => void;
-}
+export const BODY_PARTS: BodyPart[] = ['전체', '상체', '하체', '전신', '코어'];
+
+/**
+ * 난이도 필터 옵션
+ */
+export const DIFFICULTIES: Difficulty[] = ['전체', '초급', '중급', '고급'];
+
+/**
+ * 더미 운동 데이터
+ * TODO: API 연동 시 삭제
+ */
+export const DUMMY_EXERCISES: Exercise[] = [
+  { id: 1, name: '푸쉬업', bodyPart: '상체', difficulty: '초급', thumbnail: '💪' },
+  { id: 2, name: '벤치프레스', bodyPart: '상체', difficulty: '중급', thumbnail: '🏋️' },
+  { id: 3, name: '풀업', bodyPart: '상체', difficulty: '고급', thumbnail: '🔝' },
+  { id: 4, name: '덤벨 숄더프레스', bodyPart: '상체', difficulty: '중급', thumbnail: '💪' },
+  { id: 5, name: '스쿼트', bodyPart: '하체', difficulty: '초급', thumbnail: '🦵' },
+  { id: 6, name: '런지', bodyPart: '하체', difficulty: '초급', thumbnail: '🚶' },
+  { id: 7, name: '레그프레스', bodyPart: '하체', difficulty: '중급', thumbnail: '🦿' },
+  { id: 8, name: '데드리프트', bodyPart: '하체', difficulty: '고급', thumbnail: '🏋️' },
+  { id: 9, name: '버피', bodyPart: '전신', difficulty: '고급', thumbnail: '🔥' },
+  { id: 10, name: '마운틴클라이머', bodyPart: '전신', difficulty: '중급', thumbnail: '⛰️' },
+  { id: 11, name: '점핑잭', bodyPart: '전신', difficulty: '초급', thumbnail: '⭐' },
+  { id: 12, name: '케틀벨 스윙', bodyPart: '전신', difficulty: '중급', thumbnail: '🔔' },
+  { id: 13, name: '플랭크', bodyPart: '코어', difficulty: '초급', thumbnail: '🧘' },
+  { id: 14, name: '크런치', bodyPart: '코어', difficulty: '초급', thumbnail: '💫' },
+  { id: 15, name: '레그레이즈', bodyPart: '코어', difficulty: '중급', thumbnail: '🦵' },
+  { id: 16, name: '러시안 트위스트', bodyPart: '코어', difficulty: '중급', thumbnail: '🔄' },
+  { id: 17, name: '행잉 레그레이즈', bodyPart: '코어', difficulty: '고급', thumbnail: '🎯' },
+  { id: 18, name: '바벨 로우', bodyPart: '상체', difficulty: '중급', thumbnail: '💪' },
+  { id: 19, name: '힙 쓰러스트', bodyPart: '하체', difficulty: '중급', thumbnail: '🍑' },
+  { id: 20, name: '박스점프', bodyPart: '전신', difficulty: '고급', thumbnail: '📦' },
+];
+
 
 /**
  * 더미 운동 상세 데이터
  * TODO: 실제 구현 시 API에서 가져오기
  */
-const EXERCISE_DETAILS: ExerciseDetail[] = [
+export const DUMMY_EXERCISE_DETAILS: ExerciseDetail[] = [
   {
     id: 1,
     name: '푸쉬업',
@@ -516,145 +545,3 @@ const EXERCISE_DETAILS: ExerciseDetail[] = [
     youtubeUrl: 'https://www.youtube.com/watch?v=NBY9-kTuHEk'
   }
 ];
-
-/**
- * ExerciseDetailContent 컴포넌트
- * 운동 상세 정보 UI 렌더링 (콘텐츠만)
- */
-export default function ExerciseDetailContent({ 
-  exerciseId, 
-  onBack,
-  onSelectExercise,
-}: ExerciseDetailContentProps) {
-  /**
-   * 현재 운동 데이터 찾기
-   */
-  const exercise = useMemo(() => {
-    return EXERCISE_DETAILS.find(ex => ex.id === exerciseId);
-  }, [exerciseId]);
-
-  /**
-   * 대체 운동 목록 (같은 부위, 현재 운동 제외)
-   */
-  const alternativeExercises = useMemo(() => {
-    if (!exercise) return [];
-    return EXERCISE_DETAILS
-      .filter(ex => ex.bodyPart === exercise.bodyPart && ex.id !== exercise.id)
-      .slice(0, 3);
-  }, [exercise]);
-
-  /**
-   * 운동을 찾지 못한 경우
-   */
-  if (!exercise) {
-    return (
-      <main className="app-main">
-        <div className="exercise-empty">
-          <p className="exercise-empty-text">운동 정보를 찾을 수 없습니다</p>
-        </div>
-      </main>
-    );
-  }
-
-  /**
-   * 메인 콘텐츠 렌더링
-   */
-  return (
-    <main className="exercise-detail-main">
-      {/* 뒤로가기 바 */}
-      <div className="exercise-detail-back-bar">
-        <button className="exercise-detail-back" onClick={onBack}>
-          <ArrowLeft size={20} />
-        </button>
-      </div>
-
-      {/* 썸네일 이미지 */}
-      <div className="exercise-detail-thumbnail">
-        <span className="exercise-detail-emoji">{exercise.thumbnail}</span>
-      </div>
-
-      {/* 운동명 및 태그 */}
-      <div className="exercise-detail-title-section">
-        <h1 className="exercise-detail-name">{exercise.name}</h1>
-        <div className="exercise-detail-tags">
-          <span className="exercise-card-tag bodypart">{exercise.bodyPart}</span>
-          <span className="exercise-card-tag difficulty">{exercise.difficulty}</span>
-        </div>
-      </div>
-
-      {/* 운동 설명 */}
-      <div className="exercise-detail-section">
-        <p className="exercise-detail-description">{exercise.description}</p>
-      </div>
-
-      {/* 운동 방법 */}
-      <div className="exercise-detail-section">
-        <h2 className="exercise-detail-section-title">운동 방법</h2>
-        <ol className="exercise-detail-instructions">
-          {exercise.instructions.map((instruction, index) => (
-            <li key={index} className="exercise-detail-instruction-item">
-              <span className="exercise-detail-instruction-number">{index + 1}</span>
-              <span className="exercise-detail-instruction-text">{instruction}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      {/* 주의사항 */}
-      <div className="exercise-detail-section">
-        <h2 className="exercise-detail-section-title">주의사항</h2>
-        <ul className="exercise-detail-cautions">
-          {exercise.cautions.map((caution, index) => (
-            <li key={index} className="exercise-detail-caution-item">
-              {caution}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* 유튜브 영상 */}
-      <div className="exercise-detail-section">
-        <h2 className="exercise-detail-section-title">운동 영상</h2>
-        <a 
-          href={exercise.youtubeUrl} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="exercise-detail-video"
-        >
-          <img 
-            src={exercise.youtubeThumb} 
-            alt={`${exercise.name} 영상`}
-            className="exercise-detail-video-thumb"
-          />
-          <div className="exercise-detail-video-play">
-            <Play size={48} fill="white" />
-          </div>
-        </a>
-      </div>
-
-      {/* 대체 운동 */}
-      {alternativeExercises.length > 0 && (
-        <div className="exercise-detail-section">
-          <h2 className="exercise-detail-section-title">대체 운동</h2>
-          <div className="exercise-detail-alternatives">
-            {alternativeExercises.map((alt) => (
-              <button 
-                key={alt.id} 
-                className="exercise-alternative-card"
-                onClick={() => onSelectExercise(alt.id)}
-              >
-                <div className="exercise-alternative-thumbnail">
-                  <span className="exercise-alternative-emoji">{alt.thumbnail}</span>
-                </div>
-                <div className="exercise-alternative-info">
-                  <p className="exercise-alternative-name">{alt.name}</p>
-                  <span className="exercise-alternative-difficulty">{alt.difficulty}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </main>
-  );
-}

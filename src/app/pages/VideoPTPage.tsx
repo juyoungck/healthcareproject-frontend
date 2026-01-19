@@ -16,7 +16,7 @@ import {
   DUMMY_MY_RESERVATIONS,
   CURRENT_USER_ID,
   IS_CURRENT_USER_TRAINER 
-} from '../components/pt/ptDummyData';
+} from '../../data/pts';
 
 /**
  * 필터 타입
@@ -202,11 +202,11 @@ export default function VideoPTPage({
       {/* 페이지 헤더 */}
       <div className="pt-page-header">
         {/* 검색 입력 */}
-        <div className="pt-search-wrapper">
-          <Search className="pt-search-icon" size={18} />
+        <div className="search-wrapper">
+          <Search className="search-icon" size={18} />
           <input
             type="text"
-            className="pt-search-input"
+            className="search-input"
             placeholder="트레이너 또는 방 제목 검색"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -214,29 +214,29 @@ export default function VideoPTPage({
         </div>
 
         {/* 필터 버튼 그룹 */}
-        <div className="pt-filter-group">
+        <div className="filter-group">
           <button
-            className={`pt-filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
+            className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
             onClick={() => setActiveFilter('all')}
           >
             전체
           </button>
           <button
-            className={`pt-filter-btn ${activeFilter === 'live' ? 'active' : ''}`}
+            className={`filter-btn ${activeFilter === 'live' ? 'active' : ''}`}
             onClick={() => setActiveFilter('live')}
           >
             <Video size={14} />
             진행중
           </button>
           <button
-            className={`pt-filter-btn ${activeFilter === 'reserved' ? 'active' : ''}`}
+            className={`filter-btn ${activeFilter === 'reserved' ? 'active' : ''}`}
             onClick={() => setActiveFilter('reserved')}
           >
             <Calendar size={14} />
             예약중
           </button>
           <button
-            className={`pt-filter-btn ${activeFilter === 'my-reservation' ? 'active' : ''}`}
+            className={`filter-btn ${activeFilter === 'my-reservation' ? 'active' : ''}`}
             onClick={() => setActiveFilter('my-reservation')}
           >
             내 예약
@@ -244,7 +244,7 @@ export default function VideoPTPage({
           {/* 트레이너 전용 필터 */}
           {IS_CURRENT_USER_TRAINER && (
             <button 
-              className={`pt-filter-btn ${activeFilter === 'myRoom' ? 'active' : ''}`}
+              className={`filter-btn ${activeFilter === 'myRoom' ? 'active' : ''}`}
               onClick={() => setActiveFilter('myRoom')}
             >
               내 PT

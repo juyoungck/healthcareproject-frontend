@@ -1,10 +1,9 @@
 /**
  * SignupModal.tsx
  * 회원가입 모달 컴포넌트
- * - 회원유형 선택 (일반회원/트레이너)
- * - 기본정보 입력 (프로필, 비밀번호, 닉네임, 전화번호)
+ * - 기본정보 입력 (이메일, 비밀번호, 닉네임, 전화번호)
  * - 이메일 인증
- * - 트레이너 증빙자료 제출
+ * - 가입 완료 → 자동 로그인 → 온보딩으로 이동
  */
 
 import { useState } from 'react';
@@ -15,34 +14,27 @@ import { X, Mail, Lock, Eye, EyeOff, User, Phone, Check } from 'lucide-react';
  */
 interface SignupModalProps {
   onClose: () => void;
-  onSignupSuccess: () => void;
+  onSignupComplete: () => void;  // 가입 완료 후 자동 로그인 처리
   onSwitchToLogin: () => void;
 }
 
 /**
- * 회원 유형
- */
-type UserType = 'general' | 'trainer' | null;
-
-/**
  * 회원가입 단계
  */
-type SignupStep = 'type' | 'info' | 'verify' | 'complete';
+type SignupStep = 'info' | 'verify' | 'complete';
 
 /**
  * SignupModal 컴포넌트
- * 회원가입 단계별 UI 및 로직 처리
  */
 export default function SignupModal({ 
   onClose, 
-  onSignupSuccess,
+  onSignupComplete,
   onSwitchToLogin 
 }: SignupModalProps) {
   /**
-   * 단계 및 유형 상태
+   * 단계 상태
    */
-  const [step, setStep] = useState<SignupStep>('type');
-  const [userType, setUserType] = useState<UserType>(null);
+  const [step, setStep] = useState<SignupStep>('info');
 
   /**
    * 폼 데이터 상태
@@ -80,11 +72,16 @@ export default function SignupModal({
   };
 
   /**
-   * 회원유형 선택 핸들러
+   * 개별 약관 체크 시 전체 동의 상태 업데이트
    */
-  const handleTypeSelect = (type: UserType) => {
-    setUserType(type);
-    setStep('info');
+  const handleTermsChange = (checked: boolean) => {
+    setAgreeTerms(checked);
+    setAgreeAll(checked && agreePrivacy);
+  };
+
+  const handlePrivacyChange = (checked: boolean) => {
+    setAgreePrivacy(checked);
+    setAgreeAll(checked && agreeTerms);
   };
 
   /**
@@ -147,6 +144,14 @@ export default function SignupModal({
     try {
       /* TODO: 실제 인증 코드 검증 API 호출 */
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      /* 
+       * TODO: 회원가입 API 호출 및 토큰 발급
+       * const response = await signupAPI({ email, password, nickname, phone });
+       * localStorage.setItem('accessToken', response.accessToken);
+       * localStorage.setItem('refreshToken', response.refreshToken);
+       */
+      
       setStep('complete');
     } catch {
       setError('인증 코드가 올바르지 않습니다.');
@@ -156,10 +161,15 @@ export default function SignupModal({
   };
 
   /**
-   * 회원가입 완료 핸들러
+   * 회원가입 완료 → 자동 로그인 → 온보딩으로 이동
    */
   const handleComplete = () => {
-    onSignupSuccess();
+    /* 
+     * TODO: 실제 구현 시
+     * - 토큰이 이미 저장된 상태
+     * - onSignupComplete 호출하여 로그인 상태로 전환 + 온보딩 표시
+     */
+    onSignupComplete();
   };
 
   /**
@@ -176,43 +186,6 @@ export default function SignupModal({
    */
   const renderStep = () => {
     switch (step) {
-      /* 회원유형 선택 단계 */
-      case 'type':
-        return (
-          <div className="signup-type-step">
-            <p className="signup-type-desc">
-              회원 유형을 선택해주세요
-            </p>
-            <div className="signup-type-buttons">
-              <button 
-                className="signup-type-btn"
-                onClick={() => handleTypeSelect('general')}
-              >
-                <User size={32} />
-                <span className="signup-type-btn-title">일반 회원</span>
-                <span className="signup-type-btn-desc">
-                  AI 운동/식단 추천을 받고 싶어요
-                </span>
-              </button>
-              <button 
-                className="signup-type-btn"
-                onClick={() => handleTypeSelect('trainer')}
-              >
-                <User size={32} />
-                <span className="signup-type-btn-title">트레이너</span>
-                <span className="signup-type-btn-desc">
-                  화상 PT를 진행하고 싶어요
-                </span>
-              </button>
-            </div>
-            {userType === 'trainer' && (
-              <p className="signup-trainer-notice">
-                * 트레이너 가입 시 자격증 등 증빙자료가 필요합니다
-              </p>
-            )}
-          </div>
-        );
-
       /* 기본정보 입력 단계 */
       case 'info':
         return (
@@ -329,7 +302,7 @@ export default function SignupModal({
                 <input
                   type="checkbox"
                   checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  onChange={(e) => handleTermsChange(e.target.checked)}
                 />
                 <Check size={16} className={agreeTerms ? 'checked' : ''} />
                 <span>[필수] 서비스 이용약관</span>
@@ -338,7 +311,7 @@ export default function SignupModal({
                 <input
                   type="checkbox"
                   checked={agreePrivacy}
-                  onChange={(e) => setAgreePrivacy(e.target.checked)}
+                  onChange={(e) => handlePrivacyChange(e.target.checked)}
                 />
                 <Check size={16} className={agreePrivacy ? 'checked' : ''} />
                 <span>[필수] 개인정보 처리방침</span>
@@ -423,15 +396,14 @@ export default function SignupModal({
               회원가입 완료!
             </h3>
             <p className="signup-complete-desc">
-              {userType === 'trainer' 
-                ? '트레이너 승인 후 화상 PT를 진행할 수 있습니다.'
-                : '지금 바로 AI 맞춤 운동과 식단을 시작하세요!'}
+              맞춤 운동과 식단 추천을 위해<br />
+              간단한 정보를 입력해주세요
             </p>
             <button 
               className="form-submit-btn"
               onClick={handleComplete}
             >
-              로그인하러 가기
+              시작하기
             </button>
           </div>
         );
@@ -446,8 +418,7 @@ export default function SignupModal({
    */
   const getStepTitle = () => {
     switch (step) {
-      case 'type': return '회원가입';
-      case 'info': return '기본정보 입력';
+      case 'info': return '회원가입';
       case 'verify': return '이메일 인증';
       case 'complete': return '가입 완료';
       default: return '회원가입';

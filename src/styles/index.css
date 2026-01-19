@@ -22,6 +22,7 @@
 
 /* 페이지별 스타일 */
 @import './pages/landing.css';
+@import './pages/onboarding.css';
 @import './pages/exercise.css';
 @import './pages/exercise-detail.css';
 @import './pages/diet.css';
@@ -30,6 +31,8 @@
 @import './pages/plan-exercise.css';
 @import './pages/plan-diet.css';
 @import './pages/calendar.css';
+@import './pages/mypage.css';
+@import './pages/settings.css';
 
 /* 컴포넌트별 스타일 */
 @import './components/card.css';

@@ -5,7 +5,7 @@
  */
 
 import { User, Clock, Users, Lock } from 'lucide-react';
-import { PTRoom } from './ptDummyData';
+import { PTRoom } from '../../../data/pts';
 
 /**
  * Props 타입 정의

@@ -1,0 +1,244 @@
+/**
+ * settings.css
+ * 설정 페이지 스타일
+ */
+
+/**
+ * ===========================================
+ * 설정 페이지 컨테이너
+ * ===========================================
+ */
+
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  background-color: var(--color-gray-50);
+  position: relative;
+  overflow-y: auto;
+}
+
+/**
+ * ===========================================
+ * 헤더
+ * ===========================================
+ */
+
+.settings-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-max-width);
+  height: var(--header-height);
+  background-color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+  z-index: var(--z-fixed);
+}
+
+.settings-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  height: 100%;
+}
+
+.settings-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: var(--app-max-width);
+  height: var(--header-height);
+  background: none;
+  border: none;
+  color: var(--color-gray-700);
+  cursor: pointer;
+}
+
+.settings-title {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+  color: var(--color-gray-900);
+}
+
+/**
+ * ===========================================
+ * 메인 콘텐츠
+ * ===========================================
+ */
+
+.settings-main {
+  flex: 1;
+  padding: calc(var(--header-height) + var(--spacing-lg)) var(--spacing-lg) var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/**
+ * ===========================================
+ * 섹션
+ * ===========================================
+ */
+
+.settings-section {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.settings-section-title {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-500);
+  background-color: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+/**
+ * ===========================================
+ * 설정 리스트
+ * ===========================================
+ */
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-gray-100);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+.settings-item:hover {
+  background-color: var(--color-gray-50);
+}
+
+.settings-item-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.settings-item-icon {
+  color: var(--color-gray-500);
+}
+
+.settings-item-label {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-900);
+}
+
+.settings-item-value {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.settings-item-arrow {
+  color: var(--color-gray-400);
+}
+
+/**
+ * 위험 항목 (회원탈퇴)
+ */
+.settings-item-danger .settings-item-icon,
+.settings-item-danger .settings-item-label {
+  color: var(--color-error);
+}
+
+/**
+ * ===========================================
+ * 회원탈퇴 모달
+ * ===========================================
+ */
+
+.settings-withdraw-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: calc(100% - var(--spacing-xl) * 2);
+  max-width: 320px;
+  padding: var(--spacing-xl);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  text-align: center;
+}
+
+.settings-withdraw-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background-color: #FEE2E2;
+  border-radius: var(--border-radius-full);
+  color: var(--color-error);
+}
+
+.settings-withdraw-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.settings-withdraw-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  line-height: var(--line-height-relaxed);
+}
+
+.settings-withdraw-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  width: 100%;
+  margin-top: var(--spacing-sm);
+}
+
+.settings-withdraw-btn {
+  flex: 1;
+  height: 48px;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.settings-withdraw-btn.cancel {
+  color: var(--color-gray-700);
+  background-color: var(--color-gray-100);
+}
+
+.settings-withdraw-btn.cancel:hover {
+  background-color: var(--color-gray-200);
+}
+
+.settings-withdraw-btn.confirm {
+  color: var(--color-white);
+  background-color: var(--color-error);
+}
+
+.settings-withdraw-btn.confirm:hover {
+  background-color: #B91C1C;
+}

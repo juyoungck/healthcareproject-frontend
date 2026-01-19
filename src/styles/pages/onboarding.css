@@ -1,0 +1,759 @@
+/**
+ * onboarding.css
+ * 온보딩 페이지 스타일
+ */
+
+/**
+ * ===========================================
+ * 온보딩 페이지 컨테이너
+ * ===========================================
+ */
+
+.onboarding-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  background-color: var(--color-white);
+}
+
+/**
+ * ===========================================
+ * 헤더
+ * ===========================================
+ */
+
+.onboarding-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-max-width);
+  background-color: var(--color-white);
+  z-index: var(--z-fixed);
+}
+
+.onboarding-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  padding: 0 var(--spacing-md);
+}
+
+.onboarding-back-btn,
+.onboarding-skip-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  color: var(--color-gray-600);
+  cursor: pointer;
+}
+
+.onboarding-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+/**
+ * 진행률 바
+ */
+.onboarding-progress {
+  height: 4px;
+  background-color: var(--color-gray-100);
+}
+
+.onboarding-progress-bar {
+  height: 100%;
+  background-color: var(--color-primary);
+  transition: width var(--transition-normal);
+}
+
+/**
+ * ===========================================
+ * 메인 콘텐츠
+ * ===========================================
+ */
+
+.onboarding-main {
+  flex: 1;
+  padding: calc(var(--header-height) + var(--spacing-xl)) var(--spacing-lg) 100px;
+}
+
+.onboarding-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.onboarding-step-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-600);
+  text-align: center;
+  line-height: var(--line-height-relaxed);
+}
+
+/**
+ * ===========================================
+ * 입력 그리드 (키, 몸무게, 나이)
+ * ===========================================
+ */
+
+.onboarding-input-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.onboarding-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.onboarding-input-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+}
+
+.onboarding-input-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.onboarding-input-wrapper:focus-within {
+  border-color: var(--color-primary);
+}
+
+.onboarding-input {
+  flex: 1;
+  height: 52px;
+  padding: 0 var(--spacing-lg);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.onboarding-input::placeholder {
+  color: var(--color-gray-300);
+}
+
+.onboarding-input-unit {
+  padding-right: var(--spacing-lg);
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/**
+ * ===========================================
+ * 섹션
+ * ===========================================
+ */
+
+.onboarding-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.onboarding-section-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-700);
+}
+
+/**
+ * ===========================================
+ * 토글 버튼 그룹 (성별)
+ * ===========================================
+ */
+
+.onboarding-toggle-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.onboarding-toggle-btn {
+  height: 48px;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.onboarding-toggle-btn.active {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+/**
+ * ===========================================
+ * 칩 그룹 (알레르기)
+ * ===========================================
+ */
+
+.onboarding-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.onboarding-chip {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.onboarding-chip.active {
+  color: var(--color-error);
+  background-color: rgba(220, 38, 38, 0.1);
+  border-color: var(--color-error);
+}
+
+/**
+ * ===========================================
+ * 옵션 그리드 (운동 경력/목표)
+ * ===========================================
+ */
+
+.onboarding-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.onboarding-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-lg);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.onboarding-option-btn.active {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+.onboarding-option-btn .onboarding-option-label {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+}
+
+.onboarding-option-btn .onboarding-option-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}
+
+.onboarding-option-btn.active .onboarding-option-label {
+  color: var(--color-primary);
+}
+
+/**
+ * ===========================================
+ * 부상 이력
+ * ===========================================
+ */
+
+.onboarding-injury-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.onboarding-injury-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+}
+
+.onboarding-injury-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.onboarding-injury-number {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-700);
+}
+
+.onboarding-injury-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: var(--color-gray-400);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.onboarding-injury-delete:hover {
+  color: var(--color-error);
+}
+
+/**
+ * 부상 정도 선택
+ */
+.onboarding-injury-severity {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.onboarding-severity-btn {
+  height: 40px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.onboarding-severity-btn:hover {
+  border-color: var(--color-gray-300);
+}
+
+.onboarding-severity-btn.active {
+  color: var(--color-white);
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+/**
+ * 부상 추가 버튼
+ */
+.onboarding-injury-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  height: 48px;
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  background-color: var(--color-white);
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.onboarding-injury-add:hover {
+  background-color: var(--color-primary-light);
+}
+
+/**
+ * ===========================================
+ * 텍스트 입력
+ * ===========================================
+ */
+
+.onboarding-text-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--spacing-md);
+  font-size: var(--font-size-base);
+  color: var(--color-gray-900);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  outline: none;
+}
+
+.onboarding-text-input:focus {
+  border-color: var(--color-primary);
+}
+
+/**
+ * ===========================================
+ * 슬라이더 (운동 일수)
+ * ===========================================
+ */
+
+.onboarding-days-slider {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.onboarding-slider {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-gray-200);
+  border-radius: var(--border-radius-full);
+  appearance: none;
+  cursor: pointer;
+}
+
+.onboarding-slider::-webkit-slider-thumb {
+  width: 28px;
+  height: 28px;
+  background-color: var(--color-primary);
+  border: 4px solid var(--color-white);
+  border-radius: var(--border-radius-full);
+  box-shadow: var(--shadow-md);
+  appearance: none;
+  cursor: pointer;
+}
+
+.onboarding-days-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.onboarding-days-value {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.onboarding-days-unit {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/**
+ * ===========================================
+ * 시간 버튼
+ * ===========================================
+ */
+
+.onboarding-time-btn {
+  height: 48px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.onboarding-time-btn.active {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+/**
+ * ===========================================
+ * 확인 페이지
+ * ===========================================
+ */
+
+.onboarding-confirm-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.onboarding-confirm-section {
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+}
+
+.onboarding-confirm-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.onboarding-confirm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.onboarding-confirm-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+}
+
+.onboarding-confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+}
+
+.onboarding-confirm-row:not(:last-child) {
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.onboarding-confirm-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.onboarding-confirm-value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+}
+
+.onboarding-confirm-tags {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.onboarding-confirm-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.onboarding-confirm-tag {
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-error);
+  background-color: rgba(220, 38, 38, 0.1);
+  border-radius: var(--border-radius-full);
+}
+
+.onboarding-confirm-injuries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.onboarding-confirm-injury {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.onboarding-confirm-injury:last-child {
+  border-bottom: none;
+}
+
+.onboarding-confirm-injury-part {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+.onboarding-confirm-injury-severity {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: var(--border-radius-full);
+}
+
+.onboarding-confirm-injury-severity.mild {
+  color: #F59E0B;
+  background-color: #FEF3C7;
+}
+
+.onboarding-confirm-injury-severity.caution {
+  color: #F97316;
+  background-color: #FFEDD5;
+}
+
+.onboarding-confirm-injury-severity.severe {
+  color: #DC2626;
+  background-color: #FEE2E2;
+}
+
+/**
+ * ===========================================
+ * 하단 버튼
+ * ===========================================
+ */
+
+.onboarding-footer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-max-width);
+  padding: var(--spacing-md) var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
+  background-color: var(--color-white);
+  border-top: 1px solid var(--color-gray-100);
+}
+
+.onboarding-next-btn,
+.onboarding-complete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  height: 52px;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.onboarding-next-btn:hover,
+.onboarding-complete-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/**
+ * ===========================================
+ * 에러 메시지
+ * ===========================================
+ */
+
+.onboarding-error {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: #DC2626;
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: var(--border-radius-md);
+  text-align: center;
+}
+
+/**
+ * ===========================================
+ * 로딩 상태
+ * ===========================================
+ */
+
+.onboarding-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/**
+ * ===========================================
+ * 수정 완료 팝업
+ * ===========================================
+ */
+
+.onboarding-complete-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: calc(100% - var(--spacing-xl) * 2);
+  max-width: 320px;
+  padding: var(--spacing-xl);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  text-align: center;
+}
+
+.onboarding-complete-modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-full);
+  color: var(--color-primary);
+}
+
+.onboarding-complete-modal-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.onboarding-complete-modal-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  line-height: var(--line-height-relaxed);
+}
+
+.onboarding-complete-modal-btn {
+  width: 100%;
+  height: 48px;
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.onboarding-complete-modal-btn:hover {
+  background-color: var(--color-primary-hover);
+}
