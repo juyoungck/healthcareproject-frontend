@@ -11,28 +11,14 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Search } from 'lucide-react';
-import ExerciseDetailContent from './ExerciseDetailContent';
-
-/**
- * 운동 부위 타입
- */
-type BodyPart = '전체' | '상체' | '하체' | '전신' | '코어';
-
-/**
- * 난이도 타입
- */
-type Difficulty = '전체' | '초급' | '중급' | '고급';
-
-/**
- * 운동 데이터 타입
- */
-interface Exercise {
-  id: number;
-  name: string;
-  bodyPart: Exclude<BodyPart, '전체'>;
-  difficulty: Exclude<Difficulty, '전체'>;
-  thumbnail: string;
-}
+import ExerciseDetailContent from '../components/exercise/ExerciseDetail';
+import { 
+  BodyPart, 
+  Difficulty, 
+  BODY_PARTS, 
+  DIFFICULTIES, 
+  DUMMY_EXERCISES 
+} from '../../data/exercises';
 
 /**
  * Props 타입 정의
@@ -41,43 +27,6 @@ interface ExerciseContentProps {
   initialExerciseId?: number | null;
   onExerciseSelect?: (id: number | null) => void;
 }
-
-/**
- * 부위 필터 옵션
- */
-const BODY_PARTS: BodyPart[] = ['전체', '상체', '하체', '전신', '코어'];
-
-/**
- * 난이도 필터 옵션
- */
-const DIFFICULTIES: Difficulty[] = ['전체', '초급', '중급', '고급'];
-
-/**
- * 더미 운동 데이터
- * TODO: 실제 구현 시 API에서 가져오기
- */
-const DUMMY_EXERCISES: Exercise[] = [
-  { id: 1, name: '푸쉬업', bodyPart: '상체', difficulty: '초급', thumbnail: '💪' },
-  { id: 2, name: '벤치프레스', bodyPart: '상체', difficulty: '중급', thumbnail: '🏋️' },
-  { id: 3, name: '풀업', bodyPart: '상체', difficulty: '고급', thumbnail: '🔝' },
-  { id: 4, name: '덤벨 숄더프레스', bodyPart: '상체', difficulty: '중급', thumbnail: '💪' },
-  { id: 5, name: '스쿼트', bodyPart: '하체', difficulty: '초급', thumbnail: '🦵' },
-  { id: 6, name: '런지', bodyPart: '하체', difficulty: '초급', thumbnail: '🚶' },
-  { id: 7, name: '레그프레스', bodyPart: '하체', difficulty: '중급', thumbnail: '🦿' },
-  { id: 8, name: '데드리프트', bodyPart: '하체', difficulty: '고급', thumbnail: '🏋️' },
-  { id: 9, name: '버피', bodyPart: '전신', difficulty: '고급', thumbnail: '🔥' },
-  { id: 10, name: '마운틴클라이머', bodyPart: '전신', difficulty: '중급', thumbnail: '⛰️' },
-  { id: 11, name: '점핑잭', bodyPart: '전신', difficulty: '초급', thumbnail: '⭐' },
-  { id: 12, name: '케틀벨 스윙', bodyPart: '전신', difficulty: '중급', thumbnail: '🔔' },
-  { id: 13, name: '플랭크', bodyPart: '코어', difficulty: '초급', thumbnail: '🧘' },
-  { id: 14, name: '크런치', bodyPart: '코어', difficulty: '초급', thumbnail: '💫' },
-  { id: 15, name: '레그레이즈', bodyPart: '코어', difficulty: '중급', thumbnail: '🦵' },
-  { id: 16, name: '러시안 트위스트', bodyPart: '코어', difficulty: '중급', thumbnail: '🔄' },
-  { id: 17, name: '행잉 레그레이즈', bodyPart: '코어', difficulty: '고급', thumbnail: '🎯' },
-  { id: 18, name: '바벨 로우', bodyPart: '상체', difficulty: '중급', thumbnail: '💪' },
-  { id: 19, name: '힙 쓰러스트', bodyPart: '하체', difficulty: '중급', thumbnail: '🍑' },
-  { id: 20, name: '박스점프', bodyPart: '전신', difficulty: '고급', thumbnail: '📦' },
-];
 
 /**
  * ExerciseContent 컴포넌트
@@ -221,50 +170,49 @@ export default function ExerciseContent({
    * 운동 목록 렌더링
    */
   return (
-    <div className="exercise-content">
-      {/* 검색 바 */}
-      <div className="exercise-search-bar">
-        <Search className="exercise-search-icon" size={20} />
-        <input
-          type="text"
-          className="exercise-search-input"
-          placeholder="운동 검색..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
-      {/* 부위별 필터 */}
-      <div className="exercise-filter-section">
-        <div className="exercise-filter-chips">
-          {BODY_PARTS.map((bodyPart) => (
-            <button
-              key={bodyPart}
-              className={`exercise-filter-chip ${
-                selectedBodyParts.includes(bodyPart) ? 'active' : ''
-              }`}
-              onClick={() => handleBodyPartClick(bodyPart)}
-            >
-              {bodyPart}
-            </button>
-          ))}
+    <div className="exercise-page">
+      {/* 페이지 헤더 */}
+      <div className="pt-page-header">
+        {/* 검색 입력 */}
+        <div className="search-wrapper">
+          <Search className="search-icon" size={18} />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="운동 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-      </div>
 
-      {/* 난이도별 필터 */}
-      <div className="exercise-filter-section">
-        <div className="exercise-filter-chips">
-          {DIFFICULTIES.map((difficulty) => (
-            <button
-              key={difficulty}
-              className={`exercise-filter-chip difficulty ${
-                selectedDifficulties.includes(difficulty) ? 'active' : ''
-              }`}
-              onClick={() => handleDifficultyClick(difficulty)}
-            >
-              {difficulty}
-            </button>
-          ))}
+        {/* 부위별 필터 */}
+        <div className="filter-group">
+            {BODY_PARTS.map((bodyPart) => (
+                <button
+                key={bodyPart}
+                className={`filter-btn ${
+                    selectedBodyParts.includes(bodyPart) ? 'active' : ''
+                }`}
+                onClick={() => handleBodyPartClick(bodyPart)}
+                >
+                {bodyPart}
+                </button>
+            ))}
+        </div>
+
+        {/* 난이도별 필터 */}
+        <div className="filter-group">
+            {DIFFICULTIES.map((difficulty) => (
+                <button
+                key={difficulty}
+                className={`filter-btn ${
+                    selectedDifficulties.includes(difficulty) ? 'active' : ''
+                }`}
+                onClick={() => handleDifficultyClick(difficulty)}
+                >
+                {difficulty}
+                </button>
+            ))}
         </div>
       </div>
 

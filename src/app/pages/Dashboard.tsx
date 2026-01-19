@@ -4,7 +4,7 @@
  * 로그인한 사용자에게 표시되는 메인 서비스 화면
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Dumbbell, 
   User, 
@@ -17,7 +17,7 @@ import {
   Clock,
   Check
 } from 'lucide-react';
-import ExerciseContent from '../components/exercise/ExerciseContent';
+import ExercisePage from './ExercisePage';
 import DietPage from './DietPage';
 import VideoPTPage from './VideoPTPage';
 import BoardPage from './BoardPage';
@@ -30,12 +30,16 @@ import { DietPlan } from '../components/plan/PlanDietResult';
 import { MealType } from '../../data/plan';
 import WeekCalendar from '../components/calendar/WeekCalendar';
 import CalendarPage from './CalendarPage';
+import MyPage from './MyPage';
 
 /**
  * Props 타입 정의
  */
 interface DashboardProps {
   onLogout: () => void;
+  onEditOnboarding: () => void;
+  initialShowMyPage?: boolean;
+  onMyPageShown?: () => void;
 }
 
 /**
@@ -47,7 +51,7 @@ const currentUserId = 1;
 /**
  * 탭 타입 정의
  */
-type TabType = 'home' | 'exercise' | 'diet' | 'pt' | 'board' | 'exerciseView' | 'dietView';
+type TabType = 'home' | 'exercise' | 'diet' | 'pt' | 'board' | 'exerciseView' | 'dietView' | 'calendar';
 
 /**
  * 서브페이지 타입 정의
@@ -78,7 +82,13 @@ interface MealGroup {
 /**
  * Dashboard 컴포넌트
  */
-export default function Dashboard({ onLogout }: DashboardProps) {
+export default function Dashboard({ 
+    onLogout, 
+    onEditOnboarding,
+    initialShowMyPage = false,
+    onMyPageShown
+ }: DashboardProps) {
+
   /**
    * 현재 활성 탭 상태
    */
@@ -88,7 +98,22 @@ export default function Dashboard({ onLogout }: DashboardProps) {
    * 서브페이지 상태
    */
   const [subPage, setSubPage] = useState<SubPageType>('none');
-  
+
+  /**
+   * 마이페이지 상태
+   */
+  const [showMyPage, setShowMyPage] = useState(false);
+
+  /**
+   * 마이페이지 초기 표시 처리
+   */
+  useEffect(() => {
+    if (initialShowMyPage) {
+      setShowMyPage(true);
+      onMyPageShown?.();  // 상태 리셋 콜백 호출
+    }
+  }, [initialShowMyPage, onMyPageShown]);
+
   /**
     * 화상PT 초기 필터 상태
     */
@@ -499,7 +524,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         return renderHomeContent();
       case 'exercise':
         return (
-          <ExerciseContent 
+          <ExercisePage 
             initialExerciseId={selectedExerciseId}
             onExerciseSelect={(id) => setSelectedExerciseId(id)}
           />
@@ -549,13 +574,23 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       case 'pt':
         return <VideoPTPage initialFilter={videoPTFilter} />;
       case 'board':
-        return <BoardPage />;
+        return <BoardPage currentUserId={currentUserId} />;
       case 'calendar':
         return <CalendarPage onNavigateBack={() => setActiveTab('home')} />;
       default:
         return renderHomeContent();
     }
   };
+
+  if (showMyPage) {
+    return (
+      <MyPage 
+        onBack={() => setShowMyPage(false)} 
+        onLogout={onLogout}
+        onEditOnboarding={onEditOnboarding}
+      />
+    );
+  }
 
   return (
     <div className="app-container">
@@ -568,7 +603,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           <h1 className="app-title">{getHeaderTitle()}</h1>
 
           {/* 우측 마이페이지 버튼 */}
-          <button className="app-profile-btn" onClick={onLogout}>
+          <button className="app-profile-btn" onClick={() => setShowMyPage(true)}>
             <User className="app-profile-icon" />
           </button>
         </div>

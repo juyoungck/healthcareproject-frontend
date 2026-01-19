@@ -17,7 +17,7 @@ import {
   Copy,
   Check
 } from 'lucide-react';
-import { PTRoom } from './ptDummyData';
+import { PTRoom } from '../../../data/pts';
 
 /**
  * Props 타입 정의

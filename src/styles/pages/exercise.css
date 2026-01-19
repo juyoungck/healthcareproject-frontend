@@ -8,120 +8,23 @@
 
 /**
  * ===========================================
- * 검색 바
+ * 운동 페이지 컨테이너
  * ===========================================
  */
 
-/**
- * 검색 바 컨테이너
- */
-.exercise-search-bar {
+.exercise-page {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  background-color: var(--color-white);
-  border: 1px solid var(--color-gray-200);
-  border-radius: var(--border-radius-md);
-  margin-bottom: var(--spacing-md);
-  transition: border-color var(--transition-fast);
-}
-
-.exercise-search-bar:focus-within {
-  border-color: var(--color-primary);
+  flex-direction: column;
+  gap: var(--spacing-lg);
 }
 
 /**
- * 검색 아이콘
+ * 페이지 헤더 (필터/검색 영역)
  */
-.exercise-search-icon {
-  color: var(--color-gray-400);
-  flex-shrink: 0;
-}
-
-/**
- * 검색 입력 필드
- */
-.exercise-search-input {
-  flex: 1;
-  font-size: var(--font-size-base);
-  color: var(--color-gray-900);
-  background: transparent;
-  border: none;
-  outline: none;
-}
-
-.exercise-search-input::placeholder {
-  color: var(--color-gray-400);
-}
-
-/**
- * ===========================================
- * 필터 섹션
- * ===========================================
- */
-
-/**
- * 필터 섹션 컨테이너
- */
-.exercise-filter-section {
-  margin-bottom: var(--spacing-md);
-}
-
-/**
- * 필터 칩 컨테이너
- */
-.exercise-filter-chips {
+.exercise-page-header {
   display: flex;
-  gap: var(--spacing-sm);
-  overflow-x: auto;
-  padding-bottom: var(--spacing-xs);
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.exercise-filter-chips::-webkit-scrollbar {
-  display: none;
-}
-
-/**
- * 필터 칩 버튼
- */
-.exercise-filter-chip {
-  flex-shrink: 0;
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-gray-600);
-  background-color: var(--color-white);
-  border: 1px solid var(--color-gray-200);
-  border-radius: var(--border-radius-full);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-}
-
-.exercise-filter-chip:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-/**
- * 부위 필터 활성 상태
- */
-.exercise-filter-chip.active {
-  background-color: var(--color-workout);
-  border-color: var(--color-workout);
-  color: var(--color-white);
-}
-
-/**
- * 난이도 필터 활성 상태
- */
-.exercise-filter-chip.difficulty.active {
-  background-color: var(--color-gray-700);
-  border-color: var(--color-gray-700);
-  color: var(--color-white);
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 /**
@@ -156,6 +59,7 @@
   border: 1px solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
 }

@@ -19,7 +19,7 @@ import {
   MoreVertical,
   User
 } from 'lucide-react';
-import { PTRoom, Participant, DUMMY_PARTICIPANTS } from './ptDummyData';
+import { PTRoom, Participant, DUMMY_PARTICIPANTS } from '../../../data/pts';
 
 /**
  * Props 타입 정의

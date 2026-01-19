@@ -19,85 +19,31 @@
 }
 
 /**
- * ===========================================
- * 검색바
- * ===========================================
+ * 페이지 헤더 (필터/검색 영역)
  */
-
-.diet-search-container {
-  width: 100%;
-}
-
-/**
- * 검색바 래퍼
- */
-.diet-search-bar {
+.diet-page-header {
   display: flex;
-  align-items: center;
-  background-color: var(--color-white);
-  border: 1px solid var(--color-gray-300);
-  border-radius: var(--border-radius-md);
-  overflow: hidden;
-  transition: border-color var(--transition-fast);
-}
-
-.diet-search-bar:focus-within {
-  border-color: var(--color-diet);
-  box-shadow: 0 0 0 3px var(--color-diet-light);
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 /**
- * 검색 입력 필드
+ * ===========================================
+ * 음식 목록
+ * ===========================================
  */
-.diet-search-input {
+
+ /**
+ * 음식 목록 컨테이너
+ */
+.diet-list {
   flex: 1;
-  height: 44px;
-  padding: 0 var(--spacing-lg);
-  font-size: var(--font-size-base);
-  color: var(--color-gray-900);
-  background: transparent;
-  border: none;
-  outline: none;
-}
-
-.diet-search-input::placeholder {
-  color: var(--color-gray-400);
 }
 
 /**
- * 검색 버튼
+ * 음식 카드 그리드 (2열)
  */
-.diet-search-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  background-color: var(--color-diet);
-  color: var(--color-white);
-  border: none;
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
-}
-
-.diet-search-btn:hover {
-  background-color: var(--color-diet-hover);
-}
-
-.diet-search-btn:active {
-  background-color: var(--color-diet-active);
-}
-
-/**
- * ===========================================
- * 음식 카드 그리드
- * ===========================================
- */
-
-/**
- * 2열 그리드
- */
-.diet-food-grid {
+.diet-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md);
@@ -106,64 +52,79 @@
 /**
  * 음식 카드
  */
-.diet-food-card {
+.diet-card {
   display: flex;
   flex-direction: column;
   background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-gray-200);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.diet-food-card:hover {
-  border-color: var(--color-diet);
+.diet-card:hover {
+  border-color: var(--color-primary);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
-.diet-food-card:active {
-  transform: translateY(0);
+.diet-card:active {
+  transform: translateY(0.98);
 }
 
 /**
  * 음식 이미지 래퍼
  */
-.diet-food-image-wrapper {
-  width: 100%;
-  aspect-ratio: 1 / 1;
+.diet-card-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  background-color: var(--color-gray-50);
   overflow: hidden;
-  background-color: var(--color-gray-100);
 }
 
 /**
  * 음식 이미지
  */
-.diet-food-image {
+.diet-card-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--transition-normal);
 }
 
-.diet-food-card:hover .diet-food-image {
+.diet-card-card:hover .diet-card-image {
   transform: scale(1.05);
 }
 
 /**
- * 음식 이름
+ * 음식 정보 영역
  */
-.diet-food-name {
+.diet-card-info {
   padding: var(--spacing-md);
+}
+
+.diet-card-name {
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-gray-800);
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-sm);
+  text-align: left;
+}
+
+.diet-card-tags {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.diet-card-tag {
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  background-color: var(--color-diet-light);
+  color: var(--color-diet);
+  border-radius: var(--border-radius-xs);
 }
 
 /**

@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { FoodItem, DUMMY_FOODS } from '../../data/foods';
-import FoodDetailModal from '../components/diet/FoodDetailModal';
+import FoodDetail from '../components/diet/FoodDetail';
 
 /**
  * Props 타입 정의
@@ -30,7 +30,6 @@ export default function DietPage({
    * 상태 관리
    */
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchInput, setSearchInput] = useState('');
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
 
   /**
@@ -45,22 +44,6 @@ export default function DietPage({
       }
     }
   }, [initialFoodId]);
-
-  /**
-   * 검색 실행 핸들러
-   */
-  const handleSearch = () => {
-    setSearchQuery(searchInput);
-  };
-
-  /**
-   * 엔터키 검색 핸들러
-   */
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
 
   /**
    * 음식 카드 클릭 핸들러
@@ -88,52 +71,56 @@ export default function DietPage({
 
   return (
     <div className="diet-page">
-      {/* 검색바 */}
-      <div className="diet-search-container">
-        <div className="diet-search-bar">
+      {/* 페이지 헤더 */}
+      <div className="pt-page-header">
+        {/* 검색 입력 */}
+        <div className="search-wrapper">
+          <Search className="search-icon" size={18} />
           <input
             type="text"
-            className="diet-search-input"
-            placeholder="음식을 검색하세요"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={handleKeyDown}
+            className="search-input"
+            placeholder="음식 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button className="diet-search-btn" onClick={handleSearch}>
-            <Search size={20} />
-          </button>
         </div>
       </div>
 
       {/* 음식 목록 */}
-      <div className="diet-food-grid">
-        {filteredFoods.map((food) => (
-          <button
-            key={food.id}
-            className="diet-food-card"
-            onClick={() => handleFoodClick(food)}
-          >
-            <div className="diet-food-image-wrapper">
-              <img
-                src={food.image}
-                alt={food.name}
-                className="diet-food-image"
-              />
-            </div>
-            <p className="diet-food-name">{food.name}</p>
-          </button>
-        ))}
-      </div>
-
-      {/* 검색 결과 없음 */}
-      {filteredFoods.length === 0 && (
+      <div className="diet-list">
+        {filteredFoods.length > 0 ? (
+          <div className="diet-grid">
+            {filteredFoods.map((food) => (
+              <button
+                key={food.id}
+                className="diet-card"
+                onClick={() => handleFoodClick(food)}
+              >
+                <div className="diet-card-thumbnail">
+                  <img
+                    src={food.image}
+                    alt={food.name}
+                    className="diet-card-image"
+                  />
+                </div>
+                <div className="diet-card-info">
+                  <p className="diet-card-name">{food.name}</p>
+                  <div className="diet-card-tags">
+                    <span className="diet-card-tag">{food.calories}kcal</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+      ) : (
         <div className="diet-empty">
           <p className="diet-empty-text">검색 결과가 없습니다</p>
         </div>
       )}
 
+      </div>
       {/* 음식 상세 모달 */}
-      <FoodDetailModal food={selectedFood} onClose={handleCloseModal} />
+      <FoodDetail food={selectedFood} onClose={handleCloseModal} />
     </div>
   );
 }
