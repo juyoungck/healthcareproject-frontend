@@ -4,7 +4,7 @@
  * 방 목록, 검색, 필터, 예약 관리 기능
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Video, Calendar, Plus } from 'lucide-react';
 import PTRoomCard from '../components/pt/PTRoomCard';
 import PTRoomDetailModal from '../components/pt/PTRoomDetailModal';
@@ -24,9 +24,18 @@ import {
 type FilterType = 'all' | 'live' | 'reserved' | 'my-reservation' | 'myRoom';
 
 /**
+ * Props 타입 정의
+ */
+interface VideoPTPageProps {
+  initialFilter?: string | null;
+}
+
+/**
  * VideoPTPage 컴포넌트
  */
-export default function VideoPTPage() {
+export default function VideoPTPage({
+  initialFilter,
+}: VideoPTPageProps) {
   /**
    * 상태 관리
    */
@@ -39,6 +48,15 @@ export default function VideoPTPage() {
   const [activeCallRoom, setActiveCallRoom] = useState<PTRoom | null>(null);
 
   /**
+   * 초기 필터 적용
+   */
+  useEffect(() => {
+    if (initialFilter) {
+      setActiveFilter(initialFilter as FilterType);
+    }
+  }, [initialFilter]);
+
+  /**
    * 내 예약 방 ID 목록
    * TODO: 실제 구현 시 API에서 가져오기
    */
@@ -48,14 +66,14 @@ export default function VideoPTPage() {
    * 필터링된 방 목록
    */
   const filteredRooms = DUMMY_PT_ROOMS.filter((room: PTRoom) => {
-    {/* 검색어 필터 */}
+    /* 검색어 필터 */
     const matchesSearch = 
       room.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       room.trainerName.toLowerCase().includes(searchQuery.toLowerCase());
     
     if (!matchesSearch) return false;
     
-    {/* 상태 필터 */}
+    /* 상태 필터 */
     switch (activeFilter) {
       case 'live':
         return room.status === 'live';
@@ -64,7 +82,7 @@ export default function VideoPTPage() {
       case 'my-reservation':
         return myReservationIds.includes(room.id);
       case 'myRoom':
-        return room.trainerId === CURRENT_USER_ID; // 내가 만든 방
+        return room.trainerId === CURRENT_USER_ID;
       default:
         return true;
     }

@@ -65,6 +65,7 @@
    */
   --color-workout: #2563eb;
   --color-workout-light: #dbeafe;
+  --color-workout-incomplete: #93c5fd;  /* 미흡 - 하늘색 */
   
   /**
    * 식단 관련 색상 (초록색)
@@ -73,6 +74,7 @@
   --color-diet-light: #dcfce7;
   --color-diet-hover: #15803d;
   --color-diet-active: #166534;
+  --color-diet-incomplete: #86efac;     /* 미흡 - 연두색 */
   
   /**
    * 화상PT 관련 색상 (보라색)
@@ -80,6 +82,12 @@
   --color-pt: #9333ea;
   --color-pt-light: #f3e8ff;
   --color-pt-dark: #7c22ce;
+  --color-pt-incomplete: #c4b5fd;       /* 미흡 - 연보라색 */
+
+/**
+ * 메모 관련 색상 (연노랑)
+ */
+--color-memo: #fbdd64;
   
   /**
    * 상태 색상
@@ -92,6 +100,7 @@
   --color-warning-light: #fef3c7;
   --color-info: #0891b2;
   --color-info-light: #cffafe;
+  --color-failed: #9ca3af;              /* 실패 - 회색 */
   
   /**
    * 화상PT 상태별 색상
@@ -190,6 +199,15 @@
   --z-modal-backdrop: 400;
   --z-modal: 500;
   --z-tooltip: 600;
+  
+  /**
+   * ===========================================
+   * 호버 색상
+   * ===========================================
+   */
+  --color-error-hover: #b91c1c;
+  --color-kakao-hover: #e6cf00;
+  --color-naver-hover: #02b350;
   
   /**
    * ===========================================

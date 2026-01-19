@@ -28,6 +28,8 @@ import PlanDietViewPage from '../components/plan/PlanDietViewPage';
 import { ExercisePlan } from '../components/plan/PlanExerciseResult';
 import { DietPlan } from '../components/plan/PlanDietResult';
 import { MealType } from '../../data/plan';
+import WeekCalendar from '../components/calendar/WeekCalendar';
+import CalendarPage from './CalendarPage';
 
 /**
  * Props 타입 정의
@@ -37,9 +39,10 @@ interface DashboardProps {
 }
 
 /**
- * 요일 데이터
+ * 현재 로그인한 사용자 ID
+ * TODO: 실제 구현 시 인증 시스템에서 가져오기
  */
-const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+const currentUserId = 1;
 
 /**
  * 탭 타입 정의
@@ -85,6 +88,11 @@ export default function Dashboard({ onLogout }: DashboardProps) {
    * 서브페이지 상태
    */
   const [subPage, setSubPage] = useState<SubPageType>('none');
+  
+  /**
+    * 화상PT 초기 필터 상태
+    */
+  const [videoPTFilter, setVideoPTFilter] = useState<string | null>(null);
 
   /**
    * 저장된 운동 계획
@@ -178,11 +186,23 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         return '화상PT';
       case 'board':
         return '게시판';
+      case 'calendar':
+        return '캘린더';
       default:
         return '운동운동';
     }
   };
 
+  /**
+   * 화상PT 페이지 이동 핸들러
+   */
+  const handleNavigateToPT = (filter?: string) => {
+    if (filter) {
+      setVideoPTFilter(filter);
+    }
+    setActiveTab('pt');
+  };
+  
   /**
    * 오늘 요일 가져오기
    */
@@ -449,7 +469,9 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         </div>
 
         {/* 화상회의 예약 확인 바 */}
-        <div className="video-call-bar">
+        <div className="video-call-bar"
+          onClick={() => handleNavigateToPT('my-reservation')}
+        >
           <div className="video-call-content">
             <div className="video-call-left">
               <Video className="video-call-icon" />
@@ -463,47 +485,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         </div>
 
         {/* 주간 캘린더 */}
-        <div className="calendar-container">
-          <div className="calendar-header">
-            <h2 className="calendar-title">주간 활동</h2>
-            <button className="calendar-more-btn">
-              <Calendar size={16} />
-              <span>전체보기</span>
-            </button>
-          </div>
-          
-          <div className="calendar-grid">
-            {WEEK_DAYS.map((day, index) => (
-              <div key={index} className="calendar-day-column">
-                <span className={`calendar-day-label ${index === today ? 'today' : ''}`}>
-                  {day}
-                </span>
-                <div className={`calendar-day-cell ${index === today ? 'today' : ''}`}>
-                  <div className="calendar-status-dots">
-                    <div className={`calendar-status-dot ${dailyStatus[index].workout ? 'workout' : ''}`} />
-                    <div className={`calendar-status-dot ${dailyStatus[index].diet ? 'diet' : ''}`} />
-                    <div className={`calendar-status-dot ${dailyStatus[index].pt ? 'pt' : ''}`} />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="calendar-legend">
-            <div className="calendar-legend-item">
-              <div className="calendar-legend-dot workout" />
-              <span className="calendar-legend-label">운동</span>
-            </div>
-            <div className="calendar-legend-item">
-              <div className="calendar-legend-dot diet" />
-              <span className="calendar-legend-label">식단</span>
-            </div>
-            <div className="calendar-legend-item">
-              <div className="calendar-legend-dot pt" />
-              <span className="calendar-legend-label">화상PT</span>
-            </div>
-          </div>
-        </div>
+        <WeekCalendar onNavigateToMonth={() => setActiveTab('calendar')} />
       </>
     );
   };
@@ -565,9 +547,11 @@ export default function Dashboard({ onLogout }: DashboardProps) {
           />
         ) : null;
       case 'pt':
-        return <VideoPTPage />;
+        return <VideoPTPage initialFilter={videoPTFilter} />;
       case 'board':
         return <BoardPage />;
+      case 'calendar':
+        return <CalendarPage onNavigateBack={() => setActiveTab('home')} />;
       default:
         return renderHomeContent();
     }
@@ -579,7 +563,11 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       <header className="app-header">
         <div className="app-header-content">
           <Dumbbell className="app-logo-icon" />
+
+          {/* 중앙 타이틀 */}
           <h1 className="app-title">{getHeaderTitle()}</h1>
+
+          {/* 우측 마이페이지 버튼 */}
           <button className="app-profile-btn" onClick={onLogout}>
             <User className="app-profile-icon" />
           </button>
@@ -594,7 +582,8 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       {/* 하단 네비게이션 바 */}
       <nav className="app-bottom-nav">
         <div className="app-bottom-nav-grid">
-          <button 
+          {/* 운동 탭 */}
+          <button
             className={`nav-button ${activeTab === 'exercise' ? 'active' : ''}`}
             onClick={() => {
               setSelectedExerciseId(null);
@@ -604,8 +593,9 @@ export default function Dashboard({ onLogout }: DashboardProps) {
             <Dumbbell className="nav-button-icon" />
             <span className="nav-button-label">운동</span>
           </button>
-          
-          <button 
+
+          {/* 식단 탭 */}
+          <button
             className={`nav-button ${activeTab === 'diet' ? 'active' : ''}`}
             onClick={() => {
               setSelectedFoodId(null);
@@ -615,24 +605,27 @@ export default function Dashboard({ onLogout }: DashboardProps) {
             <Utensils className="nav-button-icon" />
             <span className="nav-button-label">식단</span>
           </button>
-          
-          <button 
+
+          {/* 메인(홈) 탭 */}
+          <button
             className={`nav-button ${activeTab === 'home' ? 'active' : ''}`}
             onClick={() => setActiveTab('home')}
           >
             <Home className="nav-button-icon" />
             <span className="nav-button-label">홈</span>
           </button>
-          
-          <button 
+
+          {/* 화상PT 탭 */}
+          <button
             className={`nav-button ${activeTab === 'pt' ? 'active' : ''}`}
-            onClick={() => setActiveTab('pt')}
+            onClick={() => handleNavigateToPT('all')}
           >
             <Video className="nav-button-icon" />
             <span className="nav-button-label">화상PT</span>
           </button>
-          
-          <button 
+
+          {/* 게시판 탭 */}
+          <button
             className={`nav-button ${activeTab === 'board' ? 'active' : ''}`}
             onClick={() => setActiveTab('board')}
           >
