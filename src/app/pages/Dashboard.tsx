@@ -5,12 +5,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { 
-  Dumbbell, 
-  User, 
-  Video, 
-  Utensils, 
-  Home, 
+import {
+  Dumbbell,
+  User,
+  Video,
+  Utensils,
+  Home,
   MessageSquare,
   Calendar,
   ChevronRight,
@@ -82,12 +82,12 @@ interface MealGroup {
 /**
  * Dashboard 컴포넌트
  */
-export default function Dashboard({ 
-    onLogout, 
-    onEditOnboarding,
-    initialShowMyPage = false,
-    onMyPageShown
- }: DashboardProps) {
+export default function Dashboard({
+  onLogout,
+  onEditOnboarding,
+  initialShowMyPage = false,
+  onMyPageShown
+}: DashboardProps) {
 
   /**
    * 현재 활성 탭 상태
@@ -227,7 +227,7 @@ export default function Dashboard({
     }
     setActiveTab('pt');
   };
-  
+
   /**
    * 오늘 요일 가져오기
    */
@@ -276,8 +276,8 @@ export default function Dashboard({
    */
   if (subPage === 'exercisePlan') {
     return (
-      <PlanExercisePage 
-        onBack={() => setSubPage('none')} 
+      <PlanExercisePage
+        onBack={() => setSubPage('none')}
         onSavePlan={(plan) => {
           setSavedExercisePlan(plan);
           setSubPage('none');
@@ -288,8 +288,8 @@ export default function Dashboard({
 
   if (subPage === 'dietPlan') {
     return (
-      <PlanDietPage 
-        onBack={() => setSubPage('none')} 
+      <PlanDietPage
+        onBack={() => setSubPage('none')}
         onSavePlan={(plan) => {
           setSavedDietPlan(plan);
           setSubPage('none');
@@ -386,7 +386,7 @@ export default function Dashboard({
               </div>
             </button>
           )}
-          
+
           {/* 식단 카드 - 끼니별 그룹화 적용 */}
           {savedDietPlan && todayDiet ? (
             <div className="today-diet-card">
@@ -415,7 +415,7 @@ export default function Dashboard({
                   const allCompleted = group.meals.every(
                     (meal) => completedMeals[`${getTodayDayName()}-${meal.id}`]
                   );
-                  
+
                   /**
                    * 메뉴명 전체 나열 (CSS로 말줄임 처리)
                    */
@@ -510,7 +510,12 @@ export default function Dashboard({
         </div>
 
         {/* 주간 캘린더 */}
-        <WeekCalendar onNavigateToMonth={() => setActiveTab('calendar')} />
+        <WeekCalendar
+          onNavigateToMonth={() => setActiveTab('calendar')}
+          onNavigateToWorkout={() => setActiveTab('exerciseView')}
+          onNavigateToDiet={() => setActiveTab('dietView')}
+          onNavigateToPT={() => handleNavigateToPT('my-reservation')}
+        />
       </>
     );
   };
@@ -524,7 +529,7 @@ export default function Dashboard({
         return renderHomeContent();
       case 'exercise':
         return (
-          <ExercisePage 
+          <ExercisePage
             initialExerciseId={selectedExerciseId}
             onExerciseSelect={(id) => setSelectedExerciseId(id)}
           />
@@ -548,7 +553,7 @@ export default function Dashboard({
         ) : null;
       case 'diet':
         return (
-          <DietPage 
+          <DietPage
             initialFoodId={selectedFoodId}
             onFoodSelect={(id) => setSelectedFoodId(id)}
           />
@@ -576,7 +581,14 @@ export default function Dashboard({
       case 'board':
         return <BoardPage currentUserId={currentUserId} />;
       case 'calendar':
-        return <CalendarPage onNavigateBack={() => setActiveTab('home')} />;
+        return (
+          <CalendarPage
+            onNavigateBack={() => setActiveTab('home')}
+            onNavigateToWorkout={() => setActiveTab('exerciseView')}
+            onNavigateToDiet={() => setActiveTab('dietView')}
+            onNavigateToPT={() => handleNavigateToPT('my-reservation')}
+          />
+        );
       default:
         return renderHomeContent();
     }
@@ -584,8 +596,8 @@ export default function Dashboard({
 
   if (showMyPage) {
     return (
-      <MyPage 
-        onBack={() => setShowMyPage(false)} 
+      <MyPage
+        onBack={() => setShowMyPage(false)}
         onLogout={onLogout}
         onEditOnboarding={onEditOnboarding}
       />
