@@ -27,9 +27,9 @@
 @import './pages/diet.css';
 @import './pages/videopt.css';
 @import './pages/board.css';
+@import './pages/calendar.css';
 
 /* 컴포넌트별 스타일 */
 @import './components/card.css';
-@import './components/calendar.css';
 @import './components/navigation.css';
 @import './components/videocall.css';
