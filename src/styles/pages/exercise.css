@@ -29,6 +29,37 @@
 
 /**
  * ===========================================
+ * 운동 페이지 검색 및 필터 색상
+ * ===========================================
+ */
+
+/**
+ * 검색 입력 포커스
+ */
+.exercise-page .search-input:focus {
+  border-color: var(--color-workout);
+  box-shadow: 0 0 0 3px var(--color-workout-light);
+}
+
+/**
+ * 필터 버튼 호버
+ */
+.exercise-page .filter-btn:hover {
+  border-color: var(--color-workout);
+  color: var(--color-workout);
+}
+
+/**
+ * 필터 버튼 활성화
+ */
+.exercise-page .filter-btn.active {
+  background-color: var(--color-workout);
+  border-color: var(--color-workout);
+  color: var(--color-white);
+}
+
+/**
+ * ===========================================
  * 운동 목록
  * ===========================================
  */

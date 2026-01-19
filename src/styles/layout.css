@@ -207,11 +207,6 @@
   transition: all var(--transition-fast);
 }
 
-.search-input:focus {
-  border-color: var(--color-pt);
-  box-shadow: 0 0 0 3px var(--color-pt-light);
-}
-
 .search-input::placeholder {
   color: var(--color-gray-400);
 }
@@ -251,15 +246,4 @@
   white-space: nowrap;
   cursor: pointer;
   transition: all var(--transition-fast);
-}
-
-.filter-btn:hover {
-  border-color: var(--color-pt);
-  color: var(--color-pt);
-}
-
-.filter-btn.active {
-  background-color: var(--color-pt);
-  border-color: var(--color-pt);
-  color: var(--color-white);
 }
