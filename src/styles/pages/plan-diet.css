@@ -1,0 +1,1342 @@
+/**
+ * plan-diet.css
+ * 식단 계획 생성 관련 스타일
+ * - 생성 폼
+ * - 로딩 화면
+ * - 결과 화면
+ * - 재생성 모달
+ * - 주간 보기 (요일 탭 + 끼니 탭)
+ */
+
+/**
+ * ===========================================
+ * 공통 컨테이너
+ * ===========================================
+ */
+
+.diet-plan-container,
+.diet-loading-container,
+.diet-result-container,
+.diet-view-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  background-color: var(--color-gray-50);
+}
+
+/**
+ * 콘텐츠 래퍼 (Dashboard 내 렌더링용)
+ */
+.diet-view-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--spacing-lg);
+  padding-bottom: 120px;
+  background-color: var(--color-white);
+}
+
+/**
+ * ===========================================
+ * 생성 폼 - 헤더
+ * ===========================================
+ */
+
+.diet-plan-header,
+.diet-result-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  padding: 0 var(--spacing-md);
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-gray-100);
+  z-index: var(--z-sticky);
+}
+
+.diet-plan-back-btn,
+.diet-result-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-gray-700);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.diet-plan-title,
+.diet-result-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.diet-plan-header-spacer,
+.diet-result-header-spacer {
+  width: 40px;
+}
+
+/**
+ * ===========================================
+ * 생성 폼 - 메인 콘텐츠
+ * ===========================================
+ */
+
+.diet-plan-content {
+  flex: 1;
+  padding: var(--spacing-lg);
+  padding-bottom: 100px;
+}
+
+/**
+ * 소개 배너
+ */
+.diet-plan-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.diet-plan-banner-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--color-diet);
+}
+
+.diet-plan-banner-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-diet);
+}
+
+/**
+ * 섹션
+ */
+.diet-plan-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.diet-plan-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-xs);
+}
+
+.diet-plan-section-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-lg);
+}
+
+/**
+ * ===========================================
+ * 식단 목표 선택
+ * ===========================================
+ */
+
+.diet-plan-goals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.diet-plan-goal-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-plan-goal-btn:hover {
+  border-color: var(--color-gray-300);
+}
+
+.diet-plan-goal-btn.selected {
+  border-color: var(--color-diet);
+  background-color: var(--color-diet-light);
+}
+
+.diet-plan-goal-btn.selected.blue {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.diet-plan-goal-btn.selected.red {
+  border-color: var(--color-diet);
+  background-color: var(--color-diet-light);
+}
+
+.diet-plan-goal-btn.selected.gray {
+  border-color: var(--color-gray-400);
+  background-color: var(--color-gray-100);
+}
+
+.diet-plan-goal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-md);
+  flex-shrink: 0;
+}
+
+.diet-plan-goal-icon.blue {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.diet-plan-goal-icon.red {
+  background-color: var(--color-diet-light);
+  color: var(--color-diet);
+}
+
+.diet-plan-goal-icon.gray {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+
+.diet-plan-goal-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-2xs);
+}
+
+.diet-plan-goal-label {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
+}
+
+.diet-plan-goal-btn.selected .diet-plan-goal-label {
+  color: var(--color-diet);
+}
+
+.diet-plan-goal-btn.selected.blue .diet-plan-goal-label {
+  color: var(--color-primary);
+}
+
+.diet-plan-goal-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.diet-plan-goal-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--border-radius-full);
+  flex-shrink: 0;
+}
+
+.diet-plan-goal-check.checked {
+  background-color: var(--color-diet);
+  border-color: var(--color-diet);
+}
+
+.diet-plan-goal-btn.selected.blue .diet-plan-goal-check.checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.diet-plan-goal-btn.selected.gray .diet-plan-goal-check.checked {
+  background-color: var(--color-gray-500);
+  border-color: var(--color-gray-500);
+}
+
+.diet-plan-goal-check-icon {
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+/**
+ * ===========================================
+ * 알러지 선택
+ * ===========================================
+ */
+
+.diet-plan-allergies {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.diet-plan-allergy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-plan-allergy-btn:hover {
+  border-color: var(--color-gray-300);
+}
+
+.diet-plan-allergy-btn.selected {
+  background-color: var(--color-diet-light);
+  border-color: var(--color-diet);
+  color: var(--color-diet);
+}
+
+.diet-plan-allergy-btn.none.selected {
+  background-color: var(--color-diet-light);
+  border-color: var(--color-diet);
+  color: var(--color-diet);
+}
+
+/**
+ * ===========================================
+ * 생성 폼 - 하단 버튼
+ * ===========================================
+ */
+
+.diet-plan-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--spacing-md);
+  background-color: var(--color-white);
+  border-top: 1px solid var(--color-gray-100);
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+}
+
+.diet-plan-generate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  background-color: var(--color-diet);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-plan-generate-btn:hover {
+  opacity: 0.9;
+}
+
+.diet-plan-generate-btn:disabled {
+  background-color: var(--color-gray-300);
+  cursor: not-allowed;
+}
+
+/**
+ * ===========================================
+ * 로딩 화면
+ * ===========================================
+ */
+
+.diet-loading-container {
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+.diet-loading-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-full);
+  color: var(--color-diet);
+  margin-bottom: var(--spacing-xl);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.diet-loading-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-md);
+}
+
+.diet-loading-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-2xl);
+}
+
+/**
+ * 로딩 단계
+ */
+.diet-loading-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-2xl);
+  width: 100%;
+  max-width: 300px;
+}
+
+.diet-loading-step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.diet-loading-step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--border-radius-full);
+  flex-shrink: 0;
+}
+
+.diet-loading-step.completed .diet-loading-step-icon {
+  background-color: var(--color-success);
+  color: var(--color-white);
+}
+
+.diet-loading-step.active .diet-loading-step-icon {
+  background-color: var(--color-diet-light);
+  color: var(--color-diet);
+}
+
+.diet-loading-step.pending .diet-loading-step-icon {
+  background-color: var(--color-gray-200);
+}
+
+.diet-loading-step-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-gray-400);
+  border-radius: var(--border-radius-full);
+}
+
+.diet-loading-step-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.diet-loading-step.completed .diet-loading-step-text {
+  color: var(--color-gray-700);
+}
+
+.diet-loading-step.active .diet-loading-step-text {
+  color: var(--color-diet);
+  font-weight: var(--font-weight-medium);
+}
+
+/**
+ * TIP 안내
+ */
+.diet-loading-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-lg);
+  text-align: left;
+  width: 100%;
+  max-width: 300px;
+}
+
+.diet-loading-tip-icon {
+  font-size: var(--font-size-md);
+}
+
+.diet-loading-tip-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-diet);
+  line-height: 1.5;
+}
+
+/**
+ * ===========================================
+ * 결과 화면 - 콘텐츠
+ * ===========================================
+ */
+
+.diet-result-content {
+  flex: 1;
+  padding: var(--spacing-lg);
+  padding-bottom: 100px;
+}
+
+/**
+ * 생성 완료 배너
+ */
+.diet-result-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-diet);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+/**
+ * 일일 영양 목표
+ */
+.diet-result-daily-goal {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.diet-result-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-lg);
+}
+
+.diet-result-calories {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-xs);
+}
+
+.diet-result-calories-icon {
+  color: var(--color-diet);
+}
+
+.diet-result-calories-value {
+  font-size: 40px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-diet);
+}
+
+.diet-result-calories-unit {
+  font-size: var(--font-size-lg);
+  color: var(--color-gray-600);
+  align-self: flex-end;
+  margin-bottom: 8px;
+}
+
+.diet-result-calories-label {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-lg);
+}
+
+/**
+ * 영양소 비율
+ */
+.diet-result-macros {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.diet-result-macro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.diet-result-macro-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.diet-result-macro-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+.diet-result-macro-value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.diet-result-macro-value.carb {
+  color: var(--color-primary);
+}
+
+.diet-result-macro-value.protein {
+  color: var(--color-success);
+}
+
+.diet-result-macro-value.fat {
+  color: var(--color-diet);
+}
+
+.diet-result-macro-bar {
+  height: 8px;
+  background-color: var(--color-gray-200);
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+}
+
+.diet-result-macro-fill {
+  height: 100%;
+  border-radius: var(--border-radius-full);
+  transition: width var(--transition-normal);
+}
+
+.diet-result-macro-fill.carb {
+  background-color: var(--color-primary);
+}
+
+.diet-result-macro-fill.protein {
+  background-color: var(--color-success);
+}
+
+.diet-result-macro-fill.fat {
+  background-color: var(--color-diet);
+}
+
+/**
+ * 고려된 사항
+ */
+.diet-result-considerations {
+  padding: var(--spacing-lg);
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.diet-result-considerations-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-diet);
+  margin-bottom: var(--spacing-md);
+}
+
+.diet-result-considerations-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-left: var(--spacing-lg);
+  list-style: disc;
+}
+
+.diet-result-considerations-list li {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  line-height: 1.5;
+}
+
+/**
+ * 요일별 식단
+ */
+.diet-result-daily-meals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.diet-result-day-card {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.diet-result-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.diet-result-day-name {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.diet-result-day-calories {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-diet);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-full);
+}
+
+/**
+ * 끼니 목록
+ */
+.diet-result-meals {
+  display: flex;
+  flex-direction: column;
+}
+
+.diet-result-meal-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.diet-result-meal-item:last-child {
+  border-bottom: none;
+}
+
+.diet-result-meal-type {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.diet-result-meal-center {
+  flex: 1;
+  min-width: 0;
+}
+
+.diet-result-meal-menu {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-2xs);
+}
+
+.diet-result-meal-nutrients {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}
+
+.diet-result-meal-calories {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-diet);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/**
+ * ===========================================
+ * 결과 화면 - 하단 버튼
+ * ===========================================
+ */
+
+.diet-result-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--color-white);
+  border-top: 1px solid var(--color-gray-100);
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+}
+
+.diet-result-regenerate-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-result-regenerate-btn:hover {
+  background-color: var(--color-gray-50);
+}
+
+.diet-result-save-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  background-color: var(--color-diet);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-result-save-btn:hover {
+  opacity: 0.9;
+}
+
+/**
+ * ===========================================
+ * 재생성 모달
+ * ===========================================
+ */
+
+.diet-regenerate-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  z-index: var(--z-modal);
+}
+
+.diet-regenerate-modal {
+  width: 100%;
+  max-width: 400px;
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.diet-regenerate-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.diet-regenerate-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.diet-regenerate-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-gray-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.diet-regenerate-content {
+  padding: var(--spacing-lg);
+}
+
+.diet-regenerate-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-md);
+}
+
+.diet-regenerate-textarea {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-800);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  resize: none;
+  font-family: inherit;
+}
+
+.diet-regenerate-textarea:focus {
+  outline: none;
+  border-color: var(--color-diet);
+}
+
+.diet-regenerate-textarea::placeholder {
+  color: var(--color-gray-400);
+}
+
+.diet-regenerate-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: 1px solid var(--color-gray-100);
+}
+
+.diet-regenerate-cancel-btn {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+}
+
+.diet-regenerate-submit-btn {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  background-color: var(--color-diet);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+}
+
+/**
+ * ===========================================
+ * 주간 식단 보기 - 헤더
+ * ===========================================
+ */
+
+.diet-view-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.diet-view-back-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--color-gray-600);
+  background: none;
+  border: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.diet-view-back-btn:hover {
+  color: var(--color-gray-900);
+}
+
+/**
+ * ===========================================
+ * 주간 식단 보기 - 요일 탭
+ * ===========================================
+ */
+
+.diet-view-day-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.diet-view-day-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.diet-view-day-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  aspect-ratio: 1 / 1;
+  padding: var(--spacing-xs);
+  background-color: var(--color-gray-50);
+  border: 2px solid transparent;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-view-day-tab:hover {
+  background-color: var(--color-gray-100);
+}
+
+.diet-view-day-tab.today:not(.selected) {
+  border-color: var(--color-gray-300);
+  background-color: var(--color-white);
+}
+
+.diet-view-day-tab.selected {
+  border-color: var(--color-diet);
+  background-color: var(--color-white);
+}
+
+.diet-view-day-tab.has-meal .diet-view-day-tab-label {
+  font-weight: var(--font-weight-semibold);
+}
+
+.diet-view-day-tab.completed {
+  background-color: var(--color-success-light);
+  border-color: var(--color-success);
+}
+
+.diet-view-day-tab.completed.selected {
+  background-color: var(--color-success-light);
+  border-color: var(--color-success);
+}
+
+.diet-view-day-tab-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+}
+
+.diet-view-day-tab.selected .diet-view-day-tab-label {
+  color: var(--color-diet);
+  font-weight: var(--font-weight-bold);
+}
+
+.diet-view-day-tab.completed .diet-view-day-tab-label {
+  color: var(--color-success);
+}
+
+.diet-view-day-tab-progress {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-diet);
+  margin-top: 2px;
+}
+
+.diet-view-day-tab-check {
+  color: var(--color-success);
+  margin-top: 2px;
+}
+
+/**
+ * ===========================================
+ * 주간 식단 보기 - 끼니 탭 (신규)
+ * ===========================================
+ */
+
+.diet-view-meal-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-xs);
+  background-color: var(--color-gray-100);
+  border-radius: var(--border-radius-md);
+}
+
+.diet-view-meal-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2xs);
+  padding: var(--spacing-sm) var(--spacing-xs);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-view-meal-tab:hover {
+  background-color: var(--color-gray-200);
+}
+
+.diet-view-meal-tab.selected {
+  background-color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.diet-view-meal-tab.completed.selected {
+  background-color: var(--color-success-light);
+}
+
+.diet-view-meal-tab-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-500);
+  white-space: nowrap;
+}
+
+.diet-view-meal-tab.selected .diet-view-meal-tab-label {
+  color: var(--color-diet);
+  font-weight: var(--font-weight-bold);
+}
+
+.diet-view-meal-tab.has-meals .diet-view-meal-tab-label {
+  color: var(--color-gray-700);
+}
+
+.diet-view-meal-tab.completed .diet-view-meal-tab-label {
+  color: var(--color-success);
+}
+
+.diet-view-meal-tab-check {
+  color: var(--color-success);
+}
+
+/**
+ * ===========================================
+ * 주간 식단 보기 - 콘텐츠
+ * ===========================================
+ */
+
+.diet-view-content {
+  flex: 1;
+}
+
+/**
+ * 카테고리 헤더
+ */
+.diet-view-category {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.diet-view-category-icon {
+  color: var(--color-diet);
+  flex-shrink: 0;
+}
+
+.diet-view-category-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.diet-view-category-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.diet-view-category-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-2xs);
+}
+
+/**
+ * 메뉴 리스트
+ */
+.diet-view-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.diet-view-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-view-item:hover {
+  border-color: var(--color-gray-300);
+  background-color: var(--color-gray-50);
+}
+
+.diet-view-item:active {
+  transform: scale(0.98);
+}
+
+.diet-view-item.completed {
+  background-color: var(--color-diet-light);
+  border-color: var(--color-diet);
+}
+
+.diet-view-item-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--border-radius-xs);
+  color: var(--color-white);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-view-item-check:hover {
+  border-color: var(--color-diet);
+}
+
+.diet-view-item.completed .diet-view-item-check {
+  background-color: var(--color-diet);
+  border-color: var(--color-diet);
+}
+
+.diet-view-item-check-empty {
+  width: 100%;
+  height: 100%;
+}
+
+.diet-view-item-center {
+  flex: 1;
+  min-width: 0;
+}
+
+.diet-view-item-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-2xs);
+}
+
+.diet-view-item.completed .diet-view-item-name {
+  color: var(--color-diet);
+}
+
+.diet-view-item-detail {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.diet-view-item-arrow {
+  color: var(--color-gray-400);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/**
+ * 메뉴 없음 (빈 상태)
+ */
+.diet-view-rest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+  text-align: center;
+}
+
+.diet-view-rest-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.diet-view-rest-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-700);
+  margin-bottom: var(--spacing-sm);
+}
+
+.diet-view-rest-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/**
+ * ===========================================
+ * 주간 식단 보기 - 하단 푸터
+ * ===========================================
+ */
+
+.diet-view-footer {
+  position: fixed;
+  bottom: var(--bottom-nav-height);
+  left: 0;
+  right: 0;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+  border-top: 1px solid var(--color-gray-100);
+  z-index: var(--z-sticky);
+}
+
+.diet-view-regenerate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  height: 48px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-view-regenerate-btn:hover {
+  background-color: var(--color-gray-50);
+  border-color: var(--color-diet);
+  color: var(--color-diet);
+}

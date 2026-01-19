@@ -6,21 +6,45 @@
  * - 카드 클릭 시 상세 모달 팝업
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { FoodItem, DUMMY_FOODS } from '../../data/foods';
 import FoodDetailModal from '../components/diet/FoodDetailModal';
 
 /**
+ * Props 타입 정의
+ */
+interface DietPageProps {
+  initialFoodId?: number | string | null;
+  onFoodSelect?: (id: string | null) => void;
+}
+
+/**
  * DietPage 컴포넌트
  */
-export default function DietPage() {
+export default function DietPage({ 
+  initialFoodId = null,
+  onFoodSelect 
+}: DietPageProps = {}) {
   /**
    * 상태 관리
    */
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
+
+  /**
+   * initialFoodId가 변경되면 해당 음식 선택
+   */
+  useEffect(() => {
+    if (initialFoodId !== null) {
+      const foodIdStr = String(initialFoodId);
+      const food = DUMMY_FOODS.find(f => f.id === foodIdStr);
+      if (food) {
+        setSelectedFood(food);
+      }
+    }
+  }, [initialFoodId]);
 
   /**
    * 검색 실행 핸들러
@@ -43,6 +67,7 @@ export default function DietPage() {
    */
   const handleFoodClick = (food: FoodItem) => {
     setSelectedFood(food);
+    onFoodSelect?.(food.id);
   };
 
   /**
@@ -50,6 +75,7 @@ export default function DietPage() {
    */
   const handleCloseModal = () => {
     setSelectedFood(null);
+    onFoodSelect?.(null);
   };
 
   /**

@@ -9,7 +9,7 @@
  * 주의: 헤더/네비게이션은 Dashboard에서 관리
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import ExerciseDetailContent from './ExerciseDetailContent';
 
@@ -32,6 +32,14 @@ interface Exercise {
   bodyPart: Exclude<BodyPart, '전체'>;
   difficulty: Exclude<Difficulty, '전체'>;
   thumbnail: string;
+}
+
+/**
+ * Props 타입 정의
+ */
+interface ExerciseContentProps {
+  initialExerciseId?: number | null;
+  onExerciseSelect?: (id: number | null) => void;
 }
 
 /**
@@ -75,7 +83,10 @@ const DUMMY_EXERCISES: Exercise[] = [
  * ExerciseContent 컴포넌트
  * 운동 탭 콘텐츠 UI 렌더링
  */
-export default function ExerciseContent() { 
+export default function ExerciseContent({ 
+  initialExerciseId = null,
+  onExerciseSelect 
+}: ExerciseContentProps = {}) { 
   /**
    * 검색어 상태
    */
@@ -94,7 +105,16 @@ export default function ExerciseContent() {
   /**
    * 선택된 운동 ID (상세 페이지 표시용)
    */
-  const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
+  const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(initialExerciseId);
+
+  /**
+   * initialExerciseId가 변경되면 상태 업데이트
+   */
+  useEffect(() => {
+    if (initialExerciseId !== null) {
+      setSelectedExerciseId(initialExerciseId);
+    }
+  }, [initialExerciseId]);
 
   /**
    * 부위 필터 클릭 핸들러
@@ -173,6 +193,7 @@ export default function ExerciseContent() {
    */
   const handleExerciseClick = (exerciseId: number) => {
     setSelectedExerciseId(exerciseId);
+    onExerciseSelect?.(exerciseId);
   };
 
   /**
@@ -180,6 +201,7 @@ export default function ExerciseContent() {
    */
   const handleBackFromDetail = () => {
     setSelectedExerciseId(null);
+    onExerciseSelect?.(null);
   };
 
   /**
@@ -199,7 +221,7 @@ export default function ExerciseContent() {
    * 운동 목록 렌더링
    */
   return (
-    <main className="app-main">
+    <div className="exercise-content">
       {/* 검색 바 */}
       <div className="exercise-search-bar">
         <Search className="exercise-search-icon" size={20} />
@@ -275,6 +297,6 @@ export default function ExerciseContent() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
