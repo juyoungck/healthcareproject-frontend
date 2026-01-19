@@ -9,27 +9,45 @@
  */
 
 /**
- * 뒤로가기 바 컨테이너
+ * ===========================================
+ * 상세 페이지 컨테이너
+ * ===========================================
  */
-.exercise-detail-back-bar {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background-color: var(--color-white);
-  border-bottom: 1px solid var(--color-gray-200);
+
+.exercise-detail-page {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-gray-50);
 }
 
 /**
- * 뒤로가기 버튼
+ * ===========================================
+ * 뒤로가기 바
+ * ===========================================
+ */
+
+/**
+ * 뒤로가기 바 컨테이너
+ */
+.exercise-detail-back-bar {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+}
+
+/**
+ * 뒤로가기 버튼 (원형)
  */
 .exercise-detail-back {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-gray-600);
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-gray-700);
   background-color: var(--color-gray-100);
-  border-radius: var(--border-radius-sm);
+  border: none;
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
   transition: all var(--transition-fast);
 }
 
@@ -38,20 +56,8 @@
   color: var(--color-gray-900);
 }
 
-/**
- * ===========================================
- * 메인 콘텐츠
- * ===========================================
- */
-
-/**
- * 상세 페이지 메인 영역
- */
-.exercise-detail-main {
-  padding-top: var(--header-height);
-  padding-bottom: calc(var(--bottom-nav-height) + var(--spacing-lg));
-  min-height: 100vh;
-  background-color: var(--color-gray-50);
+.exercise-detail-back:active {
+  transform: scale(0.95);
 }
 
 /**
@@ -288,30 +294,29 @@
  */
 
 /**
- * 대체 운동 컨테이너
+ * 대체 운동 섹션 (호버 시 잘림 방지용 패딩)
  */
-.exercise-detail-alternatives {
-  display: flex;
-  gap: var(--spacing-md);
-  overflow-x: auto;
-  padding-bottom: var(--spacing-xs);
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+.exercise-detail-alternatives-section {
+  padding-bottom: var(--spacing-xl);
 }
 
-.exercise-detail-alternatives::-webkit-scrollbar {
-  display: none;
+/**
+ * 대체 운동 컨테이너 (3개 균등 배치)
+ */
+.exercise-detail-alternatives {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
 }
 
 /**
  * 대체 운동 카드
  */
 .exercise-alternative-card {
-  flex-shrink: 0;
-  width: 120px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  background-color: var(--color-gray-50);
+  background-color: var(--color-white);
   border: 1px solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -320,9 +325,12 @@
 }
 
 .exercise-alternative-card:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-workout);
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+}
+
+.exercise-alternative-card:active {
+  transform: scale(0.98);
 }
 
 /**
@@ -333,7 +341,7 @@
   align-items: center;
   justify-content: center;
   height: 80px;
-  background-color: var(--color-white);
+  background-color: var(--color-gray-50);
 }
 
 /**
