@@ -302,14 +302,14 @@
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-gray-900);
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
 .exercise-loading-desc {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   color: var(--color-gray-500);
-  line-height: 1.5;
-  margin-bottom: var(--spacing-xl);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-2xl);
 }
 
 /**
@@ -319,9 +319,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-2xl);
   width: 100%;
-  max-width: 280px;
-  margin-bottom: var(--spacing-xl);
+  max-width: 300px;
 }
 
 .exercise-loading-step {
@@ -342,7 +345,7 @@
 
 .exercise-loading-step.completed .exercise-loading-step-icon {
   color: var(--color-white);
-  background-color: var(--color-success);
+  background-color: var(--color-primary);
 }
 
 .exercise-loading-step.active .exercise-loading-step-icon {
@@ -371,6 +374,15 @@
   color: var(--color-gray-400);
 }
 
+.exercise-loading-step.completed .exercise-loading-step-text {
+  color: var(--color-gray-700);
+}
+
+.exercise-loading-step.active .exercise-loading-step-text {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
 /**
  * 스피닝 애니메이션
  */
@@ -391,25 +403,22 @@
   align-items: flex-start;
   gap: var(--spacing-sm);
   padding: var(--spacing-md) var(--spacing-lg);
-  background-color: #fffbeb;
+  background-color: var(--color-primary-light);
   border-radius: var(--border-radius-lg);
-  max-width: 320px;
+  text-align: left;
+  width: 100%;
+  max-width: 300px;
 }
 
 .exercise-loading-tip-icon {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   flex-shrink: 0;
 }
 
 .exercise-loading-tip-text {
   font-size: var(--font-size-sm);
-  color: var(--color-gray-700);
+  color: var(--color-primary);
   line-height: 1.5;
-  text-align: left;
-}
-
-.exercise-loading-tip-text strong {
-  color: #d97706;
 }
 
 /**
@@ -433,8 +442,8 @@
   justify-content: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
-  background-color: var(--color-success-light);
-  color: var(--color-success);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
   border-radius: var(--border-radius-lg);
   margin-bottom: var(--spacing-lg);
   font-size: var(--font-size-sm);
@@ -575,8 +584,10 @@
   align-items: center;
   gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
   padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: var(--color-gray-100);
+  background-color: var(--color-primary-light);
   border-radius: var(--border-radius-full);
 }
 
