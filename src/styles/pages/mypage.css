@@ -550,3 +550,275 @@
   color: var(--color-white);
   border: none;
 }
+
+/**
+ * ===========================================
+ * 회원 유형 뱃지 (트레이너/일반회원)
+ * ===========================================
+ */
+
+.mypage-user-type.general {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.mypage-user-type.trainer {
+  color: var(--color-pt);
+  background-color: rgba(147, 51, 234, 0.1);
+}
+
+/**
+ * ===========================================
+ * 트레이너 등록/상태 섹션
+ * ===========================================
+ */
+
+.mypage-trainer-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.mypage-trainer-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-lg);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mypage-trainer-btn span {
+  flex: 1;
+  text-align: left;
+}
+
+/**
+ * 트레이너로 등록하기 버튼
+ */
+.mypage-trainer-btn.apply {
+  background-color: var(--color-pt);
+  color: var(--color-white);
+}
+
+.mypage-trainer-btn.apply:hover {
+  background-color: #7c22ce;
+}
+
+/**
+ * 트레이너 승인 대기중 버튼
+ */
+.mypage-trainer-btn.pending {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+}
+
+/**
+ * 트레이너 해제하기 버튼
+ */
+.mypage-trainer-btn.release {
+  background-color: var(--color-white);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+}
+
+.mypage-trainer-btn.release:hover {
+  background-color: rgba(220, 38, 38, 0.05);
+}
+
+/**
+ * 트레이너 등록 재신청 버튼 (거절됨)
+ */
+.mypage-trainer-btn.rejected {
+  background-color: var(--color-white);
+  color: var(--color-pt);
+  border: 1px solid var(--color-pt);
+}
+
+.mypage-trainer-btn.rejected:hover {
+  background-color: rgba(147, 51, 234, 0.05);
+}
+
+/**
+ * ===========================================
+ * 트레이너 등록 모달
+ * ===========================================
+ */
+
+.trainer-apply-modal {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.trainer-apply-modal .modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.trainer-apply-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.trainer-apply-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-700);
+  margin-bottom: var(--spacing-sm);
+}
+
+.trainer-apply-label-sub {
+  font-weight: var(--font-weight-normal);
+  color: var(--color-gray-500);
+  margin-left: var(--spacing-xs);
+}
+
+.trainer-apply-upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  background-color: var(--color-white);
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.trainer-apply-upload-btn:hover:not(:disabled) {
+  background-color: var(--color-primary-light);
+}
+
+.trainer-apply-upload-btn:disabled {
+  color: var(--color-gray-400);
+  border-color: var(--color-gray-300);
+  cursor: not-allowed;
+}
+
+.trainer-apply-file-list {
+  list-style: none;
+  margin-top: var(--spacing-md);
+  padding: 0;
+}
+
+.trainer-apply-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+.trainer-apply-file-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex: 1;
+  min-width: 0;
+}
+
+.trainer-apply-file-icon {
+  color: var(--color-gray-500);
+  flex-shrink: 0;
+}
+
+.trainer-apply-file-name {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trainer-apply-file-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--color-gray-400);
+  background: none;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.trainer-apply-file-remove:hover {
+  color: var(--color-error);
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.trainer-apply-textarea {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  color: var(--color-gray-900);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  resize: vertical;
+  transition: border-color var(--transition-fast);
+}
+
+.trainer-apply-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.trainer-apply-textarea::placeholder {
+  color: var(--color-gray-400);
+}
+
+.trainer-apply-footer {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--color-gray-100);
+}
+
+.trainer-apply-footer .btn-secondary,
+.trainer-apply-footer .btn-primary {
+  flex: 1;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.trainer-apply-footer .btn-secondary {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border: none;
+}
+
+.trainer-apply-footer .btn-secondary:hover {
+  background-color: var(--color-gray-200);
+}
+
+.trainer-apply-footer .btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+}
+
+.trainer-apply-footer .btn-primary:hover {
+  background-color: var(--color-primary-dark);
+}
