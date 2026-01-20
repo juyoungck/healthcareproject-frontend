@@ -7,7 +7,6 @@
 
 import { useState, useRef } from 'react';
 import { X, Upload, FileText, Image, Trash2 } from 'lucide-react';
-
 /**
  * ===========================================
  * Props 타입 정의

@@ -35,7 +35,7 @@ export const DUMMY_USERS: User[] = [
   {
     id: 'user-002',
     email: 'user@test.com',
-    nickname: '운동초보',
+    nickname: '승인 대기인 사람',
     phone: '010-1234-5678',
     profileImage: '',
     userType: 'general',
@@ -97,10 +97,10 @@ export const DUMMY_USERS: User[] = [
 // export const CURRENT_USER: User = DUMMY_USERS[0];
 
 /* 트레이너 승인 대기중 테스트 */
-export const CURRENT_USER: User = DUMMY_USERS[1];
+//export const CURRENT_USER: User = DUMMY_USERS[1];
 
 /* 트레이너로 테스트 */
-// export const CURRENT_USER: User = DUMMY_USERS[2];
+ export const CURRENT_USER: User = DUMMY_USERS[2];
 
 /**
  * 현재 사용자 정보 (기존 코드 호환용)

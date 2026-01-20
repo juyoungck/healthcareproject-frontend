@@ -242,7 +242,6 @@
 
 .week-calendar-day-cell.selected {
   border-color: var(--color-primary);
-  background-color: var(--color-primary);
 }
 
 /**
@@ -469,7 +468,8 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
-  max-width: 320px;
+  max-width: 360px;
+  max-height: 90vh;
   background-color: var(--color-white);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-xl);
@@ -520,7 +520,7 @@
   flex-direction: column;
   padding: var(--spacing-md);
   gap: var(--spacing-sm);
-  max-height: 400px;
+  max-height: 70vh;
   overflow-y: auto;
 }
 
