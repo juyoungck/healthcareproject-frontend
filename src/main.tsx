@@ -4,6 +4,11 @@
  * React 앱을 DOM에 렌더링하는 역할
  */
 
+/**
+ * Janus 라이브러리 
+ */
+import './lib/janus.js';
+
 import { createRoot } from "react-dom/client";
 import App from "./app/App.tsx";
 import "./styles/index.css";

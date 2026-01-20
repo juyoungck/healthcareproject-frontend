@@ -5,7 +5,7 @@
  * TODO: 실제 WebRTC 연결은 백엔드 연동 시 구현
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Headphones, 
   HeadphoneOff,
@@ -19,7 +19,8 @@ import {
   MoreVertical,
   User
 } from 'lucide-react';
-import { PTRoom, Participant, DUMMY_PARTICIPANTS } from '../../../data/pts';
+import { Participant, PTRoom } from '../../../data/pts';
+import { useJanus, JanusParticipant } from '../../../hooks/useJanus';
 
 /**
  * Props 타입 정의
@@ -28,6 +29,7 @@ interface VideoCallRoomProps {
   room: PTRoom;
   onLeave: () => void;
   isTrainer?: boolean;
+  userName?: string;
 }
 
 /**
@@ -38,46 +40,82 @@ type ConnectionStatus = 'connecting' | 'connected' | 'reconnecting' | 'failed';
 /**
  * VideoCallRoom 컴포넌트
  */
-export default function VideoCallRoom({ room, onLeave, isTrainer = false }: VideoCallRoomProps) {
+export default function VideoCallRoom({ 
+    room, 
+    onLeave, 
+    isTrainer = false,
+    userName = '사용자'
+ }: VideoCallRoomProps) {
+
   /**
-   * 미디어 상태
+   * 비디오 엘리먼트 참조
    */
-  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoOff, setIsVideoOff] = useState(false);
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [mainVideoId, setMainVideoId] = useState<string>('local');
-  
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+
+  /**
+   * Janus 훅 사용
+   */
+  const {
+    connectionStatus,
+    localStream,
+    participants,
+    connect,
+    disconnect,
+    toggleAudio,
+    toggleMic,
+    toggleVideo,
+    startScreenShare,
+    stopScreenShare,
+    isAudioMuted,
+    isMicMuted,
+    isVideoOff,
+    isScreenSharing
+  } = useJanus({
+    roomId: room.id,  // 30000번대 숫자 ID
+    displayName: userName,
+    trainerName: room.trainerName,
+    onError: (error) => {
+      console.error('Janus 에러:', error);
+    }
+  });
+
   /**
    * UI 상태
    */
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connecting');
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [mainVideoId, setMainVideoId] = useState<string>('local');
   const [callDuration, setCallDuration] = useState(0);
-  
-  /**
-   * 참여자 목록 (더미 데이터 사용)
-   * TODO: 실제 WebRTC 연결에서 참여자 목록 관리
-   */
-  const participants = [
-    { id: 'local', name: '나', isLocal: true },
-    { id: 'trainer-1', name: room.trainerName, isTrainer: true },
-    { id: 'user-1', name: '참여자1', isLocal: false },
-    { id: 'user-2', name: '참여자2', isLocal: false },
-  ];
 
   /**
-   * 연결 상태 시뮬레이션
-   * TODO: 실제 WebRTC 연결 시 삭제
+   * 트레이너 입장 시 메인 화면으로 설정
    */
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setConnectionStatus('connected');
-    }, 2000);
+    const trainer = participants.find(p => p.isTrainer && !p.isLocal);
+    if (trainer && mainVideoId === 'local') {
+      setMainVideoId(trainer.id);
+    }
+  }, [participants]);
+
+  /**
+   * 컴포넌트 마운트 시 연결 시작
+   */
+  useEffect(() => {
+    connect();
     
-    return () => clearTimeout(timer);
+    return () => {
+      disconnect();
+    };
   }, []);
+
+  /**
+   * 로컬 스트림을 비디오 엘리먼트에 연결
+   */
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localStream]);
 
   /**
    * 통화 시간 카운터
@@ -107,36 +145,35 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
   };
 
   /**
-   * 헤드셋 토글
+   * 헤드셋(소리 듣기) 토글
    */
-  const toggleHead = () => {
-    setIsAudioEnabled(!isAudioEnabled);
-    /* TODO: 실제 헤드셋 on/off 구현 */
+  const handleToggleAudio = () => {
+    toggleAudio();
   };
 
   /**
    * 마이크 토글
    */
-  const toggleMic = () => {
-    setIsMuted(!isMuted);
-    /* TODO: 실제 마이크 on/off 구현 */
+  const handleToggleMic = () => {
+    toggleMic();
   };
 
   /**
    * 카메라 토글
    */
-  const toggleVideo = () => {
-    setIsVideoOff(!isVideoOff);
-    /* TODO: 실제 카메라 on/off 구현 */
+  const handleToggleVideo = () => {
+    toggleVideo();
   };
 
   /**
    * 화면 공유 토글
    */
-  const toggleScreenShare = () => {
-    setIsScreenSharing(!isScreenSharing);
-    setShowMoreMenu(false);
-    /* TODO: 실제 화면 공유 구현 */
+  const handleToggleScreenShare = () => {
+    if (isScreenSharing) {
+      stopScreenShare();
+    } else {
+      startScreenShare();
+    }
   };
 
   /**
@@ -151,6 +188,7 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
    */
   const handleLeaveConfirm = () => {
     setShowLeaveConfirm(false);
+    disconnect();
     onLeave();
   };
 
@@ -158,11 +196,23 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
    * 재연결 시도
    */
   const handleRetry = () => {
-    setConnectionStatus('connecting');
-    /* TODO: 실제 재연결 로직 */
-    setTimeout(() => {
-      setConnectionStatus('connected');
-    }, 2000);
+    connect();
+  };
+
+  /**
+   * 원격 비디오 ref 설정
+   */
+  const setRemoteVideoRef = (id: string, element: HTMLVideoElement | null) => {
+    if (element) {
+      remoteVideoRefs.current.set(id, element);
+      /* 참가자의 스트림 연결 */
+      const participant = participants.find(p => p.id === id);
+      if (participant?.stream) {
+        element.srcObject = participant.stream;
+      }
+    } else {
+      remoteVideoRefs.current.delete(id);
+    }
   };
 
   /**
@@ -234,6 +284,11 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
   };
 
   /**
+   * 메인 비디오에 표시할 참가자 찾기
+   */
+  const mainParticipant = participants.find(p => p.id === mainVideoId) || participants[0];
+
+  /**
    * 비디오 타일 렌더링
    */
   const renderVideoTile = (participant: Participant) => {
@@ -295,12 +350,44 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
       <div className="vc-video-layout">
         {/* 메인 비디오 */}
         <div className="vc-main-video">
-          <div className="vc-video-placeholder">
-            <User size={64} />
-          </div>
+          {mainParticipant ? (
+            mainParticipant.isLocal ? (
+              /* 내 영상 */
+              localStream ? (
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <div className="vc-video-placeholder">
+                  <User size={64} />
+                </div>
+              )
+            ) : (
+              /* 다른 참가자 영상 */
+              mainParticipant.stream ? (
+                <video
+                  ref={(el) => el && setRemoteVideoRef(mainParticipant.id, el)}
+                  autoPlay
+                  playsInline
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <div className="vc-video-placeholder">
+                  <User size={64} />
+                </div>
+              )
+            )
+          ) : (
+            <div className="vc-video-placeholder">
+              <User size={64} />
+            </div>
+          )}
           <span className="vc-video-name">
-            {participants.find(p => p.id === mainVideoId)?.name || '나'}
-            {mainVideoId === 'local' && ' (나)'}
+            {mainParticipant?.name || '대기중'}
           </span>
         </div>
         
@@ -314,12 +401,21 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
                 className="vc-sub-video"
                 onClick={() => setMainVideoId(participant.id)}
               >
-                <div className="vc-sub-video-placeholder">
-                  <User size={24} />
-                </div>
+                {participant.stream ? (
+                  <video
+                    ref={(el) => el && setRemoteVideoRef(participant.id, el)}
+                    autoPlay
+                    playsInline
+                    muted={participant.isLocal || !isAudioMuted}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div className="vc-sub-video-placeholder">
+                    <User size={24} />
+                  </div>
+                )}
                 <span className="vc-sub-video-name">
                   {participant.name}
-                  {participant.isLocal && ' (나)'}
                 </span>
               </div>
             ))}
@@ -328,14 +424,9 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
 
       {/* 화면 공유 시 오버레이 */}
       {isScreenSharing && (
-        <div className="videocall-screenshare">
-          <div className="videocall-placeholder">
-            <Monitor size={64} style={{ color: 'var(--color-gray-500)' }} />
-          </div>
-          <div className="videocall-screenshare-badge">
-            <Monitor size={16} />
-            화면 공유 중
-          </div>
+        <div className="videocall-screenshare-badge">
+          <Monitor size={16} />
+          화면 공유 중
         </div>
       )}
 
@@ -346,10 +437,10 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
       <div className="videocall-controls">
         {/* 헤드셋 */}
         <button 
-          className={`videocall-control-btn ${!isAudioEnabled ? 'active' : ''}`}
-          onClick={toggleHead}
+          className={`videocall-control-btn ${!isAudioMuted ? 'active' : ''}`}
+          onClick={handleToggleAudio}
         >
-          {isAudioEnabled ? (
+          {isAudioMuted ? (
             <HeadphoneOff className="videocall-control-icon" /> 
           ) : ( 
             <Headphones className="videocall-control-icon" />
@@ -358,10 +449,10 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
         
         {/* 마이크 */}
         <button 
-          className={`videocall-control-btn ${!isMuted ? 'active' : ''}`}
-          onClick={toggleMic}
+          className={`videocall-control-btn ${!isMicMuted ? 'active' : ''}`}
+          onClick={handleToggleMic}
         >
-          {isMuted ? (
+          {isMicMuted ? (
             <MicOff className="videocall-control-icon" />
           ) : (
             <Mic className="videocall-control-icon" />
@@ -371,7 +462,7 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
         {/* 카메라 */}
         <button 
           className={`videocall-control-btn ${!isVideoOff ? 'active' : ''}`}
-          onClick={toggleVideo}
+          onClick={handleToggleVideo}
         >
           {isVideoOff ? (
             <VideoOff className="videocall-control-icon" />
@@ -384,7 +475,7 @@ export default function VideoCallRoom({ room, onLeave, isTrainer = false }: Vide
         {isTrainer && (
           <button 
             className={`videocall-control-btn ${isScreenSharing ? 'active' : ''}`}
-            onClick={toggleScreenShare}
+            onClick={handleToggleScreenShare}
           >
             {isScreenSharing ? (
               <MonitorOff className="videocall-control-icon" />
