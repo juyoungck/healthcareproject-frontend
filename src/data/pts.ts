@@ -18,7 +18,7 @@ export type RoomVisibility = 'public' | 'private';
  * 화상PT 방 타입 정의
  */
 export interface PTRoom {
-  id: string;
+  id: number;
   title: string;
   description: string;
   trainerId: string;
@@ -56,7 +56,7 @@ export interface Participant {
  */
 export interface MyReservation {
   id: string;
-  roomId: string;
+  roomId: number;
   room: PTRoom;
   reservedAt: string;
 }
@@ -70,7 +70,7 @@ export interface MyReservation {
 
 export const DUMMY_PT_ROOMS: PTRoom[] = [
   {
-    id: 'room-001',
+    id: 30001,
     title: '초보자를 위한 홈트레이닝',
     description: '집에서도 쉽게 따라할 수 있는 전신 운동을 함께해요. 운동 기구 없이도 가능합니다!',
     trainerId: 'trainer-001',
@@ -87,7 +87,7 @@ export const DUMMY_PT_ROOMS: PTRoom[] = [
     ],
   },
   {
-    id: 'room-002',
+    id: 30002,
     title: '다이어트 식단 상담 & 운동',
     description: '체중 감량을 목표로 하시는 분들을 위한 맞춤 PT입니다. 식단 조언도 함께 드려요.',
     trainerId: 'trainer-002',
@@ -100,7 +100,7 @@ export const DUMMY_PT_ROOMS: PTRoom[] = [
     createdAt: new Date().toISOString(),
   },
   {
-    id: 'room-003',
+    id: 30003,
     title: '1:1 프리미엄 PT',
     description: '개인 맞춤 코칭을 원하시는 분을 위한 프라이빗 세션입니다.',
     trainerId: 'trainer-001',
@@ -118,7 +118,7 @@ export const DUMMY_PT_ROOMS: PTRoom[] = [
     ],
   },
   {
-    id: 'room-004',
+    id: 30004,
     title: '상체 근력 강화 PT',
     description: '덤벨을 활용한 상체 근력 운동을 진행합니다. 초보자도 환영!',
     trainerId: 'trainer-003',
@@ -131,7 +131,7 @@ export const DUMMY_PT_ROOMS: PTRoom[] = [
     createdAt: new Date().toISOString(),
   },
   {
-    id: 'room-005',
+    id: 30005,
     title: '스트레칭 & 유연성 클래스',
     description: '하루의 피로를 풀어주는 스트레칭 시간입니다. 요가 매트만 준비해주세요.',
     trainerId: 'trainer-002',
@@ -144,7 +144,7 @@ export const DUMMY_PT_ROOMS: PTRoom[] = [
     createdAt: new Date().toISOString(),
   },
   {
-    id: 'room-006',
+    id: 30006,
     title: '비공개 클래스',
     description: '집에서도 쉽게 따라할 수 있는 전신 운동을 함께해요. 운동 기구 없이도 가능합니다!',
     trainerId: 'trainer-003',
@@ -192,13 +192,13 @@ export const DUMMY_PARTICIPANTS: Participant[] = [
 export const DUMMY_MY_RESERVATIONS: MyReservation[] = [
   {
     id: 'reservation-001',
-    roomId: 'room-002',
+    roomId: 30002,
     room: DUMMY_PT_ROOMS[1],
     reservedAt: new Date().toISOString(),
   },
   {
     id: 'reservation-002',
-    roomId: 'room-005',
+    roomId: 30005,
     room: DUMMY_PT_ROOMS[4],
     reservedAt: new Date().toISOString(),
   },
