@@ -24,9 +24,14 @@ import {
   Camera,
   X,
   Check,
-  Settings
+  Settings,
+  GraduationCap,
+  Clock,
+  UserMinus
 } from 'lucide-react';
 import SettingsPage from './SettingsPage';
+import TrainerApplyModal, { TrainerApplyData } from '../components/pt/TrainerApplyModal';
+import { CURRENT_USER_TRAINER_STATUS } from '../../data/users';
 
 /**
  * Props 타입 정의
@@ -47,7 +52,7 @@ const DUMMY_USER = {
   nickname: '운동초보',
   phone: '010-1234-5678',
   profileImage: '',
-  userType: 'general' as 'general' | 'trainer',
+  trainerStatus: CURRENT_USER_TRAINER_STATUS,
   createdAt: '2024-01-01',
   onboarding: {
     height: 175,
@@ -80,6 +85,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [editNickname, setEditNickname] = useState(user.nickname);
   const [showSettingsPage, setShowSettingsPage] = useState(false);
+  const [showTrainerModal, setShowTrainerModal] = useState(false);
 
   /**
    * 닉네임 수정 핸들러
@@ -87,6 +93,75 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
   const handleEditNickname = () => {
     /* TODO: API 연동 - 닉네임 수정 */
     setShowEditModal(false);
+  };
+
+  /**
+   * 트레이너 등록 신청 완료 핸들러
+   */
+  const handleTrainerApply = (data: TrainerApplyData) => {
+    console.log('트레이너 신청 데이터:', data);
+    /* TODO: API 연동 - POST /api/trainer/application */
+    alert('트레이너 등록 신청이 완료되었습니다.\n관리자 승인 후 트레이너로 활동할 수 있습니다.');
+    setShowTrainerModal(false);
+  };
+
+  /**
+   * 트레이너 해제 핸들러
+   */
+  const handleTrainerRelease = () => {
+    if (confirm('트레이너를 해제하시겠습니까?\n해제 후에도 다시 신청할 수 있습니다.')) {
+      /* TODO: API 연동 - 트레이너 해제 */
+      alert('트레이너가 해제되었습니다.');
+    }
+  };
+
+  /**
+   * 트레이너 버튼 렌더링
+   */
+  const renderTrainerButton = () => {
+    switch (user.trainerStatus) {
+      case 'none':
+        return (
+          <button 
+            className="mypage-trainer-btn apply" 
+            onClick={() => setShowTrainerModal(true)}
+          >
+            <GraduationCap size={20} />
+            <span>트레이너로 등록하기</span>
+            <ChevronRight size={18} />
+          </button>
+        );
+      case 'pending':
+        return (
+          <button className="mypage-trainer-btn pending" disabled>
+            <Clock size={20} />
+            <span>트레이너 승인 대기중</span>
+          </button>
+        );
+      case 'approved':
+        return (
+          <button 
+            className="mypage-trainer-btn release" 
+            onClick={handleTrainerRelease}
+          >
+            <UserMinus size={20} />
+            <span>트레이너 해제하기</span>
+          </button>
+        );
+      case 'rejected':
+        return (
+          <button 
+            className="mypage-trainer-btn rejected" 
+            onClick={() => setShowTrainerModal(true)}
+          >
+            <GraduationCap size={20} />
+            <span>트레이너 등록 재신청</span>
+            <ChevronRight size={18} />
+          </button>
+        );
+      default:
+        return null;
+    }
   };
 
   /**
@@ -135,8 +210,8 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
               <Edit2 size={16} />
             </button>
           </div>
-          <span className="mypage-user-type">
-            {user.userType === 'trainer' ? '트레이너' : '일반회원'}
+          <span className={`mypage-user-type ${user.trainerStatus === 'approved' ? 'trainer' : 'general'}`}>
+            {user.trainerStatus === 'approved' ? '트레이너' : '일반회원'}
           </span>
         </div>
       </div>
@@ -271,6 +346,19 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
           </div>
         </div>
       </div>
+
+      {/* 트레이너 등록/상태 섹션 */}
+      <div className="mypage-section mypage-trainer-section">
+        {renderTrainerButton()}
+      </div>
+
+      {/* 트레이너 등록 모달 */}
+      {showTrainerModal && (
+        <TrainerApplyModal
+          onClose={() => setShowTrainerModal(false)}
+          onSubmit={handleTrainerApply}
+        />
+      )}  
 
       {/* 닉네임 수정 모달 */}
       {showEditModal && (
