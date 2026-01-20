@@ -19,8 +19,8 @@ import {
   MoreVertical,
   User
 } from 'lucide-react';
-import { Participant, PTRoom } from '../../../data/pts';
-import { useJanus, JanusParticipant } from '../../../hooks/useJanus';
+import { PTRoom } from '../../../data/pts';
+import { useJanus } from '../../../hooks/useJanus';
 
 /**
  * Props 타입 정의
@@ -51,6 +51,7 @@ export default function VideoCallRoom({
    * 비디오 엘리먼트 참조
    */
   const localVideoRef = useRef<HTMLVideoElement>(null);
+  const subLocalVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
 
   /**
@@ -91,11 +92,18 @@ export default function VideoCallRoom({
    * 트레이너 입장 시 메인 화면으로 설정
    */
   useEffect(() => {
+    if (isTrainer) return;
+    
     const trainer = participants.find(p => p.isTrainer && !p.isLocal);
-    if (trainer && mainVideoId === 'local') {
+
+    /* 디버깅용 로그 */
+    console.log('참가자 목록:', participants.map(p => ({ id: p.id, name: p.name, isTrainer: p.isTrainer, isLocal: p.isLocal })));
+    console.log('찾은 트레이너:', trainer);
+    
+    if (trainer) {
       setMainVideoId(trainer.id);
     }
-  }, [participants]);
+  }, [participants, isTrainer]);
 
   /**
    * 컴포넌트 마운트 시 연결 시작
@@ -112,10 +120,15 @@ export default function VideoCallRoom({
    * 로컬 스트림을 비디오 엘리먼트에 연결
    */
   useEffect(() => {
-    if (localVideoRef.current && localStream) {
-      localVideoRef.current.srcObject = localStream;
+    if (localStream) {
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = localStream;
+      }
+      if (subLocalVideoRef.current) {
+        subLocalVideoRef.current.srcObject = localStream;
+      }
     }
-  }, [localStream]);
+  }, [localStream, mainVideoId]);
 
   /**
    * 통화 시간 카운터
@@ -216,17 +229,6 @@ export default function VideoCallRoom({
   };
 
   /**
-   * 참여자 수에 따른 그리드 클래스
-   */
-  const getGridClass = (): string => {
-    const count = participants.length;
-    if (count <= 1) return 'participants-1';
-    if (count <= 2) return 'participants-2';
-    if (count <= 4) return 'participants-4';
-    return 'participants-6';
-  };
-
-  /**
    * 연결 상태 렌더링
    */
   const renderConnectionStatus = () => {
@@ -288,46 +290,6 @@ export default function VideoCallRoom({
    */
   const mainParticipant = participants.find(p => p.id === mainVideoId) || participants[0];
 
-  /**
-   * 비디오 타일 렌더링
-   */
-  const renderVideoTile = (participant: Participant) => {
-    return (
-      <div key={participant.id} className="videocall-tile">
-        {/* 비디오 또는 플레이스홀더 */}
-        {participant.isVideoOff ? (
-          <div className="videocall-placeholder">
-            <div className="videocall-avatar">
-              <User className="videocall-avatar-icon" />
-            </div>
-          </div>
-        ) : (
-          /* TODO: 실제 비디오 스트림 연결 */
-          <div className="videocall-placeholder">
-            <div className="videocall-avatar">
-              <User className="videocall-avatar-icon" />
-            </div>
-          </div>
-        )}
-
-        {/* 트레이너 뱃지 */}
-        {participant.isTrainer && (
-          <span className="videocall-trainer-badge">트레이너</span>
-        )}
-
-        {/* 참여자 정보 */}
-        <div className="videocall-participant-info">
-          <span className="videocall-participant-name">{participant.name}</span>
-          {participant.isMuted ? (
-            <MicOff className="videocall-mic-status muted" />
-          ) : (
-            <Mic className="videocall-mic-status unmuted" />
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="videocall-container">
       {/* 헤더 */}
@@ -352,40 +314,48 @@ export default function VideoCallRoom({
         <div className="vc-main-video">
           {mainParticipant ? (
             mainParticipant.isLocal ? (
-              /* 내 영상 */
-              localStream ? (
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              ) : (
-                <div className="vc-video-placeholder">
-                  <User size={64} />
-                </div>
-              )
+              /* 내 영상 (메인) */
+              <video
+                ref={localVideoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover',
+                  display: localStream ? 'block' : 'none'
+                }}
+              />
             ) : (
-              /* 다른 참가자 영상 */
-              mainParticipant.stream ? (
-                <video
-                  ref={(el) => el && setRemoteVideoRef(mainParticipant.id, el)}
-                  autoPlay
-                  playsInline
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              ) : (
-                <div className="vc-video-placeholder">
-                  <User size={64} />
-                </div>
-              )
+              /* 다른 참가자 영상 (메인) */
+              <video
+                key={`main-${mainParticipant.id}`}
+                ref={(el) => {
+                  if (el && mainParticipant.stream) {
+                    el.srcObject = mainParticipant.stream;
+                  }
+                }}
+                autoPlay
+                playsInline
+                muted={isAudioMuted}
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover',
+                  display: mainParticipant.stream ? 'block' : 'none'
+                }}
+              />
             )
-          ) : (
+          ) : null}
+          
+          {/* 스트림 없을 때 플레이스홀더 */}
+          {(!mainParticipant || (mainParticipant.isLocal ? !localStream : !mainParticipant.stream)) && (
             <div className="vc-video-placeholder">
               <User size={64} />
             </div>
           )}
+          
           <span className="vc-video-name">
             {mainParticipant?.name || '대기중'}
           </span>
@@ -401,26 +371,61 @@ export default function VideoCallRoom({
                 className="vc-sub-video"
                 onClick={() => setMainVideoId(participant.id)}
               >
-                {participant.stream ? (
-                  <video
-                    ref={(el) => el && setRemoteVideoRef(participant.id, el)}
-                    autoPlay
-                    playsInline
-                    muted={participant.isLocal || !isAudioMuted}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
+                {participant.isLocal ? (
+                  /* 내 영상 (서브) */
+                  <>
+                    <video
+                      ref={subLocalVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover',
+                        display: localStream ? 'block' : 'none'
+                      }}
+                    />
+                    {!localStream && (
+                      <div className="vc-sub-video-placeholder">
+                        <User size={24} />
+                      </div>
+                    )}
+                  </>
                 ) : (
-                  <div className="vc-sub-video-placeholder">
-                    <User size={24} />
-                  </div>
+                  /* 다른 참가자 영상 (서브) */
+                  <>
+                    <video
+                      key={`sub-${participant.id}`}
+                      ref={(el) => {
+                        if (el && participant.stream) {
+                          el.srcObject = participant.stream;
+                        }
+                      }}
+                      autoPlay
+                      playsInline
+                      muted={isAudioMuted}
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover',
+                        display: participant.stream ? 'block' : 'none'
+                      }}
+                    />
+                    {!participant.stream && (
+                      <div className="vc-sub-video-placeholder">
+                        <User size={24} />
+                      </div>
+                    )}
+                  </>
                 )}
                 <span className="vc-sub-video-name">
                   {participant.name}
                 </span>
               </div>
             ))}
+            </div>
         </div>
-      </div>
 
       {/* 화면 공유 시 오버레이 */}
       {isScreenSharing && (
