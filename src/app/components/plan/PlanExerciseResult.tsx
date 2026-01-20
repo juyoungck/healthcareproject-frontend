@@ -167,10 +167,12 @@ export default function ExercisePlanResult({
                   <h4 className="exercise-result-day-name">
                     {DAY_LABELS[dailyPlan.dayName] || dailyPlan.dayName}
                   </h4>
-                  <span className="exercise-result-day-category">
-                    <Dumbbell size={14} />
-                    {dailyPlan.category}
-                  </span>
+                  {expandedDays.includes(dailyPlan.dayName) && (
+                    <span className="exercise-result-day-category">
+                      <Dumbbell size={14} />
+                      {dailyPlan.category}
+                    </span>
+                  )}
                 </div>
                 <div className="exercise-result-day-meta">
                   <span className="exercise-result-day-time">

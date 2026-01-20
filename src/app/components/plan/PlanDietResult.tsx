@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react';
-import { ArrowLeft, Check, RefreshCw, Flame } from 'lucide-react';
+import { ArrowLeft, Check, RefreshCw, Flame, ChevronDown, ChevronUp, Utensils } from 'lucide-react';
 import PlanDietRegenerateModal from './PlanDietRegenerateModal';
 
 /**
@@ -83,10 +83,44 @@ export default function PlanDietResult({
   onRegenerate,
   planData 
 }: PlanDietResultProps) {
-  /**
+ /**
    * 재생성 모달 상태
    */
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+
+  /**
+   * 펼쳐진 요일 상태
+   */
+  const [expandedDays, setExpandedDays] = useState<string[]>(
+    planData.dailyMeals.map(p => p.dayName)
+  );
+
+  /**
+   * 요일 펼침/접기 토글
+   */
+  const toggleDay = (dayName: string) => {
+    setExpandedDays(prev => {
+      if (prev.includes(dayName)) {
+        return prev.filter(d => d !== dayName);
+      } else {
+        return [...prev, dayName];
+      }
+    });
+  };
+
+  /**
+   * 끼니별 그룹화 함수
+   */
+  const groupMealsByType = (meals: Meal[]) => {
+    const groups: { [key: string]: Meal[] } = {};
+    meals.forEach(meal => {
+      if (!groups[meal.type]) {
+        groups[meal.type] = [];
+      }
+      groups[meal.type].push(meal);
+    });
+    return groups;
+  };
 
   /**
    * 재생성 핸들러
@@ -189,32 +223,55 @@ export default function PlanDietResult({
         <section className="diet-result-daily-meals">
           {planData.dailyMeals.map(dailyMeal => (
             <div key={dailyMeal.dayName} className="diet-result-day-card">
-              {/* 요일 헤더 */}
-              <div className="diet-result-day-header">
+              {/* 요일 헤더 - 클릭 가능 */}
+              <button 
+                className="diet-result-day-header"
+                onClick={() => toggleDay(dailyMeal.dayName)}
+              >
                 <h4 className="diet-result-day-name">
                   {DAY_LABELS[dailyMeal.dayName] || dailyMeal.dayName}
                 </h4>
-                <span className="diet-result-day-calories">
-                  <Flame size={14} />
-                  {dailyMeal.totalCalories}kcal
-                </span>
-              </div>
+                <div className="diet-result-day-meta">
+                  <span className="diet-result-day-calories">
+                    <Flame size={14} />
+                    {dailyMeal.totalCalories}kcal
+                  </span>
+                  {expandedDays.includes(dailyMeal.dayName) ? (
+                    <ChevronUp size={20} />
+                  ) : (
+                    <ChevronDown size={20} />
+                  )}
+                </div>
+              </button>
 
-              {/* 끼니 목록 */}
-              <div className="diet-result-meals">
-                {dailyMeal.meals.map(meal => (
-                  <div key={meal.id} className="diet-result-meal-item">
-                    <div className="diet-result-meal-type">🍽 {meal.typeLabel}</div>
-                    <div className="diet-result-meal-center">
-                      <p className="diet-result-meal-menu">{meal.menu}</p>
-                      <span className="diet-result-meal-nutrients">
-                        탄 {meal.nutrients.carb}g 단 {meal.nutrients.protein}g 지 {meal.nutrients.fat}g
-                      </span>
+              {/* 끼니 목록 - 펼쳐진 경우만 표시 */}
+              {expandedDays.includes(dailyMeal.dayName) && (
+                <div className="diet-result-meals">
+                  {Object.entries(groupMealsByType(dailyMeal.meals)).map(([type, meals]) => (
+                    <div key={type} className="diet-result-meal-group">
+                      {/* 끼니 그룹 헤더 */}
+                      <div className="diet-result-meal-group-header">
+                        🍽 {meals[0].typeLabel}
+                      </div>
+                      {/* 해당 끼니의 메뉴들 */}
+                      {meals.map(meal => (
+                        <div key={meal.id} className="diet-result-meal-item">
+                          <div className="diet-result-meal-icon">
+                            <Utensils size={20} />
+                          </div>
+                          <div className="diet-result-meal-center">
+                            <p className="diet-result-meal-menu">{meal.menu}</p>
+                            <span className="diet-result-meal-nutrients">
+                              탄 {meal.nutrients.carb}g 단 {meal.nutrients.protein}g 지 {meal.nutrients.fat}g
+                            </span>
+                          </div>
+                          <span className="diet-result-meal-calories">{meal.calories}kcal</span>
+                        </div>
+                      ))}
                     </div>
-                    <span className="diet-result-meal-calories">{meal.calories}kcal</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </section>

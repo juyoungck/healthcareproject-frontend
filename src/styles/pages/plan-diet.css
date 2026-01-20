@@ -107,7 +107,7 @@
   padding: var(--spacing-md) var(--spacing-lg);
   background-color: var(--color-diet-light);
   border-radius: var(--border-radius-lg);
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
 }
 
 .diet-plan-banner-icon {
@@ -512,9 +512,9 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--spacing-md);
   background-color: var(--color-diet-light);
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-lg);
   margin-bottom: var(--spacing-lg);
   color: var(--color-diet);
   font-size: var(--font-size-sm);
@@ -691,9 +691,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: var(--spacing-md) var(--spacing-lg);
-  background-color: var(--color-gray-50);
-  border-bottom: 1px solid var(--color-gray-100);
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 .diet-result-day-name {
@@ -715,23 +717,69 @@
 }
 
 /**
+ * 요일 헤더 메타 영역
+ */
+.diet-result-day-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  color: var(--color-gray-500);
+}
+
+/**
+ * 끼니 그룹
+ */
+.diet-result-meal-group {
+  margin-bottom: var(--spacing-xs);
+}
+
+.diet-result-meal-group:last-child {
+  margin-bottom: 0;
+}
+
+.diet-result-meal-group-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-xs);
+}
+
+/**
  * 끼니 목록
  */
+.diet-result-meal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-diet);
+  background-color: var(--color-diet-light);
+  border-radius: var(--border-radius-md);
+  flex-shrink: 0;
+}
+
 .diet-result-meals {
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
 .diet-result-meal-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: 1px solid var(--color-gray-100);
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
 }
 
 .diet-result-meal-item:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .diet-result-meal-type {
@@ -748,14 +796,14 @@
 }
 
 .diet-result-meal-menu {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-gray-800);
-  margin-bottom: var(--spacing-2xs);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-900);
+  margin-bottom: 2px;
 }
 
 .diet-result-meal-nutrients {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--color-gray-500);
 }
 
