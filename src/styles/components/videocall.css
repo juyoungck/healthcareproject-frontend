@@ -141,6 +141,8 @@
   display: flex;
   gap: var(--spacing-sm);
   overflow-x: auto;
+  align-items: center;
+  justify-content: center;
   padding-bottom: var(--spacing-xs);
 }
 

@@ -47,7 +47,8 @@ export interface Participant {
   name: string;
   profileImage?: string;
   isTrainer: boolean;
-  isMuted: boolean;
+  isMicMuted: boolean;
+  isAudioMuted: boolean;
   isVideoOff: boolean;
 }
 
@@ -167,22 +168,25 @@ export const DUMMY_PARTICIPANTS: Participant[] = [
     id: 'trainer-001',
     name: '김트레이너',
     isTrainer: true,
-    isMuted: false,
+    isAudioMuted: false,
+    isMicMuted: false,
     isVideoOff: false,
   },
   {
     id: 'user-001',
     name: '홍길동',
     isTrainer: false,
-    isMuted: true,
+    isAudioMuted: false,
+    isMicMuted: false,
     isVideoOff: false,
   },
   {
     id: 'user-002',
     name: '김철수',
     isTrainer: false,
-    isMuted: false,
-    isVideoOff: true,
+    isAudioMuted: false,
+    isMicMuted: false,
+    isVideoOff: false,
   },
 ];
 
