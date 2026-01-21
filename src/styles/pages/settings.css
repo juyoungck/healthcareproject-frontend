@@ -207,6 +207,27 @@
   line-height: var(--line-height-relaxed);
 }
 
+.settings-withdraw-password {
+  width: 100%;
+  margin-bottom: var(--spacing-md);
+}
+
+.settings-withdraw-password .form-input-wrapper {
+  width: 100%;
+}
+
+.settings-withdraw-password .form-input {
+  width: 100%;
+  text-align: left;
+}
+
+.settings-withdraw-error {
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  text-align: left;
+}
+
 .settings-withdraw-actions {
   display: flex;
   gap: var(--spacing-sm);

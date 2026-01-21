@@ -109,21 +109,45 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
     setError('');
 
     try {
-      /* 병렬로 API 호출 */
-      const [meData, profileData, injuriesData, allergiesData] = await Promise.all([
-        getMe(),
+      /* 필수 정보: 사용자 기본 정보 */
+      const meData = await getMe();
+      setUserInfo(meData);
+      setEditNickname(meData.nickname);
+
+      /* 선택 정보: 온보딩 데이터 (실패해도 페이지 로딩에 영향 없음) */
+      const [profileResult, injuriesResult, allergiesResult] = await Promise.allSettled([
         getProfile(),
         getInjuries(),
         getAllergies(),
       ]);
 
-      setUserInfo(meData);
-      setProfile(profileData);
-      setInjuries(injuriesData.injuries);
-      setAllergies(allergiesData.allergies);
-      setEditNickname(meData.nickname);
+      /* 프로필 정보 */
+      if (profileResult.status === 'fulfilled') {
+        setProfile(profileResult.value);
+      } else {
+        console.log('프로필 정보 없음 또는 로드 실패');
+        setProfile(null);
+      }
+
+      /* 부상 정보 */
+      if (injuriesResult.status === 'fulfilled') {
+        setInjuries(injuriesResult.value.injuries);
+      } else {
+        console.log('부상 정보 없음 또는 로드 실패');
+        setInjuries([]);
+      }
+
+      /* 알레르기 정보 */
+      if (allergiesResult.status === 'fulfilled') {
+        setAllergies(allergiesResult.value.allergies);
+      } else {
+        console.log('알레르기 정보 없음 또는 로드 실패');
+        setAllergies([]);
+      }
+
     } catch (err) {
-      console.error('데이터 로드 실패:', err);
+      /* 필수 정보(getMe) 실패 시에만 에러 표시 */
+      console.error('사용자 정보 로드 실패:', err);
       setError('정보를 불러오는데 실패했습니다.');
     } finally {
       setIsLoading(false);

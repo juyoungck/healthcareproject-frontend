@@ -10,6 +10,7 @@
 import { useState } from 'react';
 import { X, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { login, saveTokens } from '../../../api/auth';
+import { getErrorMessage } from '../../../constants/errorCodes';
 
 /**
  * 컴포넌트 Props 타입 정의
@@ -63,20 +64,11 @@ export default function LoginModal({
       /* 로그인 성공 콜백 */
       onLoginSuccess();
     } catch (error: unknown) {
-      /* 에러 처리 */
-      if (error instanceof Error) {
-        const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
-        
-        if (axiosError.response?.status === 401) {
-          setError('이메일 또는 비밀번호가 올바르지 않습니다.');
-        } else if (axiosError.response?.data?.message) {
-          setError(axiosError.response.data.message);
-        } else {
-          setError('로그인에 실패했습니다. 다시 시도해주세요.');
-        }
-      } else {
-        setError('로그인에 실패했습니다. 다시 시도해주세요.');
-      }
+      console.error('로그인 실패:', error);
+      const axiosError = error as { response?: { data?: { error?: { code?: string } } } };
+      const errorCode = axiosError.response?.data?.error?.code;
+
+      setError(getErrorMessage(errorCode, '로그인에 실패했습니다. 다시 시도해주세요.'));
     } finally {
       setIsLoading(false);
     }
