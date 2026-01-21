@@ -13,10 +13,9 @@ import { ArrowLeft } from 'lucide-react';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor } from '@toast-ui/react-editor';
 
-/**
- * 카테고리 타입 정의
- */
-type CategoryType = 'free' | 'question' | 'info';
+import { createPost, updatePost, getPostDetail } from '../../../api/board';
+import { PostCategory } from '../../../api/types/board';
+import { CATEGORY_MAP } from '../../../data/boards';
 
 /**
  * Props 타입 정의
@@ -31,10 +30,10 @@ interface BoardWriteProps {
 /**
  * 카테고리 옵션
  */
-const CATEGORY_OPTIONS: { value: CategoryType; label: string }[] = [
-  { value: 'free', label: '자유' },
-  { value: 'question', label: '질문' },
-  { value: 'info', label: '정보' }
+const CATEGORY_OPTIONS: { value: PostCategory; label: string }[] = [
+  { value: 'FREE', label: '자유' },
+  { value: 'QUESTION', label: '질문' },
+  { value: 'INFO', label: '정보' }
 ];
 
 /**
@@ -49,10 +48,11 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
   /**
    * 상태 관리
    */
-  const [category, setCategory] = useState<CategoryType>('free');
+  const [category, setCategory] = useState<PostCategory>('FREE');
   const [title, setTitle] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageCount, setImageCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   /**
    * Toast UI Editor ref
@@ -64,20 +64,31 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
    */
   useEffect(() => {
     if (mode === 'edit' && postId) {
-      /* TODO: API 호출하여 기존 게시글 데이터 로드 */
-      console.log('게시글 데이터 로드:', postId);
-      /* 임시 데이터 */
-      setCategory('free');
-      setTitle('오늘 운동 인증합니다! 헬스장 다녀왔어요');
-      
-      /* 에디터에 내용 설정 */
-      setTimeout(() => {
-        if (editorRef.current) {
-          editorRef.current.getInstance().setHTML('<p>안녕하세요! 오늘도 열심히 운동하고 왔습니다.</p>');
+      const fetchPostData = async () => {
+        setIsLoading(true);
+        try {
+          const data = await getPostDetail(postId);
+          setCategory(data.category);
+          setTitle(data.title);
+          
+          /* 에디터에 내용 설정 */
+          setTimeout(() => {
+            if (editorRef.current) {
+              editorRef.current.getInstance().setHTML(data.content);
+            }
+          }, 100);
+        } catch (error) {
+          console.error('게시글 로드 실패:', error);
+          alert('게시글을 불러오는데 실패했습니다.');
+          onBack();
+        } finally {
+          setIsLoading(false);
         }
-      }, 100);
+      };
+      
+      fetchPostData();
     }
-  }, [mode, postId]);
+  }, [mode, postId, onBack]);
 
   /**
    * 이미지 업로드 훅 (Toast UI Editor)
@@ -141,20 +152,24 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
     setIsSubmitting(true);
 
     try {
-      /* TODO: API 호출 */
-      const postData = {
-        category,
-        title,
-        content,
-        /* HTML 형식으로 저장 (이미지 인라인 포함) */
-      };
-
-      console.log('게시글 제출:', postData);
-
-      /* 임시: 1초 후 완료 처리 */
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      alert(mode === 'create' ? '게시글이 등록되었습니다.' : '게시글이 수정되었습니다.');
+      if (mode === 'create') {
+        await createPost({
+          category,
+          title,
+          content,
+          isNotice: false,
+        });
+        alert('게시글이 등록되었습니다.');
+      } else {
+        await updatePost({
+          postId: postId!,
+          category,
+          title,
+          content,
+          isNotice: false,
+        });
+        alert('게시글이 수정되었습니다.');
+      }
       onSubmit();
     } catch (error) {
       console.error('게시글 제출 실패:', error);
@@ -163,6 +178,18 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
       setIsSubmitting(false);
     }
   };
+
+  /* 로딩 중 */
+  if (isLoading) {
+    return (
+      <div className="board-write">
+        <div className="board-loading">
+          <div className="board-loading-spinner"></div>
+          <span>불러오는 중...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="board-write">
