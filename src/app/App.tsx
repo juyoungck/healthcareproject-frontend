@@ -5,26 +5,22 @@
  */
 
 import { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import LandingPage from './pages/LandingPage';
 import OnboardingPage from './pages/OnboardingPage';
 import type { OnboardingData } from './pages/OnboardingPage';
 import Dashboard from './pages/Dashboard';
-import { isAuthenticated, clearTokens, logout, getRefreshToken } from '../api/auth';
+import { clearTokens, logout, getRefreshToken } from '../api/auth';
 import { getProfile, getInjuries, getAllergies } from '../api/me';
 import type { ProfileResponse, InjuryItem } from '../api/types/me';
 
 
 /**
- * App 컴포넌트
- * - 비로그인 시: 랜딩페이지 (로그인/회원가입 버튼 + 사이트 소개)
- * - 로그인 시: 대시보드 (메인 서비스)
+ * AppContent 컴포넌트
+ * AuthProvider 내부에서 useAuth 사용
  */
-export default function App() {
-  /**
-   * 로그인 상태 관리
-   * TODO: 실제 구현 시 JWT 토큰 기반 인증으로 변경
-   */
-  const [isLoggedIn, setIsLoggedIn] = useState(() => isAuthenticated());
+function AppContent() {
+  const { isLoggedIn, isLoading: isAuthLoading, onLoginSuccess, onLogout, refreshUser } = useAuth();
 
   /**
    * 온보딩 상태 관리
@@ -138,27 +134,20 @@ export default function App() {
   };
 
   // 회원가입 완료 핸들러
-  const handleSignupComplete  = () => {
-    /* 
-    * TODO: 실제 구현 시 토큰은 이미 저장된 상태
-    * 여기서는 자동 로그인 처리
-    */
-    setIsLoggedIn(true);
+  const handleSignupComplete = async () => {
+    await onLoginSuccess();
     setShowOnboarding(true);
   };
 
   /**
    * 로그인 핸들러
-   * 로그인 성공 시 호출
    */
-  const handleLogin = () => {
-    setIsLoggedIn(true);
+  const handleLogin = async () => {
+    await onLoginSuccess();
   };
 
   /**
    * 로그아웃 핸들러
-   * - 서버에 로그아웃 요청
-   * - 로컬 토큰 삭제
    */
   const handleLogout = async () => {
     try {
@@ -169,9 +158,8 @@ export default function App() {
     } catch (error) {
       console.error('로그아웃 API 에러:', error);
     } finally {
-      /* 토큰 삭제 및 상태 초기화 */
       clearTokens();
-      setIsLoggedIn(false);
+      onLogout();
       setShowOnboarding(false);
       setShowOnboardingEdit(false);
     }
@@ -208,9 +196,11 @@ export default function App() {
   /**
    * 온보딩 수정 완료
    */
-  const handleOnboardingEditComplete = () => {
+  const handleOnboardingEditComplete = async () => {
     setShowOnboardingEdit(false);
     setReturnToMyPage(true);
+    /* 온보딩 수정 후 사용자 정보 새로고침 */
+    await refreshUser();
   };
 
   /**
@@ -222,21 +212,15 @@ export default function App() {
   };
 
   /**
-   * 토큰 만료로 인한 자동 로그아웃 이벤트 처리
+   * 초기 로딩 중
    */
-  useEffect(() => {
-    const handleAuthLogout = () => {
-      setIsLoggedIn(false);
-      setShowOnboarding(false);
-      setShowOnboardingEdit(false);
-    };
-
-    window.addEventListener('auth:logout', handleAuthLogout);
-    
-    return () => {
-      window.removeEventListener('auth:logout', handleAuthLogout);
-    };
-  }, []);
+  if (isAuthLoading) {
+    return (
+      <div className="loading-screen">
+        <p>로딩 중...</p>
+      </div>
+    );
+  }
 
   /**
    * 상태값에 따른 랜더링 변경
@@ -273,13 +257,13 @@ export default function App() {
     }
 
     return (
-    <Dashboard 
-      onLogout={handleLogout} 
-      onEditOnboarding={handleOpenOnboardingEdit}
-      initialShowMyPage={returnToMyPage}
-      onMyPageShown={() => setReturnToMyPage(false)}
-    />
-  );
+      <Dashboard 
+        onLogout={handleLogout} 
+        onEditOnboarding={handleOpenOnboardingEdit}
+        initialShowMyPage={returnToMyPage}
+        onMyPageShown={() => setReturnToMyPage(false)}
+      />
+    );
   }
 
   return (
@@ -287,5 +271,17 @@ export default function App() {
       onLogin={handleLogin} 
       onSignupComplete={handleSignupComplete}
     />
+  );
+}
+
+/**
+ * App 컴포넌트
+ * AuthProvider로 감싸서 전역 인증 상태 제공
+ */
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

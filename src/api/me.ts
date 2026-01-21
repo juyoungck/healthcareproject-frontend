@@ -108,12 +108,8 @@ export const updateNickname = async (data: NicknameUpdateRequest): Promise<UserU
  * 전화번호 수정
  * PATCH /api/me/phone
  */
-export const updatePhone = async (data: PhoneUpdateRequest): Promise<UserUpdateResponse> => {
-  const response = await apiClient.patch<ApiResponse<UserUpdateResponse>>(
-    '/api/me/phone',
-    data
-  );
-  return response.data.data;
+export const updatePhoneNumber = async (data: PhoneUpdateRequest): Promise<void> => {
+  await apiClient.patch('/api/me/phone', data);
 };
 
 /**
@@ -130,7 +126,21 @@ export const updateProfileImage = async (data: ProfileImageUpdateRequest): Promi
 
 /**
  * ===========================================
- * 회원탈퇴 API
+ * 비밀번호 변경 관련
+ * ===========================================
+ */
+
+/**
+ * 비밀번호 변경
+ * PATCH /api/me/password
+ */
+export const changePassword = async (data: PasswordChangeRequest): Promise<void> => {
+  await apiClient.patch('/api/me/password', data);
+};
+
+/**
+ * ===========================================
+ * 회원탈퇴 관련
  * ===========================================
  */
 

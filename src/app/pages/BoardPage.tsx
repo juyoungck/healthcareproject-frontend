@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import BoardList from '../components/board/BoardList';
 import BoardDetail from '../components/board/BoardDetail';
 import BoardWrite from '../components/board/BoardWrite';
@@ -15,17 +16,15 @@ import BoardWrite from '../components/board/BoardWrite';
 type ViewType = 'list' | 'detail' | 'write' | 'edit';
 
 /**
- * Props 타입 정의
- */
-interface BoardPageProps {
-  currentUserId: number;
-}
-
-/**
  * BoardPage 컴포넌트
  * 게시판 내 페이지 전환 관리
  */
-export default function BoardPage({ currentUserId }: BoardPageProps) {
+export default function BoardPage() {
+  /**
+   * Context에서 사용자 정보 가져오기
+   */
+  const { user } = useAuth();
+
   /**
    * 현재 뷰 상태
    */
@@ -111,7 +110,7 @@ export default function BoardPage({ currentUserId }: BoardPageProps) {
         return (
           <BoardDetail
             postId={selectedPostId}
-            currentUserId={currentUserId}
+            currentUserHandle={user?.handle || ''}
             onBack={handleBackToList}
             onEdit={handleEditPost}
             onDelete={handleDeletePost}

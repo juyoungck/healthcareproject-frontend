@@ -161,8 +161,7 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
         });
         alert('게시글이 등록되었습니다.');
       } else {
-        await updatePost({
-          postId: postId!,
+        await updatePost(postId!, {
           category,
           title,
           content,

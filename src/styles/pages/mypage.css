@@ -168,6 +168,10 @@
   cursor: pointer;
 }
 
+.mypage-edit-btn:hover {
+  color: var(--color-primary);
+}
+
 .mypage-user-type {
   display: inline-block;
   padding: var(--spacing-2xs) var(--spacing-sm);

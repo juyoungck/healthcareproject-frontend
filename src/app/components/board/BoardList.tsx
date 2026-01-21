@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useAuth } from '../../../contexts/AuthContext';
 import { Search, FileText, Plus } from 'lucide-react';
 import {
   CategoryType,
@@ -37,6 +38,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
   /**
    * 상태 관리
    */
+  const { isLoggedIn } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>('all');
   const [searchType, setSearchType] = useState<SearchType>('title');
   const [searchQuery, setSearchQuery] = useState('');
@@ -310,7 +312,16 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
       </div>
 
       {/* 글쓰기 플로팅 버튼 */}
-      <button className="board-write-fab" onClick={onWritePost}>
+      <button 
+        className="board-write-fab" 
+        onClick={() => {
+          if (!isLoggedIn) {
+            alert('로그인이 필요합니다.');
+            return;
+          }
+          onWritePost();
+        }}
+      >
         <Plus size={24} />
       </button>
     </div>
