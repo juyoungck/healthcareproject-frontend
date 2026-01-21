@@ -112,7 +112,6 @@ export interface CreatePostRequest {
  * ===========================================
  */
 export interface UpdatePostRequest {
-    postId: number;
     category: PostCategory;
     title: string;
     content: string;

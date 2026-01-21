@@ -85,10 +85,13 @@ export const createPost = async (params: CreatePostRequest): Promise<PostDetailR
 
 /**
  * 게시글 수정
- * PATCH /api/board/posts
+ * PATCH /api/board/posts/{postId}
  */
-export const updatePost = async (params: UpdatePostRequest): Promise<PostDetailResponse> => {
-    const response = await fetch(`${API_BASE_URL}/api/board/posts`, {
+export const updatePost = async (
+    postId: number,
+    params: UpdatePostRequest
+): Promise<PostDetailResponse> => {
+    const response = await fetch(`${API_BASE_URL}/api/board/posts/${postId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',

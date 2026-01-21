@@ -88,6 +88,19 @@ export default function SignupModal({
   };
 
   /**
+   * 전화번호 포맷팅 (01012345678 → 010-1234-5678)
+   */
+  const formatPhoneNumber = (phone: string): string => {
+    const digits = phone.replace(/-/g, '');
+    if (digits.length === 11) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+    } else if (digits.length === 10) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+    }
+    return phone;
+  };
+
+  /**
    * 이메일 중복 체크 핸들러
    */
   const handleCheckEmail = async () => {
@@ -201,12 +214,15 @@ export default function SignupModal({
       /* 현재는 임시로 통과 처리 */
       await new Promise(resolve => setTimeout(resolve, 500));
 
+      /* 전화번호 포맷팅 */
+      const formattedPhone = phone ? formatPhoneNumber(phone) : undefined;
+
       /* 회원가입 API 호출 */
       const tokens = await signup({
         email,
         password,
         nickname,
-        phoneNumber: phone || undefined,
+        phoneNumber: formattedPhone,
       });
 
       /* 토큰 저장 */

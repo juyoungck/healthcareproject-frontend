@@ -34,7 +34,7 @@ import { PostDetailResponse, CommentResponse } from '../../../api/types/board';
  */
 interface BoardDetailProps {
   postId: number;
-  currentUserId: number;
+  currentUserHandle: string;
   onBack: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -45,7 +45,7 @@ interface BoardDetailProps {
  */
 export default function BoardDetail({
   postId,
-  currentUserId,
+  currentUserHandle,
   onBack,
   onEdit,
   onDelete
@@ -66,7 +66,7 @@ export default function BoardDetail({
   /**
    * 본인 글 여부 확인
    */
-  const isAuthor = post?.author?.handle === localStorage.getItem('userHandle');
+  const isAuthor = post?.author?.handle === currentUserHandle;
 
   /**
    * 게시글 상세 데이터 로드
@@ -220,7 +220,7 @@ export default function BoardDetail({
    * 현재 사용자가 댓글 작성자인지 확인
    */
   const isCommentAuthor = (commentAuthorHandle: string): boolean => {
-    return localStorage.getItem('userHandle') === commentAuthorHandle;
+    return currentUserHandle === commentAuthorHandle;
   };
 
   /* 로딩 중 */

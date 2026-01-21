@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { 
   ArrowLeft,
   User,
@@ -31,8 +32,8 @@ import {
 } from 'lucide-react';
 import SettingsPage from './SettingsPage';
 import TrainerApplyModal, { TrainerApplyData } from '../components/auth/TrainerApplyModal';
-import { getMe, getProfile, getInjuries, getAllergies, updateNickname } from '../../api/me';
-import type { MeResponse, ProfileResponse, InjuryItem } from '../../api/types/me';
+import { getProfile, getInjuries, getAllergies, updateNickname, updatePhoneNumber, updateProfileImage } from '../../api/me';
+import type { ProfileResponse, InjuryItem } from '../../api/types/me';
 import { CURRENT_USER_TRAINER_STATUS } from '../../data/users';
 
 const ALLERGY_LABEL_MAP: Record<string, string> = {
@@ -69,12 +70,11 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
   /**
    * 상태 관리
    */
+  const { user: userInfo, updateUser } = useAuth();
+
   /* 로딩/에러 */
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-
-  /* 사용자 기본 정보 */
-  const [userInfo, setUserInfo] = useState<MeResponse | null>(null);
 
   /* 신체/운동 정보 */
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
@@ -86,13 +86,18 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
   const [allergies, setAllergies] = useState<string[]>([]);
 
   /* 모달 상태 */
-  const [showEditModal, setShowEditModal] = useState(false);
   const [showSettingsPage, setShowSettingsPage] = useState(false);
   const [showTrainerModal, setShowTrainerModal] = useState(false);
 
   /* 닉네임 수정 */
+  const [showNicknameModal, setShowNicknameModal] = useState(false);
   const [editNickname, setEditNickname] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isUpdatingNickname, setIsUpdatingNickname] = useState(false);
+
+  /* 전화번호 수정 */
+  const [showPhoneNumberModal, setShowPhoneNumberModal] = useState(false);
+  const [editPhoneNumber, setEditPhoneNumber] = useState('');
+  const [isUpdatingPhoneNumber, setIsUpdatingPhoneNumber] = useState(false);
 
   /**
    * ===========================================
@@ -100,21 +105,29 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
    * ===========================================
    */
 
+  /**
+   * userInfo(Context)가 변경되면 닉네임, 전화번호 초기값 설정
+   */
   useEffect(() => {
-    fetchUserData();
+    if (userInfo) {
+      setEditNickname(userInfo.nickname);
+      setEditPhoneNumber(userInfo.phoneNumber || '');
+    }
+  }, [userInfo]);
+
+  /**
+   * 온보딩 데이터만 로드 (userInfo는 Context에서 가져옴)
+   */
+  useEffect(() => {
+    fetchOnboardingData();
   }, []);
 
-  const fetchUserData = async () => {
+  const fetchOnboardingData = async () => {
     setIsLoading(true);
     setError('');
 
     try {
-      /* 필수 정보: 사용자 기본 정보 */
-      const meData = await getMe();
-      setUserInfo(meData);
-      setEditNickname(meData.nickname);
-
-      /* 선택 정보: 온보딩 데이터 (실패해도 페이지 로딩에 영향 없음) */
+      /* 온보딩 데이터만 로드 (userInfo는 이미 Context에 있음) */
       const [profileResult, injuriesResult, allergiesResult] = await Promise.allSettled([
         getProfile(),
         getInjuries(),
@@ -146,8 +159,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
       }
 
     } catch (err) {
-      /* 필수 정보(getMe) 실패 시에만 에러 표시 */
-      console.error('사용자 정보 로드 실패:', err);
+      console.error('온보딩 데이터 로드 실패:', err);
       setError('정보를 불러오는데 실패했습니다.');
     } finally {
       setIsLoading(false);
@@ -163,31 +175,65 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
       return;
     }
 
-    setIsUpdating(true);
+    setIsUpdatingNickname(true);
 
     try {
       await updateNickname({ nickname: editNickname });
     
-      /* API 호출 성공 시 로컬 상태 직접 업데이트 */
-      if (userInfo) {
-        setUserInfo({
-          ...userInfo,
-          nickname: editNickname,  // ← 응답 대신 입력한 닉네임 값 사용
-        });
-      }
+      /* API 호출 성공 시 Context 상태 업데이트 */
+      updateUser({ nickname: editNickname });
       
-      setShowEditModal(false);
+      setShowNicknameModal(false);
       alert('닉네임이 수정되었습니다.');
     } catch (err: unknown) {
       console.error('닉네임 수정 실패:', err);
-      const axiosError = err as { response?: { data?: { error?: { code?: string } } } };
-      if (axiosError.response?.data?.error?.code === 'DUPLICATE_NICKNAME') {
-        alert('이미 사용 중인 닉네임입니다.');
-      } else {
-        alert('닉네임 수정에 실패했습니다.');
-      }
+      alert('닉네임 수정에 실패했습니다.');
     } finally {
-      setIsUpdating(false);
+      setIsUpdatingNickname(false);
+    }
+  };
+
+  /**
+   * 전화번호 포맷팅 (01012345678 → 010-1234-5678)
+   */
+  const formatPhoneNumber = (phone: string): string => {
+    const digits = phone.replace(/-/g, '');
+    if (digits.length === 11) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+    } else if (digits.length === 10) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+    }
+    return phone;
+  };
+
+  /**
+   * 전화번호 수정 핸들러
+   */
+  const handleEditPhoneNumber = async () => {
+    /* 전화번호 형식 검증 (선택) */
+    const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/;
+    if (editPhoneNumber && !phoneRegex.test(editPhoneNumber.replace(/-/g, ''))) {
+      alert('올바른 전화번호 형식이 아닙니다.');
+      return;
+    }
+
+    const formattedPhone = editPhoneNumber ? formatPhoneNumber(editPhoneNumber) : '';
+
+    setIsUpdatingPhoneNumber(true);
+
+    try {
+      await updatePhoneNumber({ phoneNumber: formattedPhone });
+      
+      /* API 호출 성공 시 Context 상태 업데이트 */
+      updateUser({ phoneNumber: formattedPhone });
+      
+      setShowPhoneNumberModal(false);
+      alert('전화번호가 수정되었습니다.');
+    } catch (err: unknown) {
+      console.error('전화번호 수정 실패:', err);
+      alert('전화번호 수정에 실패했습니다.');
+    } finally {
+      setIsUpdatingPhoneNumber(false);
     }
   };
 
@@ -409,8 +455,8 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
         <div className="mypage-profile-info">
           <div className="mypage-nickname-row">
             <h2 className="mypage-nickname">{userInfo?.nickname}</h2>
-            <button className="mypage-edit-btn" onClick={() => setShowEditModal(true)}>
-              <Edit2 size={16} />
+            <button className="mypage-edit-btn" onClick={() => setShowNicknameModal(true)}>
+              <Edit2 size={14} />
             </button>
           </div>
           <span className={`mypage-user-type ${userInfo?.role === 'TRAINER' ? 'trainer' : 'general'}`}>
@@ -431,6 +477,12 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
           <div className="mypage-info-item">
             <Phone size={18} className="mypage-info-icon" />
             <span className="mypage-info-label">전화번호</span>
+            <button className="mypage-edit-btn" onClick={() => {
+              setEditPhoneNumber(formatPhoneNumber(userInfo?.phoneNumber || ''));
+              setShowPhoneNumberModal(true);
+            }}>
+              <Edit2 size={14} />
+            </button>
             <span className="mypage-info-value">{userInfo?.phoneNumber || '-'}</span>
           </div>
           <div className="mypage-info-item">
@@ -568,12 +620,12 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
       )}
 
       {/* 닉네임 수정 모달 */}
-      {showEditModal && (
-        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+      {showNicknameModal && (
+        <div className="modal-overlay" onClick={() => setShowNicknameModal(false)}>
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">닉네임 수정</h2>
-              <button className="modal-close-btn" onClick={() => setShowEditModal(false)}>
+              <button className="modal-close-btn" onClick={() => setShowNicknameModal(false)}>
                 <X size={24} />
               </button>
             </div>
@@ -592,9 +644,9 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
               <button 
                 className="form-submit-btn" 
                 onClick={handleEditNickname}
-                disabled={isUpdating}
+                disabled={isUpdatingNickname}
               >
-                {isUpdating ? '저장 중...' : (
+                {isUpdatingNickname ? '저장 중...' : (
                   <>
                     <Check size={20} />
                     저장
@@ -605,6 +657,49 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
           </div>
         </div>
       )}
+
+      {/* 전화번호 수정 모달 */}
+      {showPhoneNumberModal && (
+        <div className="modal-overlay" onClick={() => setShowPhoneNumberModal(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">전화번호 수정</h2>
+              <button className="modal-close-btn" onClick={() => setShowPhoneNumberModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="mypage-edit-modal-content">
+              <div className="form-group">
+                <label className="form-label">전화번호</label>
+                <div className="form-input-wrapper">
+                  <Phone className="form-input-icon" size={20} />
+                  <input
+                    type="tel"
+                    className="form-input"
+                    placeholder="010-0000-0000"
+                    value={editPhoneNumber}
+                    onChange={(e) => setEditPhoneNumber(e.target.value)}
+                    maxLength={13}
+                  />
+                </div>
+              </div>
+              <button 
+                className="form-submit-btn" 
+                onClick={handleEditPhoneNumber}
+                disabled={isUpdatingPhoneNumber}
+              >
+                {isUpdatingPhoneNumber ? '저장 중...' : (
+                  <>
+                    <Check size={20} />
+                    저장
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

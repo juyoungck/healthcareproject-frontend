@@ -188,6 +188,21 @@ export interface UserUpdateResponse {
 
 /**
  * ===========================================
+ * 비밀번호 변경 관련
+ * ===========================================
+ */
+
+/**
+ * 비밀번호 변경 요청
+ * PATCH /api/me/password
+ */
+export interface PasswordChangeRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+/**
+ * ===========================================
  * 회원탈퇴 관련
  * ===========================================
  */
