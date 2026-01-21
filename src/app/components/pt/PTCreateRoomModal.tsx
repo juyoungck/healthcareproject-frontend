@@ -15,30 +15,31 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import type { CreatePTRoomRequest, CreatePTRoomResponse } from '../../../api/types/pt';
 
 /**
  * 방 유형
  */
-type RoomType = 'instant' | 'scheduled';
+type RoomType = 'LIVE' | 'RESERVED';
 
 /**
  * Props 타입 정의
  */
 interface PTCreateRoomModalProps {
   onClose: () => void;
-  onCreate: (roomData: CreateRoomData) => void;
+  onCreate: (roomData: CreateRoomData) => Promise<void>;
+  isLoading?: boolean;
 }
 
 /**
  * 방 생성 데이터 타입
  */
 export interface CreateRoomData {
-  title: string;
-  description: string;
   roomType: RoomType;
-  scheduledDate?: string;
-  scheduledTime?: string;
-  maxParticipants: number;
+  title: string;
+  description?: string;
+  scheduledAt?: string | null;
+  maxParticipants?: number | null;
   isPrivate: boolean;
 }
 
@@ -47,14 +48,15 @@ export interface CreateRoomData {
  */
 export default function PTCreateRoomModal({ 
   onClose, 
-  onCreate 
+  onCreate,
+  isLoading = false
 }: PTCreateRoomModalProps) {
   /**
    * 폼 상태 관리
    */
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [roomType, setRoomType] = useState<RoomType>('instant');
+  const [roomType, setRoomType] = useState<RoomType>('LIVE');
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
   const [maxParticipants, setMaxParticipants] = useState(6);
@@ -124,7 +126,7 @@ export default function PTCreateRoomModal({
   /**
    * 폼 제출 핸들러
    */
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -134,7 +136,7 @@ export default function PTCreateRoomModal({
       return;
     }
 
-    if (roomType === 'scheduled') {
+    if (roomType === 'RESERVED') {
       if (!scheduledDate) {
         setError('예약 날짜를 선택해주세요.');
         return;
@@ -146,13 +148,16 @@ export default function PTCreateRoomModal({
     }
 
     /* 방 생성 데이터 전달 */
-    onCreate({
-      title: title.trim(),
-      description: description.trim(),
+    const scheduledAt = roomType === 'RESERVED' && scheduledDate && scheduledTime
+      ? `${scheduledDate}T${scheduledTime}:00`
+      : null;
+
+    await onCreate({
       roomType,
-      scheduledDate: roomType === 'scheduled' ? scheduledDate : undefined,
-      scheduledTime: roomType === 'scheduled' ? scheduledTime : undefined,
-      maxParticipants,
+      title: title.trim(),
+      description: description.trim() || undefined,
+      scheduledAt,
+      maxParticipants: maxParticipants || null,
       isPrivate,
     });
   };
@@ -181,16 +186,16 @@ export default function PTCreateRoomModal({
             <div className="pt-room-type-selector">
               <button
                 type="button"
-                className={`pt-room-type-btn ${roomType === 'instant' ? 'active' : ''}`}
-                onClick={() => setRoomType('instant')}
+                className={`pt-room-type-btn ${roomType === 'LIVE' ? 'active' : ''}`}
+                onClick={() => setRoomType('LIVE')}
               >
                 <Video className="pt-room-type-icon" />
                 <span className="pt-room-type-label">실시간</span>
               </button>
               <button
                 type="button"
-                className={`pt-room-type-btn ${roomType === 'scheduled' ? 'active' : ''}`}
-                onClick={() => setRoomType('scheduled')}
+                className={`pt-room-type-btn ${roomType === 'RESERVED' ? 'active' : ''}`}
+                onClick={() => setRoomType('RESERVED')}
               >
                 <Calendar className="pt-room-type-icon" />
                 <span className="pt-room-type-label">예약</span>
@@ -236,7 +241,7 @@ export default function PTCreateRoomModal({
           </div>
 
           {/* 예약 일시 (예약 방인 경우) */}
-          {roomType === 'scheduled' && (
+          {roomType === 'RESERVED' && (
             <div className="form-group">
               <label className="form-label">예약 일시 *</label>
               <div className="pt-datetime-group">
@@ -356,8 +361,11 @@ export default function PTCreateRoomModal({
           )}
 
           {/* 생성 버튼 */}
-          <button type="submit" className="form-submit-btn">
-            {roomType === 'instant' ? '방 만들고 시작하기' : '예약 방 만들기'}
+          <button type="submit" className="form-submit-btn" disabled={isLoading}>
+            {isLoading 
+              ? '생성 중...' 
+              : roomType === 'LIVE' ? '방 만들고 시작하기' : '예약 방 만들기'
+            }
           </button>
         </form>
       </div>

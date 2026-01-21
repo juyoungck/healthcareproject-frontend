@@ -5,14 +5,14 @@
  */
 
 import { User, Clock, Users, Lock } from 'lucide-react';
-import { PTRoom } from '../../../data/pts';
+import type { PTRoomListItem } from '../../../api/types/pt';
 
 /**
  * Props 타입 정의
  */
 interface PTRoomCardProps {
-  room: PTRoom;
-  onClick: (room: PTRoom) => void;
+  room: PTRoomListItem;
+  onClick: (room: PTRoomListItem) => void;
 }
 
 /**
@@ -38,7 +38,7 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
    * 상태 뱃지 렌더링
    */
   const renderStatusBadge = () => {
-    if (room.status === 'live') {
+    if (room.status === 'LIVE') {
       return (
         <span className="pt-status-badge live">
           <span className="pt-live-dot" />
@@ -47,7 +47,7 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
       );
     }
     
-    if (room.status === 'reserved') {
+    if (room.status === 'SCHEDULED') {
       return (
         <span className="pt-status-badge reserved">
           예약중
@@ -62,7 +62,7 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
    * 비공개 뱃지 렌더링
    */
   const renderPrivateBadge = () => {
-    if (room.visibility === 'private') {
+    if (room.isPrivate) {
       return (
         <span className="pt-status-badge private">
           <Lock size={10} />
@@ -87,9 +87,17 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
       {/* 트레이너 정보 */}
       <div className="pt-room-trainer">
         <div className="pt-trainer-avatar">
-          <User className="pt-trainer-avatar-icon" />
+          {room.trainer.profileImageUrl ? (
+            <img 
+              src={room.trainer.profileImageUrl} 
+              alt={room.trainer.nickname}
+              className="pt-trainer-avatar-img"
+            />
+          ) : (
+            <User className="pt-trainer-avatar-icon" />
+          )}
         </div>
-        <span className="pt-trainer-name">{room.trainerName} 트레이너</span>
+        <span className="pt-trainer-name">{room.trainer.nickname} 트레이너</span>
       </div>
 
       {/* 메타 정보 */}
@@ -98,7 +106,7 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
         <div className="pt-meta-item">
           <Clock className="pt-meta-icon" />
           <span>
-            {room.status === 'live' 
+            {room.status === 'LIVE' 
               ? '진행중' 
               : room.scheduledAt 
                 ? formatDateTime(room.scheduledAt)
@@ -111,7 +119,7 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
         <div className="pt-meta-item">
           <Users className="pt-meta-icon" />
           <span>
-            {room.currentParticipants}/{room.maxParticipants}명
+            {room.participants.current}/{room.participants.max ?? '∞'}명
           </span>
         </div>
       </div>

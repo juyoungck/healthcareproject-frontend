@@ -17,21 +17,23 @@ import {
   Copy,
   Check
 } from 'lucide-react';
-import { PTRoom } from '../../../data/pts';
+import type { PTRoomListItem, GetPTRoomDetailResponse } from '../../../api/types/pt';
 
 /**
  * Props 타입 정의
  */
 interface PTRoomDetailModalProps {
-  room: PTRoom;
+  room: PTRoomListItem;
+  roomDetail?: GetPTRoomDetailResponse | null;
   onClose: () => void;
-  onJoin: (room: PTRoom, entryCode?: string) => void;
-  onReserve: (room: PTRoom, entryCode?: string) => void;
-  onCancelReservation?: (room: PTRoom) => void;
+  onJoin: (room: PTRoomListItem, entryCode?: string) => void;
+  onReserve: (room: PTRoomListItem, entryCode?: string) => void;
+  onCancelReservation?: (room: PTRoomListItem) => void;
   isReserved?: boolean;
   isTrainer?: boolean;
   isMyRoom?: boolean;
-  onStartRoom?: (room: PTRoom) => void;
+  onStartRoom?: (room: PTRoomListItem) => void;
+  isLoading?: boolean;
 }
 
 /**
@@ -55,6 +57,7 @@ const formatDateTime = (dateString: string): string => {
  */
 export default function PTRoomDetailModal({ 
   room, 
+  roomDetail,
   onClose, 
   onJoin,
   onReserve,
@@ -62,7 +65,8 @@ export default function PTRoomDetailModal({
   isReserved = false,
   isTrainer = false,
   isMyRoom = false,
-  onStartRoom
+  onStartRoom,
+  isLoading = false
 }: PTRoomDetailModalProps) {
   /**
    * 상태 관리
@@ -119,17 +123,19 @@ export default function PTRoomDetailModal({
       setCodeError('입장 코드를 입력해주세요.');
       return;
     }
-    if (entryCode.toUpperCase() !== room.entryCode) {
-      setCodeError('입장 코드가 올바르지 않습니다.');
+    
+    /* 6자리 형식만 체크 - 실제 검증은 백엔드에서 */
+    if (entryCode.length !== 6) {
+      setCodeError('입장 코드는 6자리입니다.');
       return;
     }
 
     setShowCodePopup(false);
     
     if (codePopupType === 'join') {
-      onJoin(room, entryCode);
+      onJoin(room, entryCode.toUpperCase());
     } else {
-      onReserve(room, entryCode);
+      onReserve(room, entryCode.toUpperCase());
     }
   };
 
@@ -171,7 +177,7 @@ export default function PTRoomDetailModal({
    * 상태 뱃지 렌더링
    */
   const renderStatusBadge = () => {
-    if (room.status === 'live') {
+    if (room.status === 'LIVE') {
       return (
         <span className="pt-status-badge live">
           <span className="pt-live-dot" />
@@ -180,7 +186,7 @@ export default function PTRoomDetailModal({
       );
     }
     
-    if (room.status === 'reserved') {
+    if (room.status === 'SCHEDULED') {
       return (
         <span className="pt-status-badge reserved">
           예약중
@@ -194,13 +200,15 @@ export default function PTRoomDetailModal({
   /**
    * 인원 초과 여부
    */
-  const isFull = room.currentParticipants >= room.maxParticipants;
+  const isFull = room.participants.max 
+    ? room.participants.current >= room.participants.max 
+    : false;
 
   /**
    * 시작 가능 여부 (예약 시간 10분 전부터)
    */
   const canStartRoom = (): boolean => {
-    if (!room.scheduledAt || room.status !== 'reserved') return false;
+    if (!room.scheduledAt || room.status !== 'SCHEDULED') return false;
     
     const now = new Date();
     const scheduledTime = new Date(room.scheduledAt);
@@ -226,7 +234,7 @@ export default function PTRoomDetailModal({
           <div className="pt-detail-header">
             <h3 className="pt-detail-title">{room.title}</h3>
             <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-              {room.visibility === 'private' && (
+              {room.isPrivate && (
                 <span className="pt-status-badge private">
                   <Lock size={10} />
                   비공개
@@ -245,19 +253,19 @@ export default function PTRoomDetailModal({
             <div className="pt-detail-info-item">
               <User className="pt-detail-info-icon" />
               <span className="pt-detail-info-label">트레이너</span>
-              <span className="pt-detail-info-value">{room.trainerName}</span>
+              <span className="pt-detail-info-value">{room.trainer.nickname}</span>
             </div>
 
             {/* 일시 */}
             <div className="pt-detail-info-item">
-              {room.status === 'live' ? (
+              {room.status === 'LIVE' ? (
                 <Video className="pt-detail-info-icon" />
               ) : (
                 <Calendar className="pt-detail-info-icon" />
               )}
               <span className="pt-detail-info-label">일시</span>
               <span className="pt-detail-info-value">
-                {room.status === 'live' 
+                {room.status === 'LIVE' 
                   ? '지금 진행중'
                   : room.scheduledAt 
                     ? formatDateTime(room.scheduledAt)
@@ -271,7 +279,7 @@ export default function PTRoomDetailModal({
               <Users className="pt-detail-info-icon" />
               <span className="pt-detail-info-label">참여</span>
               <span className="pt-detail-info-value">
-                {room.currentParticipants}/{room.maxParticipants}명
+                {room.participants.current}/{room.participants.max ?? '∞'}명
                 {isFull && <span style={{ color: 'var(--color-error)', marginLeft: '8px' }}>(마감)</span>}
               </span>
             </div>
@@ -280,7 +288,7 @@ export default function PTRoomDetailModal({
           {/* 액션 버튼 */}
           <div className="pt-detail-actions">
             {/* 진행중인 방 - 참여하기 */}
-            {room.status === 'live' && (
+            {room.status === 'LIVE' && (
               <button 
                 className="pt-action-btn primary"
                 onClick={handleJoinClick}
@@ -292,7 +300,7 @@ export default function PTRoomDetailModal({
             )}
 
             {/* 예약중인 방 - 예약하기/취소 */}
-            {room.status === 'reserved' && (
+            {room.status === 'SCHEDULED' && (
               <>
                 {/* 트레이너 본인 방인 경우 */}
                 {isTrainer && isMyRoom ? (
@@ -303,14 +311,14 @@ export default function PTRoomDetailModal({
                       onClick={() => setShowParticipants(true)}
                     >
                       <UsersIcon size={20} />
-                      참여자 목록 ({room.participants?.length || 0}명)
+                      참여자 목록 ({roomDetail?.participants.count || 0}명)
                     </button>
                     
                     {/* 입장 코드 표시 (비공개 방) */}
-                    {room.visibility === 'private' && (
+                    {room.isPrivate && roomDetail?.entryCode && (
                       <div className="pt-entry-code-display">
                         <span className="pt-entry-code-label">입장 코드</span>
-                        <span className="pt-entry-code-value">{room.entryCode}</span>
+                        <span className="pt-entry-code-value">{roomDetail.entryCode}</span>
                       </div>
                     )}
                     
@@ -424,23 +432,23 @@ export default function PTRoomDetailModal({
                   </div>
                   
                   <div className="pt-participants-list">
-                    {room.participants && room.participants.length > 0 ? (
-                      room.participants.map((participant, index) => (
-                        <div key={participant.id} className="pt-participant-item">
+                    {roomDetail?.participants.users && roomDetail.participants.users.length > 0 ? (
+                      roomDetail.participants.users.map((participant, index) => (
+                        <div key={participant.handle} className="pt-participant-item">
                           <span className="pt-participant-number">{index + 1}</span>
                           <span className="pt-participant-name">{participant.nickname}</span>
-                          <span className="pt-participant-date">
-                            {new Date(participant.reservedAt).toLocaleDateString('ko-KR')}
-                          </span>
+                          {participant.role === 'TRAINER' && (
+                            <span className="pt-participant-role">트레이너</span>
+                          )}
                         </div>
                       ))
                     ) : (
-                      <p className="pt-participants-empty">아직 예약자가 없습니다</p>
+                      <p className="pt-participants-empty">아직 참여자가 없습니다</p>
                     )}
                   </div>
                   
                   <div className="pt-participants-footer">
-                    <span>총 {room.participants?.length || 0} / {room.maxParticipants - 1}명</span>
+                    <span>총 {roomDetail?.participants.count || 0} / {room.participants.max ? room.participants.max - 1 : '∞'}명</span>
                   </div>
                 </div>
               </div>
