@@ -304,6 +304,70 @@
 
 /**
  * ===========================================
+ * 부상 이력 정보
+ * ===========================================
+ */
+
+.mypage-injury-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+}
+
+.mypage-injury-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.mypage-injury-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mypage-injury-item:first-child {
+  padding-top: 0;
+}
+
+.mypage-injury-part {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+}
+
+.mypage-injury-severity {
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--border-radius-full);
+}
+
+/* 경미 */
+.mypage-injury-severity.mild {
+  color: var(--color-success);
+  background-color: var(--color-success-light);
+}
+
+/* 주의 요함 */
+.mypage-injury-severity.caution {
+  color: var(--color-warning);
+  background-color: var(--color-warning-light);
+}
+
+/* 심각 */
+.mypage-injury-severity.severe {
+  color: var(--color-error);
+  background-color: var(--color-error-light);
+}
+
+/**
+ * ===========================================
  * 알레르기 정보
  * ===========================================
  */
