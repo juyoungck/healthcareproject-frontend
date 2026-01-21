@@ -145,7 +145,7 @@ export default function VideoPTPage({
     /* 실시간 방인 경우 바로 화상통화로 이동 */
     if (data.roomType === 'instant') {
       const newRoom: PTRoom = {
-        id: `room-new-${Date.now()}`,
+        id: 'room-new-${Date.now()}',
         title: data.title,
         description: data.description,
         trainerId: 'current-user',
