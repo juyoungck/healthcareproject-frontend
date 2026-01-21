@@ -9,6 +9,7 @@
 
 import { useState } from 'react';
 import { X, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { login, saveTokens } from '../../../api/auth';
 
 /**
  * 컴포넌트 Props 타입 정의
@@ -45,22 +46,37 @@ export default function LoginModal({
     setError('');
     setIsLoading(true);
 
-    /**
-     * TODO: 실제 API 호출로 대체
-     * - ID/PW DB 대조
-     * - JWT 토큰 발급 및 저장
-     */
+    /* 입력값 검증 */
+    if (!email || !password) {
+      setError('이메일과 비밀번호를 입력해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      /* 임시 로그인 처리 (데모용) */
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      /* 로그인 API 호출 */
+      const tokens = await login({ email, password });
       
-      if (email && password) {
-        onLoginSuccess();
+      /* 토큰 저장 */
+      saveTokens(tokens);
+      
+      /* 로그인 성공 콜백 */
+      onLoginSuccess();
+    } catch (error: unknown) {
+      /* 에러 처리 */
+      if (error instanceof Error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+        
+        if (axiosError.response?.status === 401) {
+          setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+        } else if (axiosError.response?.data?.message) {
+          setError(axiosError.response.data.message);
+        } else {
+          setError('로그인에 실패했습니다. 다시 시도해주세요.');
+        }
       } else {
-        setError('이메일과 비밀번호를 입력해주세요.');
+        setError('로그인에 실패했습니다. 다시 시도해주세요.');
       }
-    } catch {
-      setError('로그인에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }

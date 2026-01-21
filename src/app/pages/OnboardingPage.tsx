@@ -25,6 +25,8 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
+import { saveOnboarding } from '../../api/me';
+import type { OnboardingRequest, OnboardingInjury } from '../../api/types/me';
 
 /**
  * Props 타입 정의
@@ -55,17 +57,17 @@ interface InjuryItem {
  * 온보딩 데이터 타입
  */
 export interface OnboardingData {
-  height: string;
-  weight: string;
+  heightCm: string;
+  weightKg: string;
   age: string;
   gender: 'male' | 'female' | null;
   allergies: string[];
-  exerciseLevel: 'beginner' | 'elementary' | 'intermediate' | 'advanced' | null;
-  exerciseGoal: 'strength' | 'weight_loss' | 'flexibility' | 'endurance' | null;
+  experienceLevel: 'beginner' | 'elementary' | 'intermediate' | 'advanced' | null;
+  goalType: 'strength' | 'weight_loss' | 'flexibility' | 'endurance' | null;
   hasInjury: boolean;
   injuries: InjuryItem[];
-  exerciseDays: number;
-  exerciseTime: '30min' | '1hour' | '1hour30' | '2hour' | null;
+  weeklyDays: number;
+  sessionMinutes: '30min' | '1hour' | '1hour30' | '2hour' | null;
 }
 
 
@@ -73,25 +75,38 @@ export interface OnboardingData {
  * 초기 데이터
  */
 const INITIAL_DATA: OnboardingData = {
-  height: '',
-  weight: '',
+  heightCm: '',
+  weightKg: '',
   age: '',
   gender: null,
   allergies: [],
-  exerciseLevel: null,
-  exerciseGoal: null,
+  experienceLevel: null,
+  goalType: null,
   hasInjury: false,
   injuries: [],
-  exerciseDays: 3,
-  exerciseTime: null
+  weeklyDays: 3,
+  sessionMinutes: null
 };
 
 /**
  * 알레르기 옵션 목록
  */
-const ALLERGY_OPTIONS = [
-  '밀', '메밀', '땅콩', '견과류', '갑각류', '연체류', '생선', 
-  '계란', '우유', '소고기', '돼지고기', '닭고기', '아황산류'
+const ALLERGY_OPTIONS: { label: string; value: string }[] = [
+  { label: '밀', value: 'WHEAT' },
+  { label: '메밀', value: 'BUCKWHEAT' },
+  { label: '땅콩', value: 'PEANUT' },
+  { label: '견과류', value: 'TREE_NUT' },
+  { label: '갑각류', value: 'CRUSTACEAN' },
+  { label: '연체류', value: 'MOLLUSK' },
+  { label: '생선', value: 'FISH' },
+  { label: '계란', value: 'EGG' },
+  { label: '우유', value: 'MILK' },
+  { label: '소고기', value: 'BEEF' },
+  { label: '돼지고기', value: 'PORK' },
+  { label: '닭고기', value: 'CHICKEN' },
+  { label: '대두', value: 'SOY' },
+  { label: '참깨', value: 'SESAME' },
+  { label: '아황산류', value: 'SULFITE' }
 ];
 
 /**
@@ -134,35 +149,8 @@ export default function OnboardingPage({
   useEffect(() => {
     if (initialData) {
       setData(initialData);
-    } else if (!isEditMode) {
-      /* 
-       * TODO: API 연동 - 기존 온보딩 데이터 조회
-       * 최초 로그인 시 기존에 입력한 데이터가 있으면 불러오기
-       */
-      fetchOnboardingData();
     }
-  }, [initialData, isEditMode]);
-
-  /**
-   * 온보딩 데이터 조회
-   * TODO: 실제 API 연동
-   */
-  const fetchOnboardingData = async () => {
-    setIsLoading(true);
-    try {
-      /* 
-       * TODO: API 호출
-       * const response = await api.get('/user/onboarding');
-       * if (response.data) {
-       *   setData(response.data);
-       * }
-       */
-    } catch (err) {
-      console.error('온보딩 데이터 조회 실패:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [initialData]);
 
   /**
    * 단계 목록
@@ -174,15 +162,15 @@ export default function OnboardingPage({
    * 신체정보 유효성 검사
    */
   const validateBodyStep = (): boolean => {
-    if (!data.height || !data.weight || !data.age) {
+    if (!data.heightCm || !data.weightKg || !data.age) {
       setError('키, 몸무게, 나이를 모두 입력해주세요.');
       return false;
     }
-    if (Number(data.height) <= 0 || Number(data.height) > 300) {
+    if (Number(data.heightCm) <= 0 || Number(data.heightCm) > 300) {
       setError('올바른 키를 입력해주세요.');
       return false;
     }
-    if (Number(data.weight) <= 0 || Number(data.weight) > 500) {
+    if (Number(data.weightKg) <= 0 || Number(data.weightKg) > 500) {
       setError('올바른 몸무게를 입력해주세요.');
       return false;
     }
@@ -201,11 +189,11 @@ export default function OnboardingPage({
    * 운동경력 유효성 검사
    */
   const validateExerciseStep = (): boolean => {
-    if (!data.exerciseLevel) {
+    if (!data.experienceLevel) {
       setError('운동 경력을 선택해주세요.');
       return false;
     }
-    if (!data.exerciseGoal) {
+    if (!data.goalType) {
       setError('운동 목표를 선택해주세요.');
       return false;
     }
@@ -241,7 +229,7 @@ export default function OnboardingPage({
    * 운동주기 유효성 검사
    */
   const validateScheduleStep = (): boolean => {
-    if (!data.exerciseTime) {
+    if (!data.sessionMinutes) {
       setError('1회 운동 시간을 선택해주세요.');
       return false;
     }
@@ -267,6 +255,49 @@ export default function OnboardingPage({
         return true;
       default:
         return true;
+    }
+  };
+
+  /**
+   * 데이터 변환 함수
+   */
+
+  const convertExperienceLevel = (level: string | null): 'BEGINNER' | 'ELEMENTARY' | 'INTERMEDIATE' | 'ADVANCED' => {
+    switch (level) {
+      case 'beginner': return 'BEGINNER';
+      case 'elementary': return 'ELEMENTARY';
+      case 'intermediate': return 'INTERMEDIATE';
+      case 'advanced': return 'ADVANCED';
+      default: return 'BEGINNER';
+    }
+  };
+
+  const convertGoalType = (goal: string | null): 'DIET' | 'BULK' | 'FLEXIBILITY' | 'MAINTAIN' => {
+    switch (goal) {
+      case 'weight_loss': return 'DIET';
+      case 'strength': return 'BULK';
+      case 'flexibility': return 'FLEXIBILITY';
+      case 'endurance': return 'MAINTAIN';
+      default: return 'MAINTAIN';
+    }
+  };
+
+  const convertSessionMinutes = (time: string | null): number => {
+    switch (time) {
+      case '30min': return 30;
+      case '1hour': return 60;
+      case '1hour30': return 90;
+      case '2hour': return 120;
+      default: return 60;
+    }
+  };
+
+  const convertInjuryLevel = (severity: string | null): 'MILD' | 'CAUTION' | 'SEVERE' => {
+    switch (severity) {
+      case 'mild': return 'MILD';
+      case 'caution': return 'CAUTION';
+      case 'severe': return 'SEVERE';
+      default: return 'MILD';
     }
   };
 
@@ -299,12 +330,12 @@ export default function OnboardingPage({
   /**
    * 알레르기 토글
    */
-  const toggleAllergy = (allergy: string) => {
+  const toggleAllergy = (allergyValue: string) => {
     setData(prev => ({
       ...prev,
-      allergies: prev.allergies.includes(allergy)
-        ? prev.allergies.filter(a => a !== allergy)
-        : [...prev.allergies, allergy]
+      allergies: prev.allergies.includes(allergyValue)
+        ? prev.allergies.filter(a => a !== allergyValue)
+        : [...prev.allergies, allergyValue]
     }));
   };
 
@@ -372,17 +403,34 @@ export default function OnboardingPage({
    */
   const handleComplete = async () => {
     setIsLoading(true);
+    setError('');
+
     try {
-      /* 
-       * TODO: API 연동 - 온보딩 데이터 저장
-       * await api.post('/user/onboarding', data);
-       */
-      console.log('Onboarding data:', data);
-      
-      // 임시 딜레이 (API 호출 시뮬레이션)
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // 모드에 따라 메시지 설정
+      /* 프론트 데이터를 API 요청 형식으로 변환 */
+      const requestData: OnboardingRequest = {
+        profile: {
+          heightCm: Number(data.heightCm),
+          weightKg: Number(data.weightKg),
+          age: Number(data.age),
+          gender: data.gender === 'male' ? 'MALE' : 'FEMALE',
+          experienceLevel: convertExperienceLevel(data.experienceLevel),
+          goalType: convertGoalType(data.goalType),
+          weeklyDays: data.weeklyDays,
+          sessionMinutes: convertSessionMinutes(data.sessionMinutes),
+        },
+        injuries: data.hasInjury 
+          ? data.injuries.map((injury): OnboardingInjury => ({
+              injuryPart: injury.part,
+              injuryLevel: convertInjuryLevel(injury.severity),
+            }))
+          : [],
+        allergies: data.allergies,
+      };
+
+      /* API 호출 */
+      await saveOnboarding(requestData);
+
+      /* 모드에 따라 메시지 설정 */
       if (isEditMode) {
         setCompleteMessage({
           title: '수정 완료',
@@ -397,8 +445,8 @@ export default function OnboardingPage({
 
       setShowCompleteModal(true);
     } catch (err) {
-      setError('저장에 실패했습니다. 다시 시도해주세요.');
       console.error('온보딩 저장 실패:', err);
+      setError('저장에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -451,8 +499,8 @@ export default function OnboardingPage({
                     type="number"
                     className="onboarding-input"
                     placeholder="0"
-                    value={data.height}
-                    onChange={(e) => setData({ ...data, height: e.target.value })}
+                    value={data.heightCm}
+                    onChange={(e) => setData({ ...data, heightCm: e.target.value })}
                   />
                   <span className="onboarding-input-unit">cm</span>
                 </div>
@@ -468,8 +516,8 @@ export default function OnboardingPage({
                     type="number"
                     className="onboarding-input"
                     placeholder="0"
-                    value={data.weight}
-                    onChange={(e) => setData({ ...data, weight: e.target.value })}
+                    value={data.weightKg}
+                    onChange={(e) => setData({ ...data, weightKg: e.target.value })}
                   />
                   <span className="onboarding-input-unit">kg</span>
                 </div>
@@ -524,11 +572,11 @@ export default function OnboardingPage({
               <div className="onboarding-chip-group">
                 {ALLERGY_OPTIONS.map((allergy) => (
                   <button
-                    key={allergy}
-                    className={`onboarding-chip ${data.allergies.includes(allergy) ? 'active' : ''}`}
-                    onClick={() => toggleAllergy(allergy)}
+                    key={allergy.value}
+                    className={`onboarding-chip ${data.allergies.includes(allergy.value) ? 'active' : ''}`}
+                    onClick={() => toggleAllergy(allergy.value)}
                   >
-                    {allergy}
+                    {allergy.label}
                   </button>
                 ))}
               </div>
@@ -559,8 +607,8 @@ export default function OnboardingPage({
                 ].map((option) => (
                   <button
                     key={option.value}
-                    className={`onboarding-option-btn ${data.exerciseLevel === option.value ? 'active' : ''}`}
-                    onClick={() => setData({ ...data, exerciseLevel: option.value as OnboardingData['exerciseLevel'] })}
+                    className={`onboarding-option-btn ${data.experienceLevel === option.value ? 'active' : ''}`}
+                    onClick={() => setData({ ...data, experienceLevel: option.value as OnboardingData['experienceLevel'] })}
                   >
                     <span className="onboarding-option-label">{option.label}</span>
                     <span className="onboarding-option-desc">{option.desc}</span>
@@ -584,8 +632,8 @@ export default function OnboardingPage({
                 ].map((option) => (
                   <button
                     key={option.value}
-                    className={`onboarding-option-btn ${data.exerciseGoal === option.value ? 'active' : ''}`}
-                    onClick={() => setData({ ...data, exerciseGoal: option.value as OnboardingData['exerciseGoal'] })}
+                    className={`onboarding-option-btn ${data.goalType === option.value ? 'active' : ''}`}
+                    onClick={() => setData({ ...data, goalType: option.value as OnboardingData['goalType'] })}
                   >
                     <span className="onboarding-option-label">{option.label}</span>
                     <span className="onboarding-option-desc">{option.desc}</span>
@@ -693,7 +741,7 @@ export default function OnboardingPage({
         return (
           <div className="onboarding-step-content">
             <p className="onboarding-step-desc">
-              일주일에 몇 번, 얼마나 운동하실 건가요?
+              원하는 운동 주기를 설정해주세요
             </p>
 
             {/* 주간 운동 일수 */}
@@ -707,12 +755,12 @@ export default function OnboardingPage({
                   type="range"
                   min="1"
                   max="7"
-                  value={data.exerciseDays}
-                  onChange={(e) => setData({ ...data, exerciseDays: parseInt(e.target.value) })}
+                  value={data.weeklyDays}
+                  onChange={(e) => setData({ ...data, weeklyDays: parseInt(e.target.value) })}
                   className="onboarding-slider"
                 />
                 <div className="onboarding-days-display">
-                  <span className="onboarding-days-value">{data.exerciseDays}</span>
+                  <span className="onboarding-days-value">{data.weeklyDays}</span>
                   <span className="onboarding-days-unit">일 / 주</span>
                 </div>
               </div>
@@ -733,8 +781,8 @@ export default function OnboardingPage({
                 ].map((option) => (
                   <button
                     key={option.value}
-                    className={`onboarding-time-btn ${data.exerciseTime === option.value ? 'active' : ''}`}
-                    onClick={() => setData({ ...data, exerciseTime: option.value as OnboardingData['exerciseTime'] })}
+                    className={`onboarding-time-btn ${data.sessionMinutes === option.value ? 'active' : ''}`}
+                    onClick={() => setData({ ...data, sessionMinutes: option.value as OnboardingData['sessionMinutes'] })}
                   >
                     {option.label}
                   </button>
@@ -759,11 +807,11 @@ export default function OnboardingPage({
                 <div className="onboarding-confirm-grid">
                   <div className="onboarding-confirm-item">
                     <span className="onboarding-confirm-label">키</span>
-                    <span className="onboarding-confirm-value">{data.height}cm</span>
+                    <span className="onboarding-confirm-value">{data.heightCm}cm</span>
                   </div>
                   <div className="onboarding-confirm-item">
                     <span className="onboarding-confirm-label">몸무게</span>
-                    <span className="onboarding-confirm-value">{data.weight}kg</span>
+                    <span className="onboarding-confirm-value">{data.weightKg}kg</span>
                   </div>
                   <div className="onboarding-confirm-item">
                     <span className="onboarding-confirm-label">나이</span>
@@ -780,9 +828,14 @@ export default function OnboardingPage({
                   <div className="onboarding-confirm-tags">
                     <span className="onboarding-confirm-label">알레르기</span>
                     <div className="onboarding-confirm-tag-list">
-                      {data.allergies.map((allergy) => (
-                        <span key={allergy} className="onboarding-confirm-tag">{allergy}</span>
-                      ))}
+                      {data.allergies.map((allergyValue) => {
+                        const allergyOption = ALLERGY_OPTIONS.find(opt => opt.value === allergyValue);
+                        return (
+                          <span key={allergyValue} className="onboarding-confirm-tag">
+                            {allergyOption?.label || allergyValue}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -794,29 +847,29 @@ export default function OnboardingPage({
                 <div className="onboarding-confirm-row">
                   <span className="onboarding-confirm-label">운동 경력</span>
                   <span className="onboarding-confirm-value">
-                    {data.exerciseLevel === 'beginner' && '입문'}
-                    {data.exerciseLevel === 'elementary' && '초급'}
-                    {data.exerciseLevel === 'intermediate' && '중급'}
-                    {data.exerciseLevel === 'advanced' && '고급'}
+                    {data.experienceLevel === 'beginner' && '입문'}
+                    {data.experienceLevel === 'elementary' && '초급'}
+                    {data.experienceLevel === 'intermediate' && '중급'}
+                    {data.experienceLevel === 'advanced' && '고급'}
                   </span>
                 </div>
                 <div className="onboarding-confirm-row">
                   <span className="onboarding-confirm-label">운동 목표</span>
                   <span className="onboarding-confirm-value">
-                    {data.exerciseGoal === 'strength' && '근력 향상'}
-                    {data.exerciseGoal === 'weight_loss' && '체중 감량'}
-                    {data.exerciseGoal === 'flexibility' && '유연성'}
-                    {data.exerciseGoal === 'endurance' && '체력 향상'}
+                    {data.goalType === 'strength' && '근력 향상'}
+                    {data.goalType === 'weight_loss' && '체중 감량'}
+                    {data.goalType === 'flexibility' && '유연성'}
+                    {data.goalType === 'endurance' && '체력 향상'}
                   </span>
                 </div>
                 <div className="onboarding-confirm-row">
                   <span className="onboarding-confirm-label">운동 주기</span>
                   <span className="onboarding-confirm-value">
-                    주 {data.exerciseDays}일, {
-                      data.exerciseTime === '30min' ? '30분 이내' :
-                      data.exerciseTime === '1hour' ? '1시간' :
-                      data.exerciseTime === '1hour30' ? '1시간 30분' :
-                      data.exerciseTime === '2hour' ? '2시간 이상' : '-'
+                    주 {data.weeklyDays}일, {
+                      data.sessionMinutes === '30min' ? '30분 이내' :
+                      data.sessionMinutes === '1hour' ? '1시간' :
+                      data.sessionMinutes === '1hour30' ? '1시간 30분' :
+                      data.sessionMinutes === '2hour' ? '2시간 이상' : '-'
                     }
                   </span>
                 </div>
@@ -859,7 +912,7 @@ export default function OnboardingPage({
   /**
    * 로딩 중일 때
    */
-  if (isLoading && !data.height) {
+  if (isLoading && !data.heightCm) {
     return (
       <div className="onboarding-page">
         <div className="onboarding-loading">
@@ -929,7 +982,7 @@ export default function OnboardingPage({
         )}
       </footer>
 
-      {/* 수정 완료 팝업 */}
+      {/* 완료 팝업 */}
       {showCompleteModal && (
         <div className="modal-overlay">
           <div className="onboarding-complete-modal">

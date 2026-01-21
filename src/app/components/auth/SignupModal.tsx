@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import { X, Mail, Lock, Eye, EyeOff, User, Phone, Check } from 'lucide-react';
+import { signup, checkEmail, saveTokens } from '../../../api/auth';
 
 /**
  * 컴포넌트 Props 타입 정의
@@ -53,6 +54,8 @@ export default function SignupModal({
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
+  const [isEmailChecked, setIsEmailChecked] = useState(false);
+  const [isEmailAvailable, setIsEmailAvailable] = useState(false);
 
   /**
    * 약관 동의 상태
@@ -82,6 +85,53 @@ export default function SignupModal({
   const handlePrivacyChange = (checked: boolean) => {
     setAgreePrivacy(checked);
     setAgreeAll(checked && agreeTerms);
+  };
+
+  /**
+   * 이메일 중복 체크 핸들러
+   */
+  const handleCheckEmail = async () => {
+    if (!email) {
+      setError('이메일을 입력해주세요.');
+      return;
+    }
+
+    /* 이메일 형식 검증 */
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('올바른 이메일 형식이 아닙니다.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const result = await checkEmail({ email });
+      
+      if (result.available) {
+        setIsEmailChecked(true);
+        setIsEmailAvailable(true);
+        setError('');
+      } else {
+        setIsEmailChecked(true);
+        setIsEmailAvailable(false);
+        setError('이미 사용 중인 이메일입니다.');
+      }
+    } catch {
+      setError('이메일 확인에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * 이메일 변경 시 중복 체크 상태 초기화
+   */
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    setIsEmailChecked(false);
+    setIsEmailAvailable(false);
   };
 
   /**
@@ -115,6 +165,11 @@ export default function SignupModal({
       return;
     }
 
+    if (!isEmailChecked || !isEmailAvailable) {
+      setError('이메일 중복 확인을 해주세요.');
+      return;
+    }
+
     if (password !== passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다.');
       return;
@@ -142,19 +197,33 @@ export default function SignupModal({
     setError('');
 
     try {
-      /* TODO: 실제 인증 코드 검증 API 호출 */
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      /* 
-       * TODO: 회원가입 API 호출 및 토큰 발급
-       * const response = await signupAPI({ email, password, nickname, phone });
-       * localStorage.setItem('accessToken', response.accessToken);
-       * localStorage.setItem('refreshToken', response.refreshToken);
-       */
+      /* TODO: 실제 인증 코드 검증 API 호출 (이메일 인증 서버 구현 필요) */
+      /* 현재는 임시로 통과 처리 */
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      /* 회원가입 API 호출 */
+      const tokens = await signup({
+        email,
+        password,
+        nickname,
+        phoneNumber: phone || undefined,
+      });
+
+      /* 토큰 저장 */
+      saveTokens(tokens);
       
       setStep('complete');
-    } catch {
-      setError('인증 코드가 올바르지 않습니다.');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          setError(axiosError.response.data.message);
+        } else {
+          setError('회원가입에 실패했습니다. 다시 시도해주세요.');
+        }
+      } else {
+        setError('회원가입에 실패했습니다. 다시 시도해주세요.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -203,9 +272,20 @@ export default function SignupModal({
                   className="form-input"
                   placeholder="이메일을 입력하세요"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => handleEmailChange(e.target.value)}
                 />
+                <button
+                  type="button"
+                  className="form-input-btn"
+                  onClick={handleCheckEmail}
+                  disabled={isLoading || !email}
+                >
+                  {isEmailChecked && isEmailAvailable ? '확인완료' : '중복확인'}
+                </button>
               </div>
+              {isEmailChecked && isEmailAvailable && (
+                <p className="form-success">사용 가능한 이메일입니다.</p>
+              )}
             </div>
 
             {/* 비밀번호 */}
