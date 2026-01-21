@@ -15,16 +15,25 @@ export interface ErrorInfo {
 /**
  * ===========================================
  * 에러 코드 정의
+ * - 백엔드 ErrorCode.java와 동기화
  * ===========================================
  */
 
 export const ERROR_CODES = {
-  /* Common */
+  /**
+   * ===========================================
+   * Common (COMMON-xxx)
+   * ===========================================
+   */
   INVALID_REQUEST: { code: 'COMMON-001', message: '요청값이 올바르지 않습니다.' },
   NOT_FOUND: { code: 'COMMON-404', message: '대상을 찾을 수 없습니다.' },
   INTERNAL_ERROR: { code: 'COMMON-500', message: '서버 오류가 발생했습니다.' },
 
-  /* Auth/Security */
+  /**
+   * ===========================================
+   * Auth/Security (AUTH-xxx)
+   * ===========================================
+   */
   UNAUTHORIZED: { code: 'AUTH-001', message: '인증이 필요합니다.' },
   FORBIDDEN: { code: 'AUTH-002', message: '권한이 없습니다.' },
   INVALID_TOKEN: { code: 'AUTH-003', message: '토큰이 유효하지 않습니다.' },
@@ -35,25 +44,66 @@ export const ERROR_CODES = {
   ALREADY_WITHDRAWN: { code: 'AUTH-008', message: '이미 탈퇴된 회원입니다.' },
   INVALID_PASSWORD: { code: 'AUTH-009', message: '비밀번호가 일치하지 않습니다.' },
 
-  /* User */
+  /**
+   * ===========================================
+   * User (USER-xxx)
+   * ===========================================
+   */
   USER_NOT_FOUND: { code: 'USER-001', message: '사용자를 찾을 수 없습니다.' },
   INVALID_INJURY_LEVEL: { code: 'USER-002', message: '부상 레벨이 존재하지 않습니다.' },
   INVALID_ALLERGY_TYPE: { code: 'USER-003', message: '알러지 타입이 존재하지 않습니다.' },
 
-  /* Community */
+  /**
+   * ===========================================
+   * Community (COMMUNITY-xxx, C-xxx, G-xxx)
+   * ===========================================
+   */
   POST_NOT_FOUND: { code: 'COMMUNITY-001', message: '게시글을 찾을 수 없습니다.' },
   NOT_POST_AUTHOR: { code: 'COMMUNITY-002', message: '게시글 수정/삭제 권한이 없습니다.' },
   COMMENT_NOT_FOUND: { code: 'C001', message: '댓글을 찾을 수 없습니다.' },
   NOT_COMMENT_AUTHOR: { code: 'C002', message: '댓글 작성자만 수정/삭제할 수 있습니다.' },
+  INVALID_INPUT_VALUE: { code: 'G001', message: '잘못된 입력값입니다.' },
 
-  /* Exercise */
+  /**
+   * ===========================================
+   * Exercise (EXERCISE-xxx)
+   * ===========================================
+   */
   EXERCISE_NOT_FOUND: { code: 'EXERCISE-001', message: '운동을 찾을 수 없습니다.' },
 
-  /* Food */
+  /**
+   * ===========================================
+   * Workout (WORKOUT-xxx)
+   * ===========================================
+   */
+  WORKOUT_DAY_NOT_FOUND: { code: 'WORKOUT-001', message: '해당 날짜의 운동 계획이 없습니다.' },
+  WORKOUT_ITEM_NOT_FOUND: { code: 'WORKOUT-002', message: '운동 항목을 찾을 수 없습니다.' },
+
+  /**
+   * ===========================================
+   * Food (FOOD-xxx)
+   * ===========================================
+   */
   FOOD_NOT_FOUND: { code: 'FOOD-001', message: '음식을 찾을 수 없습니다.' },
 
-  /* PT */
-  INVALID_ENTRY_CODE: { code: 'INVALID_ENTRY_CODE', message: '입장 코드가 일치하지 않습니다.' },
+  /**
+   * ===========================================
+   * Diet (DIET-xxx)
+   * ===========================================
+   */
+  DIET_DAY_NOT_FOUND: { code: 'DIET-001', message: '해당 날짜의 식단 기록이 없습니다.' },
+  DIET_MEAL_ITEM_NOT_FOUND: { code: 'DIET-002', message: '식단 항목을 찾을 수 없습니다.' },
+
+  /**
+   * ===========================================
+   * PT / Reservation (R-xxx)
+   * ===========================================
+   */
+  RESERVATION_NOT_ALLOWED: { code: 'R001', message: '예약이 불가능한 상태입니다.' },
+  ROOM_FULL: { code: 'R002', message: '방의 정원이 초과되었습니다.' },
+  ALREADY_RESERVED: { code: 'R003', message: '이미 예약된 상태입니다.' },
+  INVALID_ENTRY_CODE: { code: 'R004', message: '참여 코드가 일치하지 않습니다.' },
+  CANCEL_NOT_ALLOWED: { code: 'R005', message: '진행 중이거나 종료된 방의 예약은 취소할 수 없습니다.' },
   INVALID_STATUS_TRANSITION: { code: 'INVALID_STATUS_TRANSITION', message: '유효하지 않은 상태 변경 요청입니다.' },
 } as const;
 
@@ -83,3 +133,8 @@ export const getErrorMessage = (code: string | undefined, fallback = '오류가 
 export const isErrorCode = (code: string | undefined, errorKey: keyof typeof ERROR_CODES): boolean => {
   return code === ERROR_CODES[errorKey].code;
 };
+
+/**
+ * 에러 코드 키 타입
+ */
+export type ErrorCodeKey = keyof typeof ERROR_CODES;
