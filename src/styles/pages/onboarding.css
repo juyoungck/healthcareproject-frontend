@@ -49,8 +49,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
   background: none;
   border: none;
   color: var(--color-gray-600);
@@ -67,7 +67,7 @@
  * 진행률 바
  */
 .onboarding-progress {
-  height: 4px;
+  height: var(--size-2xs);
   background-color: var(--color-gray-100);
 }
 
@@ -85,7 +85,7 @@
 
 .onboarding-main {
   flex: 1;
-  padding: calc(var(--header-height) + var(--spacing-xl)) var(--spacing-lg) 100px;
+  padding: calc(var(--header-height) + var(--spacing-xl)) var(--element-size-7xl);
 }
 
 .onboarding-step-content {
@@ -132,7 +132,7 @@
   display: flex;
   align-items: center;
   background-color: var(--color-gray-50);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   overflow: hidden;
 }
@@ -143,7 +143,7 @@
 
 .onboarding-input {
   flex: 1;
-  height: 52px;
+  height: var(--element-size-2xl);
   padding: 0 var(--spacing-lg);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
@@ -197,12 +197,12 @@
 }
 
 .onboarding-toggle-btn {
-  height: 48px;
+  height: var(--element-size-xl);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--color-gray-600);
   background-color: var(--color-gray-50);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -232,7 +232,7 @@
   font-weight: var(--font-weight-medium);
   color: var(--color-gray-600);
   background-color: var(--color-gray-50);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-full);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -263,7 +263,7 @@
   gap: var(--spacing-xs);
   padding: var(--spacing-lg);
   background-color: var(--color-gray-50);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -307,7 +307,7 @@
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
   background-color: var(--color-gray-50);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
 }
 
@@ -327,8 +327,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
   background: none;
   border: none;
   color: var(--color-gray-400);
@@ -350,12 +350,12 @@
 }
 
 .onboarding-severity-btn {
-  height: 40px;
+  height: var(--element-size-base);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-gray-600);
   background-color: var(--color-white);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -380,13 +380,13 @@
   justify-content: center;
   gap: var(--spacing-xs);
   width: 100%;
-  height: 48px;
+  height: var(--element-size-xl);
   margin-top: var(--spacing-sm);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-primary);
   background-color: var(--color-white);
-  border: 1px dashed var(--color-primary);
+  border: var(--border-width-sm) dashed var(--color-primary);
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -404,12 +404,12 @@
 
 .onboarding-text-input {
   width: 100%;
-  height: 48px;
+  height: var(--element-size-xl);
   padding: 0 var(--spacing-md);
   font-size: var(--font-size-base);
   color: var(--color-gray-900);
   background-color: var(--color-gray-50);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   outline: none;
 }
@@ -432,7 +432,7 @@
 
 .onboarding-slider {
   width: 100%;
-  height: 8px;
+  height: var(--size-md);
   background-color: var(--color-gray-200);
   border-radius: var(--border-radius-full);
   appearance: none;
@@ -440,10 +440,10 @@
 }
 
 .onboarding-slider::-webkit-slider-thumb {
-  width: 28px;
-  height: 28px;
+  width: var(--icon-size-xl);
+  height: var(--icon-size-xl);
   background-color: var(--color-primary);
-  border: 4px solid var(--color-white);
+  border: var(--border-width-xl) solid var(--color-white);
   border-radius: var(--border-radius-full);
   box-shadow: var(--shadow-md);
   appearance: none;
@@ -475,12 +475,12 @@
  */
 
 .onboarding-time-btn {
-  height: 48px;
+  height: var(--element-size-xl);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-gray-600);
   background-color: var(--color-gray-50);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -516,7 +516,7 @@
   color: var(--color-gray-900);
   margin-bottom: var(--spacing-md);
   padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid var(--color-gray-200);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-200);
 }
 
 .onboarding-confirm-grid {
@@ -540,7 +540,7 @@
 }
 
 .onboarding-confirm-row:not(:last-child) {
-  border-bottom: 1px solid var(--color-gray-200);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-200);
 }
 
 .onboarding-confirm-label {
@@ -559,7 +559,7 @@
   flex-direction: column;
   gap: var(--spacing-sm);
   padding-top: var(--spacing-md);
-  border-top: 1px solid var(--color-gray-200);
+  border-top: var(--border-width-sm) solid var(--color-gray-200);
 }
 
 .onboarding-confirm-tag-list {
@@ -588,7 +588,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-sm) 0;
-  border-bottom: 1px solid var(--color-gray-200);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-200);
 }
 
 .onboarding-confirm-injury:last-child {
@@ -638,7 +638,7 @@
   padding: var(--spacing-md) var(--spacing-lg);
   padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
   background-color: var(--color-white);
-  border-top: 1px solid var(--color-gray-100);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
 }
 
 .onboarding-next-btn,
@@ -648,7 +648,7 @@
   justify-content: center;
   gap: var(--spacing-sm);
   width: 100%;
-  height: 52px;
+  height: var(--element-size-2xl);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   color: var(--color-white);
@@ -678,7 +678,7 @@
   font-weight: var(--font-weight-medium);
   color: #DC2626;
   background-color: #FEF2F2;
-  border: 1px solid #FECACA;
+  border: var(--border-width-sm) solid #FECACA;
   border-radius: var(--border-radius-md);
   text-align: center;
 }
@@ -710,7 +710,7 @@
   align-items: center;
   gap: var(--spacing-md);
   width: calc(100% - var(--spacing-xl) * 2);
-  max-width: 320px;
+  max-width: var(--container-md);
   padding: var(--spacing-xl);
   background-color: var(--color-white);
   border-radius: var(--border-radius-lg);
@@ -721,8 +721,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: var(--element-size-4xl);
+  height: var(--element-size-4xl);
   background-color: var(--color-primary-light);
   border-radius: var(--border-radius-full);
   color: var(--color-primary);
@@ -742,7 +742,7 @@
 
 .onboarding-complete-modal-btn {
   width: 100%;
-  height: 48px;
+  height: var(--element-size-xl);
   margin-top: var(--spacing-sm);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);

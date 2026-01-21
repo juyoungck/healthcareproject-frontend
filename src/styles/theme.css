@@ -10,7 +10,7 @@
   /**
    * Tailwind 호환 테마 변수
    */
-  --font-size: 16px;
+  --font-size: var(--font-size-base);
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;

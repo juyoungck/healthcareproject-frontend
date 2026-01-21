@@ -41,8 +41,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
   color: var(--color-gray-700);
   background-color: var(--color-gray-100);
   border: none;
@@ -73,16 +73,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 200px;
+  height: var(--element-size-12xl);
   background-color: var(--color-white);
-  border-bottom: 1px solid var(--color-gray-200);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-200);
 }
 
 /**
  * 썸네일 이모지 (임시)
  */
 .exercise-detail-emoji {
-  font-size: 80px;
+  font-size: var(--element-size-6xl);
 }
 
 /**
@@ -97,7 +97,7 @@
 .exercise-detail-title-section {
   padding: var(--spacing-lg);
   background-color: var(--color-white);
-  border-bottom: 1px solid var(--color-gray-200);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-200);
 }
 
 /**
@@ -183,8 +183,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
   flex-shrink: 0;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
@@ -275,8 +275,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
+  width: var(--element-size-6xl);
+  height: var(--element-size-6xl);
   background-color: rgba(0, 0, 0, 0.6);
   border-radius: var(--border-radius-full);
   transition: all var(--transition-fast);
@@ -317,7 +317,7 @@
   display: flex;
   flex-direction: column;
   background-color: var(--color-white);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   overflow: hidden;
   cursor: pointer;
@@ -340,7 +340,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 80px;
+  height: var(--element-size-6xl);
   background-color: var(--color-gray-50);
 }
 
@@ -348,7 +348,7 @@
  * 대체 운동 이모지
  */
 .exercise-alternative-emoji {
-  font-size: 32px;
+  font-size: var(--icon-size-2xl);
 }
 
 /**

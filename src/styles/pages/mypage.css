@@ -71,8 +71,8 @@
 }
 
 .mypage-set-btn {
-  width: 32px;
-  height: 32px;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
   background-color: var(--color-gray-200);
   border-radius: var(--border-radius-full);
   display: flex;
@@ -101,8 +101,8 @@
 
 .mypage-profile-image-wrapper {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: var(--element-size-7xl);
+  height: var(--element-size-7xl);
   border-radius: var(--border-radius-full);
   background-color: var(--color-gray-100);
   display: flex;
@@ -125,14 +125,14 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 32px;
-  height: 32px;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: var(--color-primary);
   color: var(--color-white);
-  border: 3px solid var(--color-white);
+  border: var(--border-width-lg) solid var(--color-white);
   border-radius: var(--border-radius-full);
   cursor: pointer;
 }
@@ -237,7 +237,7 @@
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-sm) 0;
-  border-bottom: 1px solid var(--color-gray-100);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
 }
 
 .mypage-info-item:last-child {
@@ -299,7 +299,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-normal);
   color: var(--color-gray-500);
-  margin-left: 2px;
+  margin-left: var(--spacing-2xs);
 }
 
 /**
@@ -311,7 +311,7 @@
 .mypage-allergy-section {
   margin-top: var(--spacing-lg);
   padding-top: var(--spacing-lg);
-  border-top: 1px solid var(--color-gray-100);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
 }
 
 .mypage-allergy-label {
@@ -363,8 +363,8 @@
 }
 
 .mypage-social-icon {
-  width: 40px;
-  height: 40px;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -400,7 +400,7 @@
   font-weight: var(--font-weight-medium);
   color: var(--color-primary);
   background-color: var(--color-white);
-  border: 1px solid var(--color-primary);
+  border: var(--border-width-sm) solid var(--color-primary);
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -433,7 +433,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  height: 52px;
+  height: var(--element-size-2xl);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   border: none;
@@ -454,7 +454,7 @@
 .mypage-account-btn.withdraw {
   background-color: var(--color-white);
   color: var(--color-error);
-  border: 1px solid var(--color-error);
+  border: var(--border-width-sm) solid var(--color-error);
 }
 
 .mypage-account-btn.withdraw:hover {
@@ -490,7 +490,7 @@
 
 .mypage-withdraw-modal {
   width: calc(100% - var(--spacing-xl) * 2);
-  max-width: 320px;
+  max-width: var(--container-md);
   background-color: var(--color-white);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-xl);
@@ -501,8 +501,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 72px;
-  height: 72px;
+  width: var(--element-size-5xl);
+  height: var(--element-size-5xl);
   margin: 0 auto var(--spacing-lg);
   background-color: rgba(220, 38, 38, 0.1);
   color: var(--color-error);
@@ -531,7 +531,7 @@
 
 .mypage-withdraw-btn {
   width: 100%;
-  height: 48px;
+  height: var(--element-size-xl);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   border-radius: var(--border-radius-md);
@@ -624,7 +624,7 @@
 .mypage-trainer-btn.release {
   background-color: var(--color-white);
   color: var(--color-error);
-  border: 1px solid var(--color-error);
+  border: var(--border-width-sm) solid var(--color-error);
 }
 
 .mypage-trainer-btn.release:hover {
@@ -637,7 +637,7 @@
 .mypage-trainer-btn.rejected {
   background-color: var(--color-white);
   color: var(--color-pt);
-  border: 1px solid var(--color-pt);
+  border: var(--border-width-sm) solid var(--color-pt);
 }
 
 .mypage-trainer-btn.rejected:hover {
@@ -691,7 +691,7 @@
   font-weight: var(--font-weight-medium);
   color: var(--color-primary);
   background-color: var(--color-white);
-  border: 1px dashed var(--color-primary);
+  border: var(--border-width-sm) dashed var(--color-primary);
   border-radius: var(--border-radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -748,8 +748,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: var(--icon-size-xl);
+  height: var(--icon-size-xl);
   color: var(--color-gray-400);
   background: none;
   border: none;
@@ -771,7 +771,7 @@
   font-family: inherit;
   color: var(--color-gray-900);
   background-color: var(--color-white);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   resize: vertical;
   transition: border-color var(--transition-fast);
@@ -790,7 +790,7 @@
   display: flex;
   gap: var(--spacing-sm);
   padding: var(--spacing-lg);
-  border-top: 1px solid var(--color-gray-100);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
 }
 
 .trainer-apply-footer .btn-secondary,

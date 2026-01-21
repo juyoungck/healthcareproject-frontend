@@ -48,8 +48,8 @@
  * 네비게이션 버튼 아이콘
  */
 .nav-button-icon {
-  width: 24px;
-  height: 24px;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
 }
 
 /**
@@ -57,7 +57,7 @@
  */
 .nav-button-label {
   font-size: var(--font-size-xs);
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
   font-weight: var(--font-weight-medium);
 }
 

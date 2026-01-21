@@ -42,7 +42,7 @@
 
 .modal-container {
   width: 100%;
-  max-width: 400px;
+  max-width: var(--container-xl);
   max-height: 90vh;
   overflow-y: auto;
   background-color: var(--color-white);
@@ -53,13 +53,13 @@
 }
 
 .modal-container-large {
-  max-width: 440px;
+  max-width: var(--container-xxl);
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(var(--spacing-lg-plus));
   }
   to {
     opacity: 1;
@@ -78,7 +78,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-lg) var(--spacing-xl);
-  border-bottom: 1px solid var(--color-gray-100);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
 }
 
 .modal-title {
@@ -91,8 +91,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
   color: var(--color-gray-400);
   border-radius: var(--border-radius-sm);
   transition: all var(--transition-fast);
@@ -125,7 +125,7 @@
   justify-content: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-lg) var(--spacing-xl);
-  border-top: 1px solid var(--color-gray-100);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
 }
 
 .modal-footer-text {
@@ -164,7 +164,7 @@
 .social-divider::after {
   content: '';
   flex: 1;
-  height: 1px;
+  height: var(--border-width-sm);
   background-color: var(--color-gray-200);
 }
 
@@ -186,7 +186,7 @@
   justify-content: center;
   gap: var(--spacing-sm);
   width: 100%;
-  height: 44px;
+  height: var(--element-size-lg);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   border-radius: var(--border-radius-md);
@@ -217,7 +217,7 @@
 .social-btn-google {
   background-color: var(--color-google);
   color: var(--color-google-text);
-  border: 1px solid var(--color-google-border);
+  border: var(--border-width-sm) solid var(--color-google-border);
 }
 
 .social-btn-google:hover {
@@ -254,7 +254,7 @@
   gap: var(--spacing-sm);
   padding: var(--spacing-xl);
   background-color: var(--color-white);
-  border: 2px solid var(--color-gray-200);
+  border: var(--border-width-md) solid var(--color-gray-200);
   border-radius: var(--border-radius-lg);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -316,8 +316,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
+  width: var(--element-size-6xl);
+  height: var(--element-size-6xl);
   margin-bottom: var(--spacing-xl);
   background-color: var(--color-success);
   color: var(--color-white);

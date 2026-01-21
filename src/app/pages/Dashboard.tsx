@@ -15,7 +15,8 @@ import {
   Calendar,
   ChevronRight,
   Clock,
-  Check
+  Check,
+  ExternalLink
 } from 'lucide-react';
 import ExercisePage from './ExercisePage';
 import DietPage from './DietPage';
@@ -314,9 +315,9 @@ export default function Dashboard({
             <div className="today-exercise-card">
               <div className="today-exercise-header" onClick={() => setActiveTab('exerciseView')}>
                 <span className="today-exercise-label">오늘의 운동</span>
-                <ChevronRight size={16} className="today-exercise-arrow" />
+                <ExternalLink size={16} className="today-exercise-arrow" />
               </div>
-              <div className="today-exercise-category">
+              <div className="today-exercise-category" onClick={() => setActiveTab('exerciseView')} style={{ cursor: 'pointer' }}>
                 <Dumbbell size={20} className="today-exercise-category-icon" />
                 <div className="today-exercise-category-info">
                   <p className="today-exercise-category-title">{todayExercise.category}</p>
@@ -334,10 +335,7 @@ export default function Dashboard({
                     <li
                       key={exercise.id}
                       className={`today-exercise-item ${isCompleted ? 'completed' : ''}`}
-                      onClick={() => {
-                        setSelectedExerciseId(exercise.id);
-                        setActiveTab('exercise');
-                      }}
+                      onClick={() => handleToggleExercise(exerciseKey)}
                     >
                       <button
                         className="today-exercise-item-check"
@@ -358,7 +356,15 @@ export default function Dashboard({
                           {exercise.sets}세트 × {exercise.reps}회 • 휴식 {exercise.restSeconds}초
                         </p>
                       </div>
-                      <ChevronRight size={16} className="today-exercise-item-arrow" />
+                      <ExternalLink
+                        size={16}
+                        className="today-exercise-item-arrow"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedExerciseId(exercise.id);
+                          setActiveTab('exercise');
+                        }}
+                      />
                     </li>
                   );
                 })}
@@ -368,7 +374,7 @@ export default function Dashboard({
             <div className="today-exercise-card rest-day" onClick={() => setActiveTab('exerciseView')}>
               <div className="today-exercise-header">
                 <span className="today-exercise-label">오늘의 운동</span>
-                <ChevronRight size={16} className="today-exercise-arrow" />
+                <ExternalLink size={16} className="today-exercise-arrow" />
               </div>
               <div className="today-exercise-rest">
                 <Dumbbell size={32} className="today-exercise-rest-icon" />
@@ -395,9 +401,9 @@ export default function Dashboard({
                 setActiveTab('dietView');
               }}>
                 <span className="today-diet-label">오늘의 식단</span>
-                <ChevronRight size={16} className="today-diet-arrow" />
+                <ExternalLink size={16} className="today-diet-arrow" />
               </div>
-              <div className="today-diet-category">
+              <div className="today-diet-category" onClick={() => { setSelectedMealType('breakfast'); setActiveTab('dietView'); }} style={{ cursor: 'pointer' }}>
                 <Utensils size={20} className="today-diet-category-icon" />
                 <div className="today-diet-category-info">
                   <p className="today-diet-category-title">{todayDiet.totalCalories}kcal</p>
@@ -426,17 +432,21 @@ export default function Dashboard({
                       key={group.type}
                       className={`today-diet-item ${allCompleted ? 'completed' : ''}`}
                       onClick={() => {
-                        setSelectedMealType(group.type as MealType);
-                        setActiveTab('dietView');
+                        const newCompletedState = !allCompleted;
+                        setCompletedMeals((prev) => {
+                          const updated = { ...prev };
+                          group.meals.forEach((meal) => {
+                            const mealKey = `${getTodayDayName()}-${meal.id}`;
+                            updated[mealKey] = newCompletedState;
+                          });
+                          return updated;
+                        });
                       }}
                     >
                       <button
                         className="today-diet-item-check"
                         onClick={(e) => {
                           e.stopPropagation();
-                          /**
-                           * 그룹 전체 토글
-                           */
                           const newCompletedState = !allCompleted;
                           setCompletedMeals((prev) => {
                             const updated = { ...prev };
@@ -460,7 +470,15 @@ export default function Dashboard({
                           {group.typeLabel} • {group.totalCalories}kcal
                         </p>
                       </div>
-                      <ChevronRight size={16} className="today-diet-item-arrow" />
+                      <ExternalLink
+                        size={16}
+                        className="today-diet-item-arrow"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedMealType(group.type as MealType);
+                          setActiveTab('dietView');
+                        }}
+                      />
                     </li>
                   );
                 })}
@@ -473,7 +491,7 @@ export default function Dashboard({
             }}>
               <div className="today-diet-header">
                 <span className="today-diet-label">오늘의 식단</span>
-                <ChevronRight size={16} className="today-diet-arrow" />
+                <ExternalLink size={16} className="today-diet-arrow" />
               </div>
               <div className="today-diet-rest">
                 <Utensils size={32} className="today-diet-rest-icon" />

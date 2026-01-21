@@ -8,7 +8,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Flame, Check, ChevronRight, Utensils, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Check, ExternalLink, Utensils, RefreshCw, ArrowLeft, Flame } from 'lucide-react';
 import { DietPlan } from './PlanDietResult';
 import PlanDietRegenerateModal from './PlanDietRegenerateModal';
 import { MealType, MEAL_TYPE_LABELS } from '../../../data/plan';
@@ -39,9 +39,9 @@ const MEAL_TABS: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack1', 'snack2
 /**
  * PlanDietViewPage 컴포넌트
  */
-export default function PlanDietViewPage({ 
-  onBack, 
-  planData, 
+export default function PlanDietViewPage({
+  onBack,
+  planData,
   completedMeals,
   onToggleMeal,
   onFoodClick,
@@ -79,18 +79,18 @@ export default function PlanDietViewPage({
   const weekDates = useMemo(() => {
     const startDayOfWeek = startDate.getDay();
     const dates: { [key: string]: number } = {};
-    
+
     for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
       let daysToAdd = dayIndex - startDayOfWeek;
       if (daysToAdd < 0) {
         daysToAdd += 7;
       }
-      
+
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + daysToAdd);
       dates[String(dayIndex)] = date.getDate();
     }
-    
+
     return dates;
   }, [startDate]);
 
@@ -100,15 +100,15 @@ export default function PlanDietViewPage({
   const todayDayIndex = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const start = new Date(startDate);
     start.setHours(0, 0, 0, 0);
-    
+
     const diffTime = today.getTime() - start.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 0 || diffDays >= 7) return -1;
-    
+
     return today.getDay();
   }, [startDate]);
 
@@ -154,12 +154,12 @@ export default function PlanDietViewPage({
   const getCompletionRate = (dayName: string) => {
     const dayMeal = planData.dailyMeals.find(meal => meal.dayName === dayName);
     if (!dayMeal) return 0;
-    
+
     const total = dayMeal.meals.length;
     const completed = dayMeal.meals.filter(
       m => completedMeals[`${dayName}-${m.id}`]
     ).length;
-    
+
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   };
 
@@ -176,14 +176,14 @@ export default function PlanDietViewPage({
    */
   const getMealTypeCompletionRate = (mealType: MealType) => {
     if (!selectedDayMeal) return 0;
-    
+
     const typeMeals = selectedDayMeal.meals.filter(m => m.type === mealType);
     if (typeMeals.length === 0) return 0;
-    
+
     const completed = typeMeals.filter(
       m => completedMeals[`${selectedDay}-${m.id}`]
     ).length;
-    
+
     return Math.round((completed / typeMeals.length) * 100);
   };
 
@@ -204,7 +204,7 @@ export default function PlanDietViewPage({
           const isSelected = selectedDay === day;
           const isToday = String(todayDayIndex) === day;
           const completionRate = getCompletionRate(day);
-          
+
           return (
             <button
               key={day}
@@ -246,14 +246,14 @@ export default function PlanDietViewPage({
               {filteredMeals.map((meal) => {
                 const mealKey = `${selectedDay}-${meal.id}`;
                 const isCompleted = completedMeals[mealKey];
-                
+
                 return (
-                  <li 
-                    key={meal.id} 
+                  <li
+                    key={meal.id}
                     className={`diet-view-item ${isCompleted ? 'completed' : ''}`}
-                    onClick={() => onFoodClick?.(meal.id)}
+                    onClick={() => onToggleMeal(mealKey)}
                   >
-                    <div 
+                    <div
                       className="diet-view-item-check"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -268,7 +268,14 @@ export default function PlanDietViewPage({
                         {meal.calories}kcal • 탄 {meal.nutrients.carb}g 단 {meal.nutrients.protein}g 지 {meal.nutrients.fat}g
                       </p>
                     </div>
-                    <ChevronRight size={20} className="diet-view-item-arrow" />
+                    <ExternalLink
+                      size={20}
+                      className="diet-view-item-arrow"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onFoodClick?.(meal.id);
+                      }}
+                    />
                   </li>
                 );
               })}
@@ -291,7 +298,7 @@ export default function PlanDietViewPage({
             const isSelected = selectedMealType === mealType;
             const hasMeals = hasMealsForType(mealType);
             const completionRate = getMealTypeCompletionRate(mealType);
-            
+
             return (
               <button
                 key={mealType}
@@ -310,7 +317,7 @@ export default function PlanDietViewPage({
         </div>
 
         {/* 재생성 버튼 */}
-        <button 
+        <button
           className="diet-view-regenerate-btn"
           onClick={() => setShowRegenerateModal(true)}
         >

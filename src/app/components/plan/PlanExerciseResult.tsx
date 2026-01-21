@@ -163,17 +163,9 @@ export default function ExercisePlanResult({
                 className="exercise-result-day-header"
                 onClick={() => toggleDay(dailyPlan.dayName)}
               >
-                <div className="exercise-result-day-info">
-                  <h4 className="exercise-result-day-name">
-                    {DAY_LABELS[dailyPlan.dayName] || dailyPlan.dayName}
-                  </h4>
-                  {expandedDays.includes(dailyPlan.dayName) && (
-                    <span className="exercise-result-day-category">
-                      <Dumbbell size={14} />
-                      {dailyPlan.category}
-                    </span>
-                  )}
-                </div>
+                <h4 className="exercise-result-day-name">
+                  {DAY_LABELS[dailyPlan.dayName] || dailyPlan.dayName}
+                </h4>
                 <div className="exercise-result-day-meta">
                   <span className="exercise-result-day-time">
                     <Clock size={14} />
@@ -190,6 +182,11 @@ export default function ExercisePlanResult({
               {/* 운동 목록 */}
               {expandedDays.includes(dailyPlan.dayName) && (
                 <div className="exercise-result-exercises">
+                  {/* 카테고리 헤더 */}
+                  <div className="exercise-result-category-header">
+                    <Dumbbell size={14} />
+                    {dailyPlan.category}
+                  </div>
                   {dailyPlan.exercises.map(exercise => (
                     <div key={exercise.id} className="exercise-result-exercise-item">
                       <div className="exercise-result-exercise-icon">

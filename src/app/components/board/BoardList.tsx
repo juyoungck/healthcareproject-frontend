@@ -7,13 +7,13 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, FileText } from 'lucide-react';
-import { 
-  Post, 
-  CategoryType, 
-  SearchType, 
-  CATEGORY_LABELS, 
-  DUMMY_POSTS 
+import { Search, Plus, FileText } from 'lucide-react';
+import {
+  Post,
+  CategoryType,
+  SearchType,
+  CATEGORY_LABELS,
+  DUMMY_POSTS
 } from '../../../data/boards';
 
 /**
@@ -58,7 +58,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
       if (selectedCategory !== 'all' && post.category !== selectedCategory) {
         return false;
       }
-      
+
       /* 검색어 필터 */
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
@@ -68,7 +68,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
           return post.author.toLowerCase().includes(query);
         }
       }
-      
+
       return true;
     });
   }, [selectedCategory, searchQuery, searchType]);
@@ -170,6 +170,16 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
   };
 
   /**
+ * 맨 위로 스크롤
+ */
+  const handleScrollToTop = () => {
+    const appMain = document.querySelector('.app-main');
+    if (appMain) {
+      appMain.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  /**
    * 날짜 포맷 (YYYY.MM.DD HH:mm:ss)
    */
   const formatDate = (dateStr: string) => {
@@ -185,11 +195,6 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
 
   return (
     <div className="board-container">
-      {/* 헤더 */}
-      <div className="board-header">
-        <h1 className="board-title">게시판</h1>
-      </div>
-
       {/* 카테고리 탭 */}
       <div className="board-tabs">
         {(['all', 'free', 'question', 'info'] as CategoryType[]).map((category) => (
@@ -247,7 +252,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
                 <span className={`board-category-badge ${post.category}`}>
                   {CATEGORY_LABELS[post.category]}
                 </span>
-                
+
                 {/* 우측: 콘텐츠 영역 */}
                 <div className="board-item-content">
                   {/* 상단: 제목 + 댓글수 */}
@@ -278,7 +283,12 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
                 </div>
               )}
               {!hasMore && displayedPosts.length > 0 && (
-                <p className="board-end-message">모든 게시글을 불러왔습니다.</p>
+                <div className="board-end-section">
+                  <p className="board-end-message">모든 게시글을 불러왔습니다.</p>
+                  <button className="board-scroll-top-btn" onClick={handleScrollToTop}>
+                    맨 위로 ↑
+                  </button>
+                </div>
               )}
             </div>
           </>
@@ -287,7 +297,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
 
       {/* 글쓰기 플로팅 버튼 */}
       <button className="board-write-fab" onClick={onWritePost}>
-        <FileText size={24} />
+        <Plus size={24} />
       </button>
     </div>
   );
