@@ -9,7 +9,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { 
+import {
   ArrowLeft,
   User,
   Mail,
@@ -61,12 +61,13 @@ interface MyPageProps {
   onBack: () => void;
   onLogout: () => void;
   onEditOnboarding: () => void;
+  onOpenAdminPage?: () => void;
 }
 
 /**
  * MyPage 컴포넌트
  */
-export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPageProps) {
+export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdminPage }: MyPageProps) {
   /**
    * 상태 관리
    */
@@ -179,10 +180,10 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
 
     try {
       await updateNickname({ nickname: editNickname });
-    
+
       /* API 호출 성공 시 Context 상태 업데이트 */
       updateUser({ nickname: editNickname });
-      
+
       setShowNicknameModal(false);
       alert('닉네임이 수정되었습니다.');
     } catch (err: unknown) {
@@ -223,10 +224,10 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
 
     try {
       await updatePhoneNumber({ phoneNumber: formattedPhone });
-      
+
       /* API 호출 성공 시 Context 상태 업데이트 */
       updateUser({ phoneNumber: formattedPhone });
-      
+
       setShowPhoneNumberModal(false);
       alert('전화번호가 수정되었습니다.');
     } catch (err: unknown) {
@@ -329,12 +330,12 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
    */
   const renderTrainerButton = () => {
     const status = getTrainerStatus();
-    
+
     switch (status) {
       case 'none':
         return (
-          <button 
-            className="mypage-trainer-btn apply" 
+          <button
+            className="mypage-trainer-btn apply"
             onClick={() => setShowTrainerModal(true)}
           >
             <GraduationCap size={20} />
@@ -351,8 +352,8 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
         );
       case 'approved':
         return (
-          <button 
-            className="mypage-trainer-btn release" 
+          <button
+            className="mypage-trainer-btn release"
             onClick={handleTrainerRelease}
           >
             <UserMinus size={20} />
@@ -361,8 +362,8 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
         );
       case 'rejected':
         return (
-          <button 
-            className="mypage-trainer-btn release" 
+          <button
+            className="mypage-trainer-btn release"
             onClick={handleTrainerRelease}
           >
             <GraduationCap size={20} />
@@ -377,7 +378,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
   /* 설정 페이지 */
   if (showSettingsPage) {
     return (
-      <SettingsPage 
+      <SettingsPage
         onBack={() => setShowSettingsPage(false)}
         onLogout={onLogout}
       />
@@ -435,7 +436,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
           </button>
           <h1 className="mypage-title">마이페이지</h1>
           <button className="mypage-set-btn" onClick={() => setShowSettingsPage(true)}>
-              <Settings size={24} />
+            <Settings size={24} />
           </button>
         </div>
       </header>
@@ -504,49 +505,49 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
         </div>
         {profile ? (
           <>
-        <div className="mypage-body-grid">
-          <div className="mypage-body-item">
-            <span className="mypage-body-label">키</span>
-            <span className="mypage-body-value">{profile.heightCm}<span className="mypage-body-unit">cm</span></span>
-          </div>
-          <div className="mypage-body-item">
-            <span className="mypage-body-label">몸무게</span>
-            <span className="mypage-body-value">{profile.weightKg}<span className="mypage-body-unit">kg</span></span>
-          </div>
-          <div className="mypage-body-item">
-            <span className="mypage-body-label">나이</span>
-            <span className="mypage-body-value">{profile.age}<span className="mypage-body-unit">세</span></span>
-          </div>
-          <div className="mypage-body-item">
-            <span className="mypage-body-label">성별</span>
-            <span className="mypage-body-value">{getGenderLabel(profile.gender)}</span>
-          </div>
-        </div>
-        <div className="mypage-info-list">
-          <div className="mypage-info-item">
-            <Dumbbell size={18} className="mypage-info-icon" />
-            <span className="mypage-info-label">운동 경력</span>
-            <span className="mypage-info-value">{getExperienceLevelLabel(profile.experienceLevel)}</span>
-          </div>
-          <div className="mypage-info-item">
-            <Target size={18} className="mypage-info-icon" />
-            <span className="mypage-info-label">운동 목표</span>
-            <span className="mypage-info-value">{getGoalTypeLabel(profile.goalType)}</span>
-          </div>
-          <div className="mypage-info-item">
-            <Calendar size={18} className="mypage-info-icon" />
-            <span className="mypage-info-label">운동 주기</span>
-            <span className="mypage-info-value">주 {profile.weeklyDays}일, {getSessionTimeLabel(profile.sessionMinutes)}</span>
-          </div>
-          {/* 부상 이력 (없는 경우) */}
-          <div className="mypage-info-item">
-            <AlertTriangle size={18} className="mypage-info-icon" />
-            <span className="mypage-info-label">부상 이력</span>
-            <span className="mypage-info-value">{injuries.length > 0 ? `${injuries.length}건` : '없음'}</span>
-          </div>
-        </div>
+            <div className="mypage-body-grid">
+              <div className="mypage-body-item">
+                <span className="mypage-body-label">키</span>
+                <span className="mypage-body-value">{profile.heightCm}<span className="mypage-body-unit">cm</span></span>
+              </div>
+              <div className="mypage-body-item">
+                <span className="mypage-body-label">몸무게</span>
+                <span className="mypage-body-value">{profile.weightKg}<span className="mypage-body-unit">kg</span></span>
+              </div>
+              <div className="mypage-body-item">
+                <span className="mypage-body-label">나이</span>
+                <span className="mypage-body-value">{profile.age}<span className="mypage-body-unit">세</span></span>
+              </div>
+              <div className="mypage-body-item">
+                <span className="mypage-body-label">성별</span>
+                <span className="mypage-body-value">{getGenderLabel(profile.gender)}</span>
+              </div>
+            </div>
+            <div className="mypage-info-list">
+              <div className="mypage-info-item">
+                <Dumbbell size={18} className="mypage-info-icon" />
+                <span className="mypage-info-label">운동 경력</span>
+                <span className="mypage-info-value">{getExperienceLevelLabel(profile.experienceLevel)}</span>
+              </div>
+              <div className="mypage-info-item">
+                <Target size={18} className="mypage-info-icon" />
+                <span className="mypage-info-label">운동 목표</span>
+                <span className="mypage-info-value">{getGoalTypeLabel(profile.goalType)}</span>
+              </div>
+              <div className="mypage-info-item">
+                <Calendar size={18} className="mypage-info-icon" />
+                <span className="mypage-info-label">운동 주기</span>
+                <span className="mypage-info-value">주 {profile.weeklyDays}일, {getSessionTimeLabel(profile.sessionMinutes)}</span>
+              </div>
+              {/* 부상 이력 (없는 경우) */}
+              <div className="mypage-info-item">
+                <AlertTriangle size={18} className="mypage-info-icon" />
+                <span className="mypage-info-label">부상 이력</span>
+                <span className="mypage-info-value">{injuries.length > 0 ? `${injuries.length}건` : '없음'}</span>
+              </div>
+            </div>
 
-        {/* 부상 상세 (있는 경우) */}
+            {/* 부상 상세 (있는 경우) */}
             {injuries.length > 0 && (
               <div className="mypage-injury-list">
                 {injuries.map((injury, index) => (
@@ -560,21 +561,21 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
               </div>
             )}
 
-        {/* 알레르기 정보 */}
-        <div className="mypage-allergy-section">
-            <span className="mypage-allergy-label">알레르기</span>
-            <div className="mypage-allergy-tags">
-            {allergies.length > 0 ? (
+            {/* 알레르기 정보 */}
+            <div className="mypage-allergy-section">
+              <span className="mypage-allergy-label">알레르기</span>
+              <div className="mypage-allergy-tags">
+                {allergies.length > 0 ? (
                   allergies.map((allergy, index) => (
                     <span key={index} className="mypage-allergy-tag">{getAllergyLabel(allergy)}</span>
                   ))
                 ) : (
                   <span className="mypage-allergy-none">없음</span>
                 )}
+              </div>
             </div>
-        </div>
-        </>
-      ) : (
+          </>
+        ) : (
           <div className="mypage-no-profile">
             <p>등록된 신체/운동 정보가 없습니다.</p>
             <button className="mypage-register-btn" onClick={onEditOnboarding}>
@@ -611,6 +612,20 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
         {renderTrainerButton()}
       </div>
 
+      {/* 관리자 패널 버튼 (관리자만 표시) */}
+      {userInfo?.role === 'ADMIN' && onOpenAdminPage && (
+        <div className="mypage-section">
+          <button
+            className="mypage-trainer-btn apply"
+            onClick={onOpenAdminPage}
+          >
+            <Settings size={20} />
+            <span>관리자 패널</span>
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
+
       {/* 트레이너 등록 모달 */}
       {showTrainerModal && (
         <TrainerApplyModal
@@ -641,8 +656,8 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
                   maxLength={10}
                 />
               </div>
-              <button 
-                className="form-submit-btn" 
+              <button
+                className="form-submit-btn"
                 onClick={handleEditNickname}
                 disabled={isUpdatingNickname}
               >
@@ -683,8 +698,8 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
                   />
                 </div>
               </div>
-              <button 
-                className="form-submit-btn" 
+              <button
+                className="form-submit-btn"
                 onClick={handleEditPhoneNumber}
                 disabled={isUpdatingPhoneNumber}
               >

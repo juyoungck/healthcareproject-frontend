@@ -13,14 +13,14 @@ import Dashboard from './pages/Dashboard';
 import { clearTokens, logout, getRefreshToken } from '../api/auth';
 import { getProfile, getInjuries, getAllergies } from '../api/me';
 import type { ProfileResponse, InjuryItem } from '../api/types/me';
-
+import AdminPage from './pages/AdminPage';
 
 /**
  * AppContent 컴포넌트
  * AuthProvider 내부에서 useAuth 사용
  */
 function AppContent() {
-  const { isLoggedIn, isLoading: isAuthLoading, onLoginSuccess, onLogout, refreshUser } = useAuth();
+  const { isLoggedIn, isLoading: isAuthLoading, onLoginSuccess, onLogout, refreshUser, user } = useAuth();
 
   /**
    * 온보딩 상태 관리
@@ -30,6 +30,10 @@ function AppContent() {
   const [userOnboardingData, setUserOnboardingData] = useState<OnboardingData | null>(null);
   const [isLoadingOnboardingData, setIsLoadingOnboardingData] = useState(false);
 
+  /**
+   * 관리자 패널 상태 관리
+   */
+  const [showAdminPage, setShowAdminPage] = useState(false);
   /**
    * 마이페이지 상태 관리
    */
@@ -255,6 +259,12 @@ function AppContent() {
         />
       );
     }
+    if (user?.role === 'ADMIN' && showAdminPage) {
+      return (
+        <AdminPage onBackToMyPage={() => setShowAdminPage(false)}
+        />
+      );
+    }
 
     return (
       <Dashboard 
@@ -262,6 +272,7 @@ function AppContent() {
         onEditOnboarding={handleOpenOnboardingEdit}
         initialShowMyPage={returnToMyPage}
         onMyPageShown={() => setReturnToMyPage(false)}
+        onOpenAdminPage={() => setShowAdminPage(true)}
       />
     );
   }
