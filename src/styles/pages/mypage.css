@@ -407,6 +407,48 @@
 
 /**
  * ===========================================
+ * 온보딩 정보 없음 상태
+ * ===========================================
+ */
+
+.mypage-no-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xl);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+  text-align: center;
+}
+
+.mypage-no-profile p {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.mypage-register-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.mypage-register-btn:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/**
+ * ===========================================
  * 소셜 계정 연동
  * ===========================================
  */
@@ -544,75 +586,6 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-}
-
-/**
- * ===========================================
- * 회원탈퇴 모달
- * ===========================================
- */
-
-.mypage-withdraw-modal {
-  width: calc(100% - var(--spacing-xl) * 2);
-  max-width: var(--container-md);
-  background-color: var(--color-white);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-xl);
-  text-align: center;
-}
-
-.mypage-withdraw-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--element-size-5xl);
-  height: var(--element-size-5xl);
-  margin: 0 auto var(--spacing-lg);
-  background-color: rgba(220, 38, 38, 0.1);
-  color: var(--color-error);
-  border-radius: var(--border-radius-full);
-}
-
-.mypage-withdraw-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-gray-900);
-  margin-bottom: var(--spacing-sm);
-}
-
-.mypage-withdraw-desc {
-  font-size: var(--font-size-sm);
-  color: var(--color-gray-500);
-  line-height: var(--line-height-relaxed);
-  margin-bottom: var(--spacing-xl);
-}
-
-.mypage-withdraw-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.mypage-withdraw-btn {
-  width: 100%;
-  height: var(--element-size-xl);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.mypage-withdraw-btn.cancel {
-  background-color: var(--color-gray-100);
-  color: var(--color-gray-700);
-  border: none;
-}
-
-.mypage-withdraw-btn.confirm {
-  background-color: var(--color-error);
-  color: var(--color-white);
-  border: none;
 }
 
 
