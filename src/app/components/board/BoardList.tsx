@@ -3,18 +3,19 @@
  * 게시판 목록 컴포넌트
  * - 카테고리 필터 (전체/자유/질문/정보)
  * - 제목/작성자 검색
- * - 무한 스크롤
+ * - 무한 스크롤 (커서 기반)
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Plus, FileText } from 'lucide-react';
+import { Search, FileText, Plus } from 'lucide-react';
 import {
-  Post,
   CategoryType,
   SearchType,
   CATEGORY_LABELS,
-  DUMMY_POSTS
+  CATEGORY_MAP
 } from '../../../data/boards';
+import { getPosts } from '../../../api/board';
+import { PostListItem } from '../../../api/types/board';
 
 /**
  * Props 타입 정의
@@ -39,9 +40,11 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>('all');
   const [searchType, setSearchType] = useState<SearchType>('title');
   const [searchQuery, setSearchQuery] = useState('');
-  const [displayedPosts, setDisplayedPosts] = useState<Post[]>([]);
+  const [displayedPosts, setDisplayedPosts] = useState<PostListItem[]>([]);
+  const [notices, setNotices] = useState<PostListItem[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [cursorId, setCursorId] = useState<number | null>(null);
 
   /**
    * 무한 스크롤 감지용 ref
@@ -50,72 +53,63 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   /**
-   * 카테고리/검색 필터링된 전체 게시글
+   * 검색 타입 매핑 (프론트 → 백엔드)
    */
-  const getFilteredPosts = useCallback(() => {
-    return DUMMY_POSTS.filter(post => {
-      /* 카테고리 필터 */
-      if (selectedCategory !== 'all' && post.category !== selectedCategory) {
-        return false;
-      }
-
-      /* 검색어 필터 */
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        if (searchType === 'title') {
-          return post.title.toLowerCase().includes(query);
-        } else {
-          return post.author.toLowerCase().includes(query);
-        }
-      }
-
-      return true;
-    });
-  }, [selectedCategory, searchQuery, searchType]);
+  const getSearchBy = (type: SearchType) => {
+    return type === 'title' ? 'TITLE' : 'AUTHOR';
+  };
 
   /**
-   * 게시글 더 불러오기
+   * API에서 게시글 목록 불러오기
    */
-  const loadMorePosts = useCallback(() => {
-    if (isLoading || !hasMore) return;
+  const fetchPosts = useCallback(async (cursor: number | null, isReset: boolean = false) => {
+    if (isLoading) return;
 
     setIsLoading(true);
 
-    /* API 호출 시뮬레이션 */
-    setTimeout(() => {
-      const filteredPosts = getFilteredPosts();
-      const currentLength = displayedPosts.length;
-      const nextPosts = filteredPosts.slice(currentLength, currentLength + POSTS_PER_LOAD);
+    try {
+      const response = await getPosts({
+        category: CATEGORY_MAP.toBackend[selectedCategory],
+        q: searchQuery || undefined,
+        searchBy: searchQuery ? getSearchBy(searchType) : undefined,
+        cursorId: cursor || undefined,
+        size: POSTS_PER_LOAD,
+      });
 
-      if (nextPosts.length === 0) {
-        setHasMore(false);
+      if (isReset) {
+        setNotices(response.notices);
+        setDisplayedPosts(response.items);
       } else {
-        setDisplayedPosts(prev => [...prev, ...nextPosts]);
-        if (currentLength + nextPosts.length >= filteredPosts.length) {
-          setHasMore(false);
-        }
+        setDisplayedPosts(prev => [...prev, ...response.items]);
       }
 
+      setHasMore(response.pageInfo.hasNext);
+      setCursorId(response.pageInfo.nextCursorId);
+    } catch (error) {
+      console.error('게시글 목록 조회 실패:', error);
+    } finally {
       setIsLoading(false);
-    }, 300);
-  }, [isLoading, hasMore, displayedPosts.length, getFilteredPosts]);
+    }
+  }, [selectedCategory, searchType, searchQuery, isLoading]);
 
   /**
-   * 카테고리/검색 변경 시 목록 초기화
+   * 다음 페이지 불러오기
+   */
+  const loadMorePosts = useCallback(() => {
+    if (isLoading || !hasMore) return;
+    fetchPosts(cursorId, false);
+  }, [isLoading, hasMore, cursorId, fetchPosts]);
+
+  /**
+   * 카테고리 변경 시 목록 초기화 및 재조회
    */
   useEffect(() => {
     setDisplayedPosts([]);
+    setNotices([]);
     setHasMore(true);
-  }, [selectedCategory, searchQuery, searchType]);
-
-  /**
-   * 초기 로드 및 필터 변경 시 첫 페이지 로드
-   */
-  useEffect(() => {
-    if (displayedPosts.length === 0 && hasMore) {
-      loadMorePosts();
-    }
-  }, [displayedPosts.length, hasMore, loadMorePosts]);
+    setCursorId(null);
+    fetchPosts(null, true);
+  }, [selectedCategory]);
 
   /**
    * Intersection Observer 설정
@@ -150,7 +144,10 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
    */
   const handleSearch = () => {
     setDisplayedPosts([]);
+    setNotices([]);
     setHasMore(true);
+    setCursorId(null);
+    fetchPosts(null, true);
   };
 
   /**
@@ -233,7 +230,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
 
       {/* 게시글 목록 */}
       <div className="board-list">
-        {displayedPosts.length === 0 && !isLoading ? (
+        {displayedPosts.length === 0 && notices.length === 0 && !isLoading ? (
           <div className="board-list-empty">
             <FileText className="board-list-empty-icon" />
             <p className="board-list-empty-text">
@@ -242,33 +239,55 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
           </div>
         ) : (
           <>
-            {displayedPosts.map((post) => (
+            {/* 공지사항 */}
+            {notices.map((post) => (
               <button
-                key={post.id}
-                className="board-item"
-                onClick={() => onSelectPost(post.id)}
+                key={`notice-${post.postId}`}
+                className="board-item notice"
+                onClick={() => onSelectPost(post.postId)}
               >
-                {/* 좌측: 카테고리 뱃지 */}
-                <span className={`board-category-badge ${post.category}`}>
-                  {CATEGORY_LABELS[post.category]}
-                </span>
-
-                {/* 우측: 콘텐츠 영역 */}
+                <span className="board-category-badge notice">공지</span>
                 <div className="board-item-content">
-                  {/* 상단: 제목 + 댓글수 */}
                   <div className="board-item-row">
                     <span className="board-item-title">{post.title}</span>
                     {post.commentCount > 0 && (
                       <span className="board-item-comment-count">[{post.commentCount}]</span>
                     )}
                   </div>
-                  {/* 하단: 작성자 | 날짜 | 조회수 */}
                   <div className="board-item-meta">
-                    <span>{post.author}</span>
+                    <span>{post.nickname}</span>
                     <span className="board-item-divider">|</span>
-                    <span>{formatDate(post.date)}</span>
+                    <span>{formatDate(post.createdAt)}</span>
                     <span className="board-item-divider">|</span>
-                    <span>조회 {post.views}</span>
+                    <span>조회 {post.viewCount}</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+
+            {/* 일반 게시글 */}
+            {displayedPosts.map((post) => (
+              <button
+                key={post.postId}
+                className="board-item"
+                onClick={() => onSelectPost(post.postId)}
+              >
+                <span className={`board-category-badge ${CATEGORY_MAP.toFrontend[post.category]}`}>
+                  {CATEGORY_LABELS[CATEGORY_MAP.toFrontend[post.category]]}
+                </span>
+                <div className="board-item-content">
+                  <div className="board-item-row">
+                    <span className="board-item-title">{post.title}</span>
+                    {post.commentCount > 0 && (
+                      <span className="board-item-comment-count">[{post.commentCount}]</span>
+                    )}
+                  </div>
+                  <div className="board-item-meta">
+                    <span>{post.nickname}</span>
+                    <span className="board-item-divider">|</span>
+                    <span>{formatDate(post.createdAt)}</span>
+                    <span className="board-item-divider">|</span>
+                    <span>조회 {post.viewCount}</span>
                   </div>
                 </div>
               </button>
@@ -283,12 +302,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
                 </div>
               )}
               {!hasMore && displayedPosts.length > 0 && (
-                <div className="board-end-section">
-                  <p className="board-end-message">모든 게시글을 불러왔습니다.</p>
-                  <button className="board-scroll-top-btn" onClick={handleScrollToTop}>
-                    맨 위로 ↑
-                  </button>
-                </div>
+                <p className="board-end-message">모든 게시글을 불러왔습니다.</p>
               )}
             </div>
           </>

@@ -89,6 +89,24 @@ export const REPORT_REASONS = [
 ];
 
 /**
+ * 프론트 카테고리 ↔ 백엔드 카테고리 매핑
+ */
+export const CATEGORY_MAP = {
+  toBackend: {
+    'all': 'ALL',
+    'free': 'FREE',
+    'question': 'QUESTION',
+    'info': 'INFO',
+  } as const,
+  toFrontend: {
+    'ALL': 'all',
+    'FREE': 'free',
+    'QUESTION': 'question',
+    'INFO': 'info',
+  } as const,
+};
+
+/**
  * 더미 게시글 목록 데이터
  * TODO: API 연동 시 삭제
  */
