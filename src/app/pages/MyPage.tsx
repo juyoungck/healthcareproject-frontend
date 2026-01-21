@@ -142,12 +142,13 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding }: MyPagePro
     setIsUpdating(true);
 
     try {
-      const result = await updateNickname({ nickname: editNickname });
-      
+      await updateNickname({ nickname: editNickname });
+    
+      /* API 호출 성공 시 로컬 상태 직접 업데이트 */
       if (userInfo) {
         setUserInfo({
           ...userInfo,
-          nickname: result.user.nickname,
+          nickname: editNickname,  // ← 응답 대신 입력한 닉네임 값 사용
         });
       }
       
