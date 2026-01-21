@@ -551,6 +551,7 @@
   border: none;
 }
 
+
 /**
  * ===========================================
  * 회원 유형 뱃지 (트레이너/일반회원)
@@ -564,7 +565,7 @@
 
 .mypage-user-type.trainer {
   color: var(--color-pt);
-  background-color: rgba(147, 51, 234, 0.1);
+  background-color: var(--color-pt-light);
 }
 
 /**
@@ -605,7 +606,7 @@
 }
 
 .mypage-trainer-btn.apply:hover {
-  background-color: #7c22ce;
+  background-color: var(--color-pt-dark);
 }
 
 /**
@@ -627,7 +628,7 @@
 }
 
 .mypage-trainer-btn.release:hover {
-  background-color: rgba(220, 38, 38, 0.05);
+  background-color: var(--color-error-light);
 }
 
 /**
@@ -640,7 +641,7 @@
 }
 
 .mypage-trainer-btn.rejected:hover {
-  background-color: rgba(147, 51, 234, 0.05);
+  background-color: var(--color-pt-light);
 }
 
 /**
@@ -760,7 +761,7 @@
 
 .trainer-apply-file-remove:hover {
   color: var(--color-error);
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: var(--color-error-light);
 }
 
 .trainer-apply-textarea {

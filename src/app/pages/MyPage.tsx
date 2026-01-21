@@ -30,7 +30,7 @@ import {
   UserMinus
 } from 'lucide-react';
 import SettingsPage from './SettingsPage';
-import TrainerApplyModal, { TrainerApplyData } from '../components/pt/TrainerApplyModal';
+import TrainerApplyModal, { TrainerApplyData } from '../components/auth/TrainerApplyModal';
 import { CURRENT_USER_TRAINER_STATUS } from '../../data/users';
 
 /**

@@ -10,7 +10,7 @@
    * 레이아웃 관련 변수
    * ===========================================
    */
-  
+
   /**
    * 앱 최대 너비
    * 모바일 앱처럼 세로형 UI 유지
@@ -46,7 +46,7 @@
    * 브랜드 색상 (Brand Colors)
    * ===========================================
    */
-  
+
   /**
    * 프라이머리 색상 (파란색 계열)
    */
@@ -54,20 +54,20 @@
   --color-primary-light: #eff6ff;
   --color-primary-dark: #1d4ed8;
   --color-primary-hover: #3b82f6;
-  
+
   /**
    * ===========================================
    * 기능별 색상 (Functional Colors)
    * ===========================================
    */
-  
+
   /**
    * 운동 관련 색상 (파란색)
    */
   --color-workout: #2563eb;
   --color-workout-light: #dbeafe;
-  --color-workout-incomplete: #93c5fd;  /* 미흡 - 하늘색 */
-  
+  --color-workout-incomplete: #93c5fd;
+  /* 미흡 - 하늘색 */
   /**
    * 식단 관련 색상 (초록색)
    */
@@ -75,21 +75,20 @@
   --color-diet-light: #dcfce7;
   --color-diet-hover: #15803d;
   --color-diet-active: #166534;
-  --color-diet-incomplete: #86efac;     /* 미흡 - 연두색 */
-  
+  --color-diet-incomplete: #6bbd69;
   /**
    * 화상PT 관련 색상 (보라색)
    */
   --color-pt: #9333ea;
   --color-pt-light: #f3e8ff;
   --color-pt-dark: #7c22ce;
-  --color-pt-incomplete: #c4b5fd;       /* 미흡 - 연보라색 */
-
-/**
+  --color-pt-incomplete: #E6E6FA;
+  /* 미흡 - 라벤더 */
+  /**
  * 메모 관련 색상 (연노랑)
  */
---color-memo: #fbdd64;
-  
+  --color-memo: #fbdd64;
+
   /**
    * 상태 색상
    */
@@ -101,18 +100,22 @@
   --color-warning-light: #fef3c7;
   --color-info: #0891b2;
   --color-info-light: #cffafe;
-  --color-failed: #9ca3af;              /* 실패 - 회색 */
-  
+  --color-failed: #9ca3af;
+  /* 실패 - 회색 */
+
   /**
    * 화상PT 상태별 색상
    */
-  --color-live: #dc2626;        /* 진행중 - 빨간색 */
+  --color-live: #dc2626;
+  /* 진행중 - 빨간색 */
   --color-live-light: #fee2e2;
-  --color-reserved: #f59e0b;    /* 예약중 - 주황색 */
+  --color-reserved: #f59e0b;
+  /* 예약중 - 주황색 */
   --color-reserved-light: #fef3c7;
-  --color-private: #6b7280;     /* 비공개 - 회색 */
+  --color-private: #6b7280;
+  /* 비공개 - 회색 */
   --color-private-light: #f3f4f6;
-  
+
   /**
    * ===========================================
    * 그레이스케일 (Grayscale)
@@ -130,7 +133,7 @@
   --color-gray-800: #1f2937;
   --color-gray-900: #111827;
   --color-black: #000000;
-  
+
   /**
    * ===========================================
    * 테두리 둥글기 (Border Radius)
@@ -153,33 +156,41 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  
+
   /**
    * ===========================================
    * 폰트 설정 (Typography)
    * ===========================================
    */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
-                 'Helvetica Neue', Arial, 'Noto Sans KR', sans-serif;
-  
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
-  
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans KR', sans-serif;
+
+  --font-size-xs: 0.75rem;
+  /* 12px */
+  --font-size-sm: 0.875rem;
+  /* 14px */
+  --font-size-base: 1rem;
+  /* 16px */
+  --font-size-lg: 1.125rem;
+  /* 18px */
+  --font-size-xl: 1.25rem;
+  /* 20px */
+  --font-size-2xl: 1.5rem;
+  /* 24px */
+  --font-size-3xl: 1.875rem;
+  /* 30px */
+  --font-size-4xl: 2.25rem;
+  /* 36px */
+
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
+
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
-  
+
   /**
    * ===========================================
    * 트랜지션 (Transitions)
@@ -188,7 +199,7 @@
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
-  
+
   /**
    * ===========================================
    * Z-인덱스 (Z-Index)
@@ -200,7 +211,7 @@
   --z-modal-backdrop: 400;
   --z-modal: 500;
   --z-tooltip: 600;
-  
+
   /**
    * ===========================================
    * 호버 색상
@@ -209,7 +220,7 @@
   --color-error-hover: #b91c1c;
   --color-kakao-hover: #e6cf00;
   --color-naver-hover: #02b350;
-  
+
   /**
    * ===========================================
    * 소셜 로그인 색상
