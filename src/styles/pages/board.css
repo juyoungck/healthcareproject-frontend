@@ -76,13 +76,17 @@
 }
 
 .board-search-select {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-sm) var(--spacing-md);
   font-size: var(--font-size-sm);
   color: var(--color-gray-700);
   background-color: var(--color-white);
   border: var(--border-width-sm) solid var(--color-gray-300);
   border-radius: var(--border-radius-md);
   cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-sm) center;
 }
 
 .board-search-input {
@@ -1105,4 +1109,68 @@
 .board-scroll-top-btn:hover {
   background-color: var(--color-primary);
   color: var(--color-white);
+}
+
+/**
+ * ===========================================
+ * 댓글 수정 폼
+ * ===========================================
+ */
+
+.board-edit-form {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.board-edit-input {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-900);
+  border: var(--border-width-sm) solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+}
+
+.board-edit-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.board-edit-save {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+}
+
+.board-edit-save:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.board-edit-cancel {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  background-color: var(--color-gray-100);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+}
+
+.board-edit-cancel:hover {
+  background-color: var(--color-gray-200);
+}
+
+.board-comment-action.edit {
+  color: var(--color-primary);
+}
+
+.board-comment-action.edit:hover {
+  color: var(--color-primary-hover);
 }
