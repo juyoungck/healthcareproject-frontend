@@ -202,7 +202,7 @@
   padding-left: var(--element-size-base);
   font-size: var(--font-size-sm);
   background-color: var(--color-white);
-  border: var(--border-width-sm) dashed var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   transition: all var(--transition-fast);
 }
@@ -241,7 +241,7 @@
   font-weight: var(--font-weight-medium);
   color: var(--color-gray-600);
   background-color: var(--color-white);
-  border: var(--border-width-sm) dashed var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-full);
   white-space: nowrap;
   cursor: pointer;

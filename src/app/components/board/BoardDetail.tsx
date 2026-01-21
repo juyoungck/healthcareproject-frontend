@@ -26,15 +26,16 @@ import {
   REPORT_REASONS,
   CATEGORY_MAP
 } from '../../../data/boards';
-import { getPostDetail, deletePost, createComment, deleteComment, reportContent } from '../../../api/board';
+import { getPostDetail, deletePost, createComment, updateComment, deleteComment, reportContent } from '../../../api/board';
 import { PostDetailResponse, CommentResponse } from '../../../api/types/board';
+import { getMe } from '../../../api/me';
 
 /**
  * Props 타입 정의
  */
 interface BoardDetailProps {
   postId: number;
-  currentUserHandle: string;
+  currentUserId: number;
   onBack: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -45,7 +46,7 @@ interface BoardDetailProps {
  */
 export default function BoardDetail({
   postId,
-  currentUserHandle,
+  currentUserId,
   onBack,
   onEdit,
   onDelete
@@ -55,9 +56,12 @@ export default function BoardDetail({
    */
   const [post, setPost] = useState<PostDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUserHandle, setCurrentUserHandle] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedReportReason, setSelectedReportReason] = useState('');
@@ -90,6 +94,21 @@ export default function BoardDetail({
   }, [postId]);
 
   /**
+   * 현재 로그인한 사용자 정보 조회
+   */
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const me = await getMe();
+        setCurrentUserHandle(me.handle);
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+  /**
    * 날짜 포맷
    */
   const formatDate = (dateStr: string) => {
@@ -115,7 +134,6 @@ export default function BoardDetail({
         content: newComment.trim(),
       });
 
-      /* 게시글 다시 로드 */
       const data = await getPostDetail(postId);
       setPost(data);
       setNewComment('');
@@ -137,7 +155,6 @@ export default function BoardDetail({
         content: replyContent.trim(),
       });
 
-      /* 게시글 다시 로드 */
       const data = await getPostDetail(postId);
       setPost(data);
       setReplyContent('');
@@ -147,6 +164,40 @@ export default function BoardDetail({
       alert('답글 작성에 실패했습니다.');
     }
   };
+
+  /**
+   * 댓글 수정 시작
+   */
+  const handleEditStart = (commentId: number, currentContent: string) => {
+    setEditingCommentId(commentId);
+    setEditContent(currentContent);
+  };
+
+  /**
+   * 댓글 수정 취소
+   */
+  const handleEditCancel = () => {
+    setEditingCommentId(null);
+    setEditContent('');
+  };
+
+/**
+ * 댓글 수정 저장
+ */
+const handleEditSave = async (commentId: number) => {
+  if (!editContent.trim() || !post) return;
+
+  try {
+    await updateComment(postId, { commentId, content: editContent.trim() });
+    const data = await getPostDetail(postId);
+    setPost(data);
+    setEditingCommentId(null);
+    setEditContent('');
+  } catch (error) {
+    console.error('댓글 수정 실패:', error);
+    alert('댓글 수정에 실패했습니다.');
+  }
+};
 
   /**
    * 삭제 확인 모달 열기
@@ -167,7 +218,6 @@ export default function BoardDetail({
         await deletePost(postId);
         onDelete();
       } else {
-        /* 댓글/대댓글 삭제 */
         await deleteComment(postId, deleteTarget.id);
         const data = await getPostDetail(postId);
         setPost(data);
@@ -280,7 +330,6 @@ export default function BoardDetail({
       </div>
 
       {/* 게시글 본문 */}
-      {/* 게시글 본문 */}
       <div
         className="board-detail-content"
         dangerouslySetInnerHTML={{ __html: post.content }}
@@ -351,7 +400,30 @@ export default function BoardDetail({
                   </span>
                   <span className="board-comment-date">{formatDate(comment.createdAt)}</span>
                 </div>
-                <p className="board-comment-content">{comment.content}</p>
+                
+                {/* 댓글 내용 또는 수정 폼 */}
+                {editingCommentId === comment.commentId ? (
+                  <div className="board-edit-form">
+                    <input
+                      type="text"
+                      className="board-edit-input"
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') handleEditSave(comment.commentId);
+                      }}
+                    />
+                    <button className="board-edit-save" onClick={() => handleEditSave(comment.commentId)}>
+                      저장
+                    </button>
+                    <button className="board-edit-cancel" onClick={handleEditCancel}>
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <p className="board-comment-content">{comment.content}</p>
+                )}
+
                 <div className="board-comment-actions">
                   <button
                     className="board-comment-action"
@@ -361,13 +433,21 @@ export default function BoardDetail({
                     답글
                   </button>
                   <div className="board-comment-actions-right">
-                    {isCommentAuthor(comment.author.handle) && (
-                      <button
-                        className="board-comment-action delete"
-                        onClick={() => handleDeleteClick('comment', comment.commentId)}
-                      >
-                        삭제
-                      </button>
+                    {isCommentAuthor(comment.author.handle) && editingCommentId !== comment.commentId && (
+                      <>
+                        <button
+                          className="board-comment-action edit"
+                          onClick={() => handleEditStart(comment.commentId, comment.content)}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="board-comment-action delete"
+                          onClick={() => handleDeleteClick('comment', comment.commentId)}
+                        >
+                          삭제
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -413,16 +493,47 @@ export default function BoardDetail({
                     </span>
                     <span className="board-comment-date">{formatDate(reply.createdAt)}</span>
                   </div>
-                  <p className="board-comment-content">{reply.content}</p>
+
+                  {/* 대댓글 내용 또는 수정 폼 */}
+                  {editingCommentId === reply.commentId ? (
+                    <div className="board-edit-form">
+                      <input
+                        type="text"
+                        className="board-edit-input"
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') handleEditSave(reply.commentId);
+                        }}
+                      />
+                      <button className="board-edit-save" onClick={() => handleEditSave(reply.commentId)}>
+                        저장
+                      </button>
+                      <button className="board-edit-cancel" onClick={handleEditCancel}>
+                        취소
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="board-comment-content">{reply.content}</p>
+                  )}
+
                   <div className="board-comment-actions">
                     <div className="board-comment-actions-right">
-                      {isCommentAuthor(reply.author.handle) && (
-                        <button
-                          className="board-comment-action delete"
-                          onClick={() => handleDeleteClick('reply', reply.commentId)}
-                        >
-                          삭제
-                        </button>
+                      {isCommentAuthor(reply.author.handle) && editingCommentId !== reply.commentId && (
+                        <>
+                          <button
+                            className="board-comment-action edit"
+                            onClick={() => handleEditStart(reply.commentId, reply.content)}
+                          >
+                            수정
+                          </button>
+                          <button
+                            className="board-comment-action delete"
+                            onClick={() => handleDeleteClick('reply', reply.commentId)}
+                          >
+                            삭제
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
