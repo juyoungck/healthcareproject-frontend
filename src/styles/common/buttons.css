@@ -68,7 +68,7 @@
 .btn-secondary {
   background-color: var(--color-white);
   color: var(--color-gray-700);
-  border: 1px solid var(--color-gray-300);
+  border: var(--border-width-sm) solid var(--color-gray-300);
 }
 
 .btn-secondary:hover {
@@ -86,7 +86,7 @@
 .btn-outline {
   background-color: transparent;
   color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  border: var(--border-width-sm) solid var(--color-primary);
 }
 
 .btn-outline:hover {
@@ -187,21 +187,21 @@
  */
 .btn-icon {
   padding: var(--spacing-sm);
-  width: 40px;
-  height: 40px;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
   border-radius: var(--border-radius-md);
 }
 
 .btn-icon-sm {
   padding: var(--spacing-xs);
-  width: 32px;
-  height: 32px;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
 }
 
 .btn-icon-lg {
   padding: var(--spacing-md);
-  width: 48px;
-  height: 48px;
+  width: var(--element-size-xl);
+  height: var(--element-size-xl);
 }
 
 /**

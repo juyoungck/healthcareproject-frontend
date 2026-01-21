@@ -193,6 +193,7 @@ export default function VideoPTPage({
         room={activeCallRoom} 
         onLeave={handleLeaveCall} 
         isTrainer={IS_CURRENT_USER_TRAINER}
+        userName={IS_CURRENT_USER_TRAINER ? `[트레이너] ${activeCallRoom.trainerName}` : '회원닉네임'}
       />
     );
   }

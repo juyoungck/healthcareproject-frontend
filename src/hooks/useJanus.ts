@@ -82,7 +82,7 @@ export function useJanus({ roomId, displayName, trainerName, onError }: UseJanus
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle');
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [participants, setParticipants] = useState<JanusParticipant[]>([]);
-  const [isAudioMuted, setIsAudioMuted] = useState(true);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
@@ -146,7 +146,7 @@ export function useJanus({ roomId, displayName, trainerName, onError }: UseJanus
       },
       
       onremotestream: (stream: MediaStream) => {
-        const isTrainerParticipant = trainerName ? display.includes(trainerName) : false;
+        const isTrainerParticipant = display.startsWith('[트레이너]');
   
         /* 참가자 목록에 추가 */
         setParticipants(prev => {
@@ -429,7 +429,8 @@ export function useJanus({ roomId, displayName, trainerName, onError }: UseJanus
         audioSend: true,
         videoSend: true,
         audioRecv: false,
-        videoRecv: false
+        videoRecv: false,
+        replaceVideo: true
       },
       success: (jsep: any) => {
         publisherRef.current.send({
@@ -437,6 +438,12 @@ export function useJanus({ roomId, displayName, trainerName, onError }: UseJanus
           jsep
         });
         setIsScreenSharing(true);
+
+        /* 로컬 스트림 업데이트 */
+        const newStream = publisherRef.current.webrtcStuff?.myStream;
+        if (newStream) {
+            setLocalStream(newStream);
+        }
       },
       error: (error: Error) => {
         console.error('화면공유 에러:', error);
@@ -456,7 +463,8 @@ export function useJanus({ roomId, displayName, trainerName, onError }: UseJanus
         audioSend: true,
         videoSend: true,
         audioRecv: false,
-        videoRecv: false
+        videoRecv: false,
+        replaceVideo: true
       },
       success: (jsep: any) => {
         publisherRef.current.send({
@@ -464,6 +472,12 @@ export function useJanus({ roomId, displayName, trainerName, onError }: UseJanus
           jsep
         });
         setIsScreenSharing(false);
+
+        /* 로컬 스트림 업데이트 (카메라로 복귀) */
+        const newStream = publisherRef.current.webrtcStuff?.myStream;
+        if (newStream) {
+            setLocalStream(newStream);
+        }
       },
       error: (error: Error) => {
         console.error('화면공유 중지 에러:', error);

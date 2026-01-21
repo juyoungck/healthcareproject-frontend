@@ -38,7 +38,7 @@
  */
 .diet-page .search-input:focus {
   border-color: var(--color-diet);
-  box-shadow: 0 0 0 3px var(--color-diet-light);
+  box-shadow: 0 0 0 var(--border-width-lg) var(--color-diet-light);
 }
 
 /**
@@ -70,7 +70,7 @@
   display: flex;
   flex-direction: column;
   background-color: var(--color-white);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -81,7 +81,7 @@
 .diet-card:hover {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  transform: translateY(calc(var(--spacing-2xs) * -1));
 }
 
 .diet-card:active {
@@ -95,7 +95,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100px;
+  height: var(--element-size-7xl);
   background-color: var(--color-gray-50);
   overflow: hidden;
 }

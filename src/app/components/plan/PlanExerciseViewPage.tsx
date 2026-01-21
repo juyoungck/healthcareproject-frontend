@@ -8,7 +8,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Clock, Check, ChevronRight, Dumbbell, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Clock, Check, ExternalLink, Dumbbell, RefreshCw, ArrowLeft } from 'lucide-react';
 import { ExercisePlan } from './PlanExerciseResult';
 import PlanExerciseRegenerateModal from './PlanExerciseRegenerateModal';
 
@@ -32,9 +32,9 @@ const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 /**
  * PlanExerciseViewPage 컴포넌트
  */
-export default function PlanExerciseViewPage({ 
-  onBack, 
-  planData, 
+export default function PlanExerciseViewPage({
+  onBack,
+  planData,
   completedExercises,
   onToggleExercise,
   onExerciseClick,
@@ -66,18 +66,18 @@ export default function PlanExerciseViewPage({
   const weekDates = useMemo(() => {
     const startDayOfWeek = startDate.getDay();
     const dates: { [key: string]: number } = {};
-    
+
     for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
       let daysToAdd = dayIndex - startDayOfWeek;
       if (daysToAdd < 0) {
         daysToAdd += 7;
       }
-      
+
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + daysToAdd);
       dates[String(dayIndex)] = date.getDate();
     }
-    
+
     return dates;
   }, [startDate]);
 
@@ -87,15 +87,15 @@ export default function PlanExerciseViewPage({
   const todayDayIndex = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const start = new Date(startDate);
     start.setHours(0, 0, 0, 0);
-    
+
     const diffTime = today.getTime() - start.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 0 || diffDays >= 7) return -1;
-    
+
     return today.getDay();
   }, [startDate]);
 
@@ -126,12 +126,12 @@ export default function PlanExerciseViewPage({
   const getCompletionRate = (dayName: string) => {
     const dayPlan = planData.dailyPlans.find(plan => plan.dayName === dayName);
     if (!dayPlan) return 0;
-    
+
     const total = dayPlan.exercises.length;
     const completed = dayPlan.exercises.filter(
       ex => completedExercises[`${dayName}-${ex.id}`]
     ).length;
-    
+
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   };
 
@@ -152,7 +152,7 @@ export default function PlanExerciseViewPage({
           const isSelected = selectedDay === day;
           const isToday = String(todayDayIndex) === day;
           const completionRate = getCompletionRate(day);
-          
+
           return (
             <button
               key={day}
@@ -194,14 +194,14 @@ export default function PlanExerciseViewPage({
               {selectedDayPlan.exercises.map((exercise) => {
                 const exerciseKey = `${selectedDay}-${exercise.id}`;
                 const isCompleted = completedExercises[exerciseKey];
-                
+
                 return (
-                  <li 
-                    key={exercise.id} 
+                  <li
+                    key={exercise.id}
                     className={`exercise-view-item ${isCompleted ? 'completed' : ''}`}
-                    onClick={() => onExerciseClick?.(exercise.id)}
+                    onClick={() => onToggleExercise(exerciseKey)}
                   >
-                    <div 
+                    <div
                       className="exercise-view-item-check"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -216,7 +216,14 @@ export default function PlanExerciseViewPage({
                         {exercise.sets}세트 × {exercise.reps}회 • 휴식 {exercise.restSeconds}초
                       </p>
                     </div>
-                    <ChevronRight size={20} className="exercise-view-item-arrow" />
+                    <ExternalLink
+                      size={20}
+                      className="exercise-view-item-arrow"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onExerciseClick?.(exercise.id);
+                      }}
+                    />
                   </li>
                 );
               })}
@@ -233,7 +240,7 @@ export default function PlanExerciseViewPage({
 
       {/* 하단 재생성 버튼 */}
       <footer className="exercise-view-footer">
-        <button 
+        <button
           className="exercise-view-regenerate-btn"
           onClick={() => setShowRegenerateModal(true)}
         >

@@ -58,8 +58,8 @@
 }
 
 .videocall-status-dot {
-  width: 8px;
-  height: 8px;
+  width: var(--size-md);
+  height: var(--size-md);
   border-radius: var(--border-radius-full);
   background-color: var(--color-success);
 }
@@ -109,15 +109,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+  min-height: 18.75rem;
 }
 
 .vc-video-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 120px;
-  height: 120px;
+  width: var(--element-size-8xl);
+  height: var(--element-size-8xl);
   background-color: var(--color-gray-700);
   border-radius: var(--border-radius-full);
   color: var(--color-gray-400);
@@ -141,13 +141,15 @@
   display: flex;
   gap: var(--spacing-sm);
   overflow-x: auto;
+  align-items: center;
+  justify-content: center;
   padding-bottom: var(--spacing-xs);
 }
 
 .vc-sub-video {
   flex-shrink: 0;
-  width: 100px;
-  height: 80px;
+  width: var(--element-size-7xl);
+  height: var(--element-size-6xl);
   position: relative;
   background-color: var(--color-gray-800);
   border-radius: var(--border-radius-md);
@@ -156,7 +158,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: 2px solid transparent;
+  border: var(--border-width-md) solid transparent;
   transition: all var(--transition-fast);
 }
 
@@ -168,8 +170,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
   background-color: var(--color-gray-700);
   border-radius: var(--border-radius-full);
   color: var(--color-gray-400);
@@ -180,7 +182,7 @@
   bottom: var(--spacing-xs);
   left: var(--spacing-xs);
   right: var(--spacing-xs);
-  padding: 2px var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
   background-color: rgba(0, 0, 0, 0.6);
   color: var(--color-white);
   font-size: var(--font-size-xs);
@@ -223,8 +225,8 @@
 }
 
 .videocall-avatar {
-  width: 64px;
-  height: 64px;
+  width: var(--element-size-4xl);
+  height: var(--element-size-4xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,8 +235,8 @@
 }
 
 .videocall-avatar-icon {
-  width: 32px;
-  height: 32px;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
   color: var(--color-pt);
 }
 
@@ -260,8 +262,8 @@
 }
 
 .videocall-mic-status {
-  width: 14px;
-  height: 14px;
+  width: var(--icon-size-xs);
+  height: var(--icon-size-xs);
 }
 
 .videocall-mic-status.muted {
@@ -340,8 +342,8 @@
 }
 
 .videocall-control-btn {
-  width: 52px;
-  height: 52px;
+  width: var(--element-size-2xl);
+  height: var(--element-size-2xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -373,8 +375,8 @@
 }
 
 .videocall-control-icon {
-  width: 24px;
-  height: 24px;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
   color: var(--color-white);
 }
 
@@ -382,8 +384,8 @@
  * 카메라 전환 버튼
  */
 .videocall-switch-camera {
-  width: 40px;
-  height: 40px;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
 }
 
 /**
@@ -395,7 +397,7 @@
   right: 0;
   display: flex;
   flex-direction: column;
-  min-width: 160px;
+  min-width: var(--element-size-10xl);
   background-color: var(--color-gray-800);
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -420,8 +422,8 @@
 }
 
 .videocall-more-icon {
-  width: 18px;
-  height: 18px;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
 }
 
 /**
@@ -442,8 +444,8 @@
 }
 
 .videocall-waiting-icon {
-  width: 80px;
-  height: 80px;
+  width: var(--element-size-6xl);
+  height: var(--element-size-6xl);
   color: var(--color-pt);
 }
 
@@ -456,13 +458,13 @@
 .videocall-waiting-desc {
   font-size: var(--font-size-sm);
   color: var(--color-gray-400);
-  max-width: 280px;
+  max-width: var(--container-xs);
 }
 
 .videocall-waiting-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--color-gray-700);
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
+  border: var(--border-width-lg) solid var(--color-gray-700);
   border-top-color: var(--color-pt);
   border-radius: var(--border-radius-full);
   animation: spin 1s linear infinite;
@@ -519,7 +521,7 @@
 
 .vc-leave-popup {
   width: 100%;
-  max-width: 300px;
+  max-width: var(--container-sm);
   background-color: var(--color-white);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-xl);
@@ -531,8 +533,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: var(--element-size-4xl);
+  height: var(--element-size-4xl);
   margin: 0 auto var(--spacing-lg);
   background-color: var(--color-error);
   color: var(--color-white);
@@ -560,7 +562,7 @@
 
 .vc-leave-popup-btn {
   flex: 1;
-  height: 44px;
+  height: var(--element-size-lg);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   border-radius: var(--border-radius-md);

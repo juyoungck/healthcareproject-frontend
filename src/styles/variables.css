@@ -16,13 +16,13 @@
    * 모바일 앱처럼 세로형 UI 유지
    * 데스크탑에서도 동일한 비율 적용
    */
-  --app-max-width: 520px;
+  --app-max-width: 32.5rem;
   
   /**
    * 헤더 및 네비게이션 높이
    */
-  --header-height: 56px;
-  --bottom-nav-height: 64px;
+  --header-height: var(--element-size-3xl);
+  --bottom-nav-height: var(--element-size-4xl);
   
   /**
    * ===========================================
@@ -36,6 +36,7 @@
   --spacing-sm: 0.5rem;     /* 8px */
   --spacing-md: 0.75rem;    /* 12px */
   --spacing-lg: 1rem;       /* 16px */
+  --spacing-lg-plus: 1.25rem; /* 20px */
   --spacing-xl: 1.5rem;     /* 24px */
   --spacing-2xl: 2rem;      /* 32px */
   --spacing-3xl: 3rem;      /* 48px */
@@ -140,7 +141,7 @@
   --border-radius-md: 0.75rem;   /* 12px */
   --border-radius-lg: 1rem;      /* 16px */
   --border-radius-xl: 1.5rem;    /* 24px */
-  --border-radius-full: 9999px;  /* 완전 원형 */
+  --border-radius-full: 624.9375rem;  /* 완전 원형 */
   
   /**
    * ===========================================
@@ -221,4 +222,76 @@
   --color-google: #ffffff;
   --color-google-text: #000000;
   --color-google-border: #dadce0;
+
+/**
+ * ===========================================
+ * 아이콘 크기 (Icon Size)
+ * ===========================================
+ */
+--icon-size-xs: 0.875rem;    /* 14px */
+--icon-size-sm: 1rem;        /* 16px */
+--icon-size-md: 1.125rem;    /* 18px */
+--icon-size-base: 1.25rem;   /* 20px */
+--icon-size-lg: 1.5rem;      /* 24px */
+--icon-size-xl: 1.75rem;     /* 28px */
+--icon-size-2xl: 2rem;       /* 32px */
+
+/**
+ * ===========================================
+ * 요소 크기 (Element Size)
+ * ===========================================
+ */
+--element-size-2xs: 1.5rem;  /* 24px */
+--element-size-xs: 1.75rem;  /* 28px */
+--element-size-sm: 2rem;     /* 32px */
+--element-size-md: 2.25rem;  /* 36px */
+--element-size-base: 2.5rem; /* 40px */
+--element-size-lg: 2.75rem;  /* 44px */
+--element-size-xl: 3rem;     /* 48px */
+--element-size-2xl: 3.25rem; /* 52px */
+--element-size-3xl: 3.5rem;  /* 56px */
+--element-size-3xl-plus: 3.75rem;  /* 60px */
+--element-size-4xl: 4rem;    /* 64px */
+--element-size-4xl-plus: 4.375rem; /* 70px */
+--element-size-5xl: 4.5rem;  /* 72px */
+--element-size-6xl: 5rem;    /* 80px */
+--element-size-7xl: 6.25rem; /* 100px */
+--element-size-8xl: 7.5rem;  /* 120px */
+--element-size-10xl: 10rem;        /* 160px */
+--element-size-12xl: 12.5rem;      /* 200px */
+
+/**
+ * ===========================================
+ * 컨테이너 최대 너비 (Container Max Width)
+ * ===========================================
+ */
+--container-xs: 17.5rem;   /* 280px */
+--container-sm: 18.75rem;  /* 300px */
+--container-md: 20rem;     /* 320px */
+--container-lg: 22.5rem;   /* 360px */
+--container-xl: 25rem;     /* 400px */
+--container-xxl: 27.5rem;  /* 440px */
+
+/**
+ * ===========================================
+ * 기타 크기
+ * ===========================================
+ */
+--size-2xs: 0.25rem;   /* 4px */
+--size-xs: 0.3125rem;  /* 5px */
+--size-sm: 0.375rem;   /* 6px */
+--size-md: 0.5rem;     /* 8px */
+--size-lg: 0.875rem;   /* 14px */
+
+/**
+ * ===========================================
+ * 테두리 두께 (Border Width)
+ * ===========================================
+ */
+--border-width-sm: 0.0625rem;  /* 1px */
+--border-width-md: 0.125rem;   /* 2px */
+--border-width-lg: 0.1875rem;  /* 3px */
+--border-width-xl: 0.25rem;    /* 4px */
+
 }
+

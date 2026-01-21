@@ -38,7 +38,7 @@
  */
 .exercise-page .search-input:focus {
   border-color: var(--color-workout);
-  box-shadow: 0 0 0 3px var(--color-workout-light);
+  box-shadow: 0 0 0 var(--border-width-lg) var(--color-workout-light);
 }
 
 /**
@@ -87,7 +87,7 @@
   display: flex;
   flex-direction: column;
   background-color: var(--color-white);
-  border: 1px solid var(--color-gray-200);
+  border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -98,7 +98,7 @@
 .exercise-card:hover {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  transform: translateY(calc(var(--spacing-2xs) * -1));
 }
 
 .exercise-card:active {
@@ -112,7 +112,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100px;
+  height: var(--element-size-7xl);
   background-color: var(--color-gray-50);
 }
 
@@ -120,7 +120,7 @@
  * 운동 카드 이모지 (임시 썸네일)
  */
 .exercise-card-emoji {
-  font-size: 40px;
+  font-size: var(--element-size-base);
 }
 
 /**
