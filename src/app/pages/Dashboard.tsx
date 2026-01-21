@@ -41,6 +41,7 @@ interface DashboardProps {
   onEditOnboarding: () => void;
   initialShowMyPage?: boolean;
   onMyPageShown?: () => void;
+  onOpenAdminPage?: () => void;
 }
 
 /**
@@ -87,7 +88,8 @@ export default function Dashboard({
   onLogout,
   onEditOnboarding,
   initialShowMyPage = false,
-  onMyPageShown
+  onMyPageShown,
+  onOpenAdminPage
 }: DashboardProps) {
 
   /**
@@ -618,6 +620,10 @@ export default function Dashboard({
         onBack={() => setShowMyPage(false)}
         onLogout={onLogout}
         onEditOnboarding={onEditOnboarding}
+        onOpenAdminPage={() => {
+          setShowMyPage(false);   
+          onOpenAdminPage?.();
+        }}
       />
     );
   }

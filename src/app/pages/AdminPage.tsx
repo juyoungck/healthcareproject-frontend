@@ -24,7 +24,7 @@ import AdminSystem from '../components/admin/AdminSystem';
  */
 
 interface AdminPageProps {
-  /** 마이페이지로 돌아가기 핸들러 */
+  /** 메인화면으로 돌아가기 핸들러 */
   onBackToMyPage: () => void;
 }
 
@@ -89,7 +89,7 @@ export default function AdminPage({ onBackToMyPage }: AdminPageProps) {
           <h1 className="admin-header-title">관리자 패널</h1>
           <button className="admin-back-btn" onClick={onBackToMyPage}>
             <ArrowLeft size={18} />
-            마이페이지로 돌아가기
+            메인 화면으로 이동
           </button>
         </header>
 
