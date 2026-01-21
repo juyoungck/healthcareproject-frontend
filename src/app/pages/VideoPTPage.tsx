@@ -4,24 +4,33 @@
  * 방 목록, 검색, 필터, 예약 관리 기능
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { Search, Video, Calendar, Plus } from 'lucide-react';
 import PTRoomCard from '../components/pt/PTRoomCard';
 import PTRoomDetailModal from '../components/pt/PTRoomDetailModal';
 import PTCreateRoomModal, { CreateRoomData } from '../components/pt/PTCreateRoomModal';
 import VideoCallRoom from '../components/pt/VideoCallRoom';
-import { 
-  PTRoom, 
-  DUMMY_PT_ROOMS, 
-  DUMMY_MY_RESERVATIONS,
-  CURRENT_USER_ID,
-  IS_CURRENT_USER_TRAINER 
-} from '../../data/pts';
+import {
+  getPTRoomList,
+  getPTRoomDetail,
+  createPTRoom,
+  joinPTRoom,
+  createPTReservation,
+  cancelPTReservation,
+  updatePTRoomStatus,
+} from '../../api/pt';
+import type {
+  PTRoomListItem,
+  GetPTRoomDetailResponse,
+  PTFilterType,
+} from '../../api/types/pt';
+import { filterToTab } from '../../api/types/pt';
 
 /**
  * 필터 타입
  */
-type FilterType = 'all' | 'live' | 'reserved' | 'my-reservation' | 'myRoom';
+type FilterType = PTFilterType;
 
 /**
  * Props 타입 정의
@@ -36,16 +45,28 @@ interface VideoPTPageProps {
 export default function VideoPTPage({
   initialFilter,
 }: VideoPTPageProps) {
-  /**
-   * 상태 관리
-   */
+  const { user } = useAuth();
+  const isTrainer = user?.role === 'TRAINER';
+
+  /* 상태 관리 */
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const [selectedRoom, setSelectedRoom] = useState<PTRoom | null>(null);
+  const [rooms, setRooms] = useState<PTRoomListItem[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<PTRoomListItem | null>(null);
+  const [roomDetail, setRoomDetail] = useState<GetPTRoomDetailResponse | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [inVideoCall, setInVideoCall] = useState(false);
-  const [activeCallRoom, setActiveCallRoom] = useState<PTRoom | null>(null);
+  const [activeCallRoom, setActiveCallRoom] = useState<GetPTRoomDetailResponse | null>(null);
+
+  /* 로딩/에러 상태 */
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  /* 내 예약 목록 (MY_RESERVATIONS 탭용) */
+  const [myReservationIds, setMyReservationIds] = useState<number[]>([]);
 
   /**
    * 초기 필터 적용
@@ -57,43 +78,50 @@ export default function VideoPTPage({
   }, [initialFilter]);
 
   /**
-   * 내 예약 방 ID 목록
-   * TODO: 실제 구현 시 API에서 가져오기
+   * 방 목록 조회
    */
-  const myReservationIds = DUMMY_MY_RESERVATIONS.map(r => r.roomId);
+  const fetchRooms = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await getPTRoomList({
+        tab: filterToTab[activeFilter],
+        q: searchQuery || undefined,
+      });
+      setRooms(response.items);
+    } catch (err: any) {
+      console.error('방 목록 조회 실패:', err);
+      setError(err.response?.data?.message || '방 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [activeFilter, searchQuery]);
 
   /**
-   * 필터링된 방 목록
+   * 필터/검색어 변경 시 목록 조회
    */
-  const filteredRooms = DUMMY_PT_ROOMS.filter((room: PTRoom) => {
-    /* 검색어 필터 */
-    const matchesSearch = 
-      room.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      room.trainerName.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    if (!matchesSearch) return false;
-    
-    /* 상태 필터 */
-    switch (activeFilter) {
-      case 'live':
-        return room.status === 'live';
-      case 'reserved':
-        return room.status === 'reserved';
-      case 'my-reservation':
-        return myReservationIds.includes(room.id);
-      case 'myRoom':
-        return room.trainerId === CURRENT_USER_ID;
-      default:
-        return true;
-    }
-  });
+  useEffect(() => {
+    fetchRooms();
+  }, [fetchRooms]);
 
   /**
    * 방 카드 클릭 핸들러
    */
-  const handleRoomClick = (room: PTRoom) => {
+  const handleRoomClick = async (room: PTRoomListItem) => {
     setSelectedRoom(room);
     setShowDetailModal(true);
+    setIsDetailLoading(true);
+    setRoomDetail(null);
+    
+    try {
+      const detail = await getPTRoomDetail(room.ptRoomId);
+      setRoomDetail(detail);
+    } catch (err: any) {
+      console.error('방 상세 조회 실패:', err);
+    } finally {
+      setIsDetailLoading(false);
+    }
   };
 
   /**
@@ -102,78 +130,133 @@ export default function VideoPTPage({
   const closeDetailModal = () => {
     setShowDetailModal(false);
     setSelectedRoom(null);
+    setRoomDetail(null);
   };
 
   /**
    * 방 참여 핸들러
    */
-  const handleJoinRoom = (room: PTRoom, entryCode?: string) => {
-    console.log('방 참여:', room.id, entryCode);
-    /* 화상통화 화면으로 전환 */
-    setActiveCallRoom(room);
-    setInVideoCall(true);
-    closeDetailModal();
+  const handleJoinRoom = async (room: PTRoomListItem, entryCode?: string) => {
+    setIsActionLoading(true);
+    
+    try {
+      const joinedRoom = await joinPTRoom(room.ptRoomId, { entryCode: entryCode || null });
+      setActiveCallRoom(joinedRoom);
+      setInVideoCall(true);
+      closeDetailModal();
+    } catch (err: any) {
+      console.error('방 입장 실패:', err);
+      const errorCode = err.response?.data?.code;
+      if (errorCode === 'INVALID_ENTRY_CODE') {
+        alert('입장 코드가 올바르지 않습니다.');
+      } else {
+        alert(err.response?.data?.message || '방 입장에 실패했습니다.');
+      }
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   /**
    * 방 예약 핸들러
    */
-  const handleReserveRoom = (room: PTRoom) => {
-    console.log('방 예약:', room.id);
-    /* TODO: 예약 API 호출 */
-    alert('예약이 완료되었습니다!');
-    closeDetailModal();
+  const handleReserveRoom = async (room: PTRoomListItem, entryCode?: string) => {
+    setIsActionLoading(true);
+    
+    try {
+      await createPTReservation(room.ptRoomId, { entryCode: entryCode || null });
+      alert('예약이 완료되었습니다!');
+      closeDetailModal();
+      fetchRooms(); /* 목록 새로고침 */
+    } catch (err: any) {
+      console.error('예약 실패:', err);
+      const errorCode = err.response?.data?.code;
+      if (errorCode === 'INVALID_ENTRY_CODE') {
+        alert('입장 코드가 올바르지 않습니다.');
+      } else {
+        alert(err.response?.data?.message || '예약에 실패했습니다.');
+      }
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   /**
    * 예약 취소 핸들러
    */
-  const handleCancelReservation = (room: PTRoom) => {
-    console.log('예약 취소:', room.id);
-    /* TODO: 예약 취소 API 호출 */
-    alert('예약이 취소되었습니다.');
-    closeDetailModal();
+  const handleCancelReservation = async (room: PTRoomListItem) => {
+    setIsActionLoading(true);
+    
+    try {
+      await cancelPTReservation(room.ptRoomId);
+      alert('예약이 취소되었습니다.');
+      closeDetailModal();
+      fetchRooms(); /* 목록 새로고침 */
+    } catch (err: any) {
+      console.error('예약 취소 실패:', err);
+      alert(err.response?.data?.message || '예약 취소에 실패했습니다.');
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   /**
    * 방 생성 핸들러
    */
-  const handleCreateRoom = (data: CreateRoomData) => {
-    console.log('방 생성:', data);
-    /* TODO: 방 생성 API 호출 */
+  const handleCreateRoom = async (data: CreateRoomData) => {
+    setIsActionLoading(true);
     
-    /* 실시간 방인 경우 바로 화상통화로 이동 */
-    if (data.roomType === 'instant') {
-      const newRoom: PTRoom = {
-        id: 'room-new-${Date.now()}',
+    try {
+      const createdRoom = await createPTRoom({
+        roomType: data.roomType,
         title: data.title,
         description: data.description,
-        trainerId: 'current-user',
-        trainerName: '나',
-        status: 'live',
-        visibility: data.isPrivate ? 'private' : 'public',
+        scheduledAt: data.scheduledAt,
         maxParticipants: data.maxParticipants,
-        currentParticipants: 1,
-        startedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-      };
+        isPrivate: data.isPrivate,
+      });
       
-      setActiveCallRoom(newRoom);
-      setInVideoCall(true);
-    } else {
-      alert('예약 방이 생성되었습니다!');
+      setShowCreateModal(false);
+      
+      /* 실시간 방인 경우 바로 화상통화로 이동 */
+      if (data.roomType === 'LIVE') {
+        /* 생성된 방 상세 정보로 입장 */
+        const roomDetail = await getPTRoomDetail(createdRoom.ptRoomId);
+        setActiveCallRoom(roomDetail);
+        setInVideoCall(true);
+      } else {
+        alert('예약 방이 생성되었습니다!');
+        fetchRooms(); /* 목록 새로고침 */
+      }
+    } catch (err: any) {
+      console.error('방 생성 실패:', err);
+      alert(err.response?.data?.message || '방 생성에 실패했습니다.');
+    } finally {
+      setIsActionLoading(false);
     }
-    
-    setShowCreateModal(false);
   };
 
   /**
    * 방 시작 핸들러 (트레이너 전용)
    */
-  const handleStartRoom = (room: PTRoom) => {
-    console.log('방 시작:', room.id);
-    setSelectedRoom(null);
-    setActiveCallRoom(room);
+  const handleStartRoom = async (room: PTRoomListItem) => {
+    setIsActionLoading(true);
+    
+    try {
+      /* 상태를 LIVE로 변경 */
+      await updatePTRoomStatus(room.ptRoomId, { status: 'LIVE' });
+      
+      /* 변경된 방 상세 정보 조회 후 입장 */
+      const roomDetail = await getPTRoomDetail(room.ptRoomId);
+      setActiveCallRoom(roomDetail);
+      setInVideoCall(true);
+      closeDetailModal();
+    } catch (err: any) {
+      console.error('방 시작 실패:', err);
+      alert(err.response?.data?.message || '방 시작에 실패했습니다.');
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   /**
@@ -192,8 +275,8 @@ export default function VideoPTPage({
       <VideoCallRoom 
         room={activeCallRoom} 
         onLeave={handleLeaveCall} 
-        isTrainer={IS_CURRENT_USER_TRAINER}
-        userName={IS_CURRENT_USER_TRAINER ? `[트레이너] ${activeCallRoom.trainerName}` : '회원닉네임'}
+        isTrainer={isTrainer}
+        userName={isTrainer ? `[트레이너] ${user?.nickname}` : user?.nickname || '사용자'}
       />
     );
   }
@@ -243,7 +326,7 @@ export default function VideoPTPage({
             내 예약
           </button>
           {/* 트레이너 전용 필터 */}
-          {IS_CURRENT_USER_TRAINER && (
+          {isTrainer && (
             <button 
               className={`filter-btn ${activeFilter === 'myRoom' ? 'active' : ''}`}
               onClick={() => setActiveFilter('myRoom')}
@@ -256,10 +339,14 @@ export default function VideoPTPage({
 
       {/* 방 목록 */}
       <div className="pt-room-list">
-        {filteredRooms.length > 0 ? (
-          filteredRooms.map(room => (
+        {isLoading ? (
+          <div className="pt-loading">로딩 중...</div>
+        ) : error ? (
+          <div className="pt-error">{error}</div>
+        ) : rooms.length > 0 ? (
+          rooms.map(room => (
             <PTRoomCard 
-              key={room.id} 
+              key={room.ptRoomId} 
               room={room} 
               onClick={handleRoomClick}
             />
@@ -285,7 +372,7 @@ export default function VideoPTPage({
       </div>
 
       {/* 트레이너인 경우 FAB 버튼 표시 */}
-      {IS_CURRENT_USER_TRAINER && (
+      {isTrainer && (
         <button 
           className="pt-fab"
           onClick={() => setShowCreateModal(true)}
@@ -298,14 +385,16 @@ export default function VideoPTPage({
       {showDetailModal && selectedRoom && (
         <PTRoomDetailModal
           room={selectedRoom}
-          onClose={() => setSelectedRoom(null)}
+          roomDetail={roomDetail}
+          onClose={closeDetailModal}
           onJoin={handleJoinRoom}
           onReserve={handleReserveRoom}
           onCancelReservation={handleCancelReservation}
-          isReserved={myReservationIds.includes(selectedRoom.id)}
-          isTrainer={IS_CURRENT_USER_TRAINER}
-          isMyRoom={selectedRoom.trainerId === CURRENT_USER_ID}
+          isReserved={myReservationIds.includes(selectedRoom.ptRoomId)}
+          isTrainer={isTrainer}
+          isMyRoom={selectedRoom.trainer.handle === user?.handle}
           onStartRoom={handleStartRoom}
+          isLoading={isDetailLoading || isActionLoading}
         />
       )}
 
@@ -314,6 +403,7 @@ export default function VideoPTPage({
         <PTCreateRoomModal
           onClose={() => setShowCreateModal(false)}
           onCreate={handleCreateRoom}
+          isLoading={isActionLoading}
         />
       )}
     </div>

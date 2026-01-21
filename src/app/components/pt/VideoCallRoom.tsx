@@ -19,14 +19,15 @@ import {
   MoreVertical,
   User
 } from 'lucide-react';
-import { PTRoom } from '../../../data/pts';
+import type { GetPTRoomDetailResponse } from '../../../api/types/pt';
 import { useJanus } from '../../../hooks/useJanus';
+import { leavePTRoom } from '../../../api/pt';
 
 /**
  * Props 타입 정의
  */
 interface VideoCallRoomProps {
-  room: PTRoom;
+  room: GetPTRoomDetailResponse;
   onLeave: () => void;
   isTrainer?: boolean;
   userName?: string;
@@ -56,7 +57,10 @@ export default function VideoCallRoom({
 
   /**
    * Janus 훅 사용
+   * janusRoomKey를 숫자로 변환
    */
+  const janusRoomId = room.janusRoomKey ? parseInt(room.janusRoomKey, 10) : room.ptRoomId;
+
   const {
     connectionStatus,
     localStream,
@@ -73,9 +77,9 @@ export default function VideoCallRoom({
     isVideoOff,
     isScreenSharing
   } = useJanus({
-    roomId: room.id,  // 30000번대 숫자 ID
-    displayName: userName,
-    trainerName: room.trainerName,
+    roomId: janusRoomId,
+    displayName: userName || '사용자',
+    trainerName: room.trainer.nickname,
     onError: (error) => {
       console.error('Janus 에러:', error);
     }
@@ -199,9 +203,16 @@ export default function VideoCallRoom({
   /**
    * 종료 확인 핸들러
    */
-  const handleLeaveConfirm = () => {
+  const handleLeaveConfirm = async () => {
     setShowLeaveConfirm(false);
     disconnect();
+    
+    try {
+      await leavePTRoom(room.ptRoomId);
+    } catch (err) {
+      console.error('퇴장 API 호출 실패:', err);
+    }
+    
     onLeave();
   };
 

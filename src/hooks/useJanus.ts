@@ -7,9 +7,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
  * Janus 서버 URL
- * TODO: 환경변수로 분리 권장
  */
-const JANUS_SERVER = 'https://janus.jsflux.co.kr/janus';
+const JANUS_SERVER = import.meta.env.VITE_JANUS_SERVER
 
 /**
  * 참가자 타입

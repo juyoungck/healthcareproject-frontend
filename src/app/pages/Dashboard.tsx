@@ -597,7 +597,7 @@ export default function Dashboard({
       case 'pt':
         return <VideoPTPage initialFilter={videoPTFilter} />;
       case 'board':
-        return <BoardPage currentUserId={currentUserId} />;
+        return <BoardPage />;
       case 'calendar':
         return (
           <CalendarPage
