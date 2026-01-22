@@ -173,6 +173,31 @@
   border-radius: var(--border-radius-sm);
 }
 
+/* 프로필 이미지 스타일 */
+.vc-video-profile-img {
+  width: var(--element-size-8xl);
+  height: var(--element-size-8xl);
+  border-radius: var(--border-radius-full);
+  object-fit: cover;
+}
+
+.vc-sub-video-profile-img {
+  width: var(--element-size-xl);
+  height: var(--element-size-xl);
+  border-radius: var(--border-radius-full);
+  object-fit: cover;
+}
+
+.vc-sub-video-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-gray-700);
+  color: var(--color-gray-400);
+}
+
 /**
  * 서브 비디오 목록
  */
@@ -182,7 +207,14 @@
   overflow-x: auto;
   align-items: center;
   justify-content: center;
-  padding-bottom: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.vc-sub-videos::-webkit-scrollbar {
+  display: none;
 }
 
 .vc-sub-video {
@@ -199,6 +231,20 @@
   cursor: pointer;
   border: var(--border-width-md) solid transparent;
   transition: all var(--transition-fast);
+  scroll-snap-align: center;
+}
+
+/* 모바일에서 서브 비디오 크기 조정 */
+@media (max-width: 480px) {
+  .vc-sub-video {
+    width: 5rem;
+    height: 4rem;
+  }
+  
+  .vc-sub-video-profile-img {
+    width: var(--element-size-lg);
+    height: var(--element-size-lg);
+  }
 }
 
 .vc-sub-video:hover {

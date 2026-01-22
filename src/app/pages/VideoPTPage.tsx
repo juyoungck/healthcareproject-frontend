@@ -263,6 +263,7 @@ export default function VideoPTPage({
         onLeave={handleLeaveCall} 
         isTrainer={isTrainer}
         userName={isTrainer ? `[트레이너] ${user?.nickname}` : user?.nickname || '사용자'}
+        userProfileImage={user?.profileImageUrl}
       />
     );
   }

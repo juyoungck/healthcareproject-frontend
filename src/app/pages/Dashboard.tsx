@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   Dumbbell,
   User,
@@ -91,6 +92,7 @@ export default function Dashboard({
   onMyPageShown,
   onOpenAdminPage
 }: DashboardProps) {
+  const { user: userInfo, updateUser } = useAuth();
 
   /**
    * 현재 활성 탭 상태
@@ -640,7 +642,11 @@ export default function Dashboard({
 
           {/* 우측 마이페이지 버튼 */}
           <button className="app-profile-btn" onClick={() => setShowMyPage(true)}>
-            <User className="app-profile-icon" />
+            {userInfo?.profileImageUrl ? (
+              <img src={userInfo.profileImageUrl} alt="프로필" className="mypage-profile-image" />
+            ) : (
+              <User size={48} className="mypage-profile-placeholder" />
+            )}
           </button>
         </div>
       </header>
