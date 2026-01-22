@@ -1,63 +1,166 @@
 /**
- * ExerciseContent.tsx
+ * ExercisePage.tsx
  * 운동 탭 콘텐츠 컴포넌트
  * - 운동 검색 기능
- * - 부위별/난이도별 필터
- * - 운동 목록 2열 그리드 표시
+ * - 부위별 필터
+ * - 운동 목록 무한 스크롤
  * - 운동 카드 클릭 시 상세 페이지 표시
- * 
- * 주의: 헤더/네비게이션은 Dashboard에서 관리
  */
 
-import { useState, useMemo, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Search, Loader } from 'lucide-react';
 import ExerciseDetailContent from '../components/exercise/ExerciseDetail';
-import { 
-  BodyPart, 
-  Difficulty, 
-  BODY_PARTS, 
-  DIFFICULTIES, 
-  DUMMY_EXERCISES 
-} from '../../data/exercises';
+import { getExercises } from '../../api/exercise';
+import type { ExerciseListItem, BodyPart } from '../../api/types/exercise';
+import { BODY_PART_OPTIONS, BODY_PART_LABELS, DIFFICULTY_LABELS} from '../../api/types/exercise';
 
 /**
  * Props 타입 정의
  */
-interface ExerciseContentProps {
+interface ExercisePageProps {
   initialExerciseId?: number | null;
   onExerciseSelect?: (id: number | null) => void;
 }
 
 /**
- * ExerciseContent 컴포넌트
- * 운동 탭 콘텐츠 UI 렌더링
+ * ExercisePage 컴포넌트
  */
-export default function ExerciseContent({ 
+export default function ExercisePage({
   initialExerciseId = null,
-  onExerciseSelect 
-}: ExerciseContentProps = {}) { 
+  onExerciseSelect,
+}: ExercisePageProps = {}) {
   /**
-   * 검색어 상태
+   * 상태 관리
    */
+  const [exercises, setExercises] = useState<ExerciseListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError] = useState('');
+
+  /* 페이지네이션 */
+  const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [hasNext, setHasNext] = useState(true);
+
+  /* 필터 */
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBodyPart, setSelectedBodyPart] = useState<BodyPart | 'ALL'>('ALL');
 
-  /**
-   * 부위 필터 상태 (복수 선택 가능)
-   */
-  const [selectedBodyParts, setSelectedBodyParts] = useState<BodyPart[]>(['전체']);
-
-  /**
-   * 난이도 필터 상태 (복수 선택 가능)
-   */
-  const [selectedDifficulties, setSelectedDifficulties] = useState<Difficulty[]>(['전체']);
-
-  /**
-   * 선택된 운동 ID (상세 페이지 표시용)
-   */
+  /* 선택된 운동 ID (상세 페이지) */
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(initialExerciseId);
 
+  /* 무한 스크롤 옵저버 */
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
   /**
-   * initialExerciseId가 변경되면 상태 업데이트
+   * 운동 목록 조회 (첫 페이지)
+   */
+  const fetchExercises = useCallback(async (reset = false) => {
+    if (reset) {
+      setIsLoading(true);
+      setExercises([]);
+      setNextCursor(null);
+      setHasNext(true);
+    }
+    setError('');
+
+    try {
+      const response = await getExercises({
+        limit: 10,
+        keyword: searchQuery || undefined,
+        bodyPart: selectedBodyPart !== 'ALL' ? selectedBodyPart : undefined,
+      });
+
+      setExercises(response.items);
+      setNextCursor(response.nextCursor);
+      setHasNext(response.hasNext);
+    } catch (err) {
+      console.error('운동 목록 조회 실패:', err);
+      setError('운동 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchQuery, selectedBodyPart]);
+
+  /**
+   * 운동 목록 추가 조회 (무한 스크롤)
+   */
+  const fetchMoreExercises = useCallback(async () => {
+    if (isLoadingMore || !hasNext || nextCursor === null) return;
+
+    setIsLoadingMore(true);
+
+    try {
+      const response = await getExercises({
+        cursor: nextCursor,
+        limit: 10,
+        keyword: searchQuery || undefined,
+        bodyPart: selectedBodyPart !== 'ALL' ? selectedBodyPart : undefined,
+      });
+
+      setExercises(prev => [...prev, ...response.items]);
+      setNextCursor(response.nextCursor);
+      setHasNext(response.hasNext);
+    } catch (err) {
+      console.error('운동 목록 추가 조회 실패:', err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore, hasNext, nextCursor, searchQuery, selectedBodyPart]);
+
+  /**
+   * 초기 로드 및 필터 변경 시 재조회
+   */
+  useEffect(() => {
+    fetchExercises(true);
+  }, [selectedBodyPart]);
+
+  /**
+   * 검색 실행 (엔터 또는 버튼)
+   */
+  const handleSearch = () => {
+    fetchExercises(true);
+  };
+
+  /**
+   * 검색 입력 엔터 처리
+   */
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  /**
+   * 무한 스크롤 옵저버 설정
+   */
+  useEffect(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNext && !isLoadingMore) {
+          fetchMoreExercises();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [fetchMoreExercises, hasNext, isLoadingMore]);
+
+  /**
+   * initialExerciseId 변경 시 상태 업데이트
    */
   useEffect(() => {
     if (initialExerciseId !== null) {
@@ -68,74 +171,9 @@ export default function ExerciseContent({
   /**
    * 부위 필터 클릭 핸들러
    */
-  const handleBodyPartClick = (bodyPart: BodyPart) => {
-    if (bodyPart === '전체') {
-      setSelectedBodyParts(['전체']);
-    } else {
-      setSelectedBodyParts(prev => {
-        /* 전체가 선택되어 있으면 제거하고 새 항목 추가 */
-        const withoutAll = prev.filter(p => p !== '전체');
-        
-        if (prev.includes(bodyPart)) {
-          /* 이미 선택된 항목 클릭 시 제거 */
-          const newSelection = withoutAll.filter(p => p !== bodyPart);
-          /* 아무것도 선택 안되면 전체로 */
-          return newSelection.length === 0 ? ['전체'] : newSelection;
-        } else {
-          /* 새 항목 추가 */
-          return [...withoutAll, bodyPart];
-        }
-      });
-    }
+  const handleBodyPartClick = (bodyPart: BodyPart | 'ALL') => {
+    setSelectedBodyPart(bodyPart);
   };
-
-  /**
-   * 난이도 필터 클릭 핸들러
-   */
-  const handleDifficultyClick = (difficulty: Difficulty) => {
-    if (difficulty === '전체') {
-      setSelectedDifficulties(['전체']);
-    } else {
-      setSelectedDifficulties(prev => {
-        /* 전체가 선택되어 있으면 제거하고 새 항목 추가 */
-        const withoutAll = prev.filter(d => d !== '전체');
-        
-        if (prev.includes(difficulty)) {
-          /* 이미 선택된 항목 클릭 시 제거 */
-          const newSelection = withoutAll.filter(d => d !== difficulty);
-          /* 아무것도 선택 안되면 전체로 */
-          return newSelection.length === 0 ? ['전체'] : newSelection;
-        } else {
-          /* 새 항목 추가 */
-          return [...withoutAll, difficulty];
-        }
-      });
-    }
-  };
-
-  /**
-   * 필터링된 운동 목록
-   */
-  const filteredExercises = useMemo(() => {
-    return DUMMY_EXERCISES.filter(exercise => {
-      /* 검색어 필터 */
-      const matchesSearch = exercise.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-
-      /* 부위 필터 */
-      const matchesBodyPart = 
-        selectedBodyParts.includes('전체') || 
-        selectedBodyParts.includes(exercise.bodyPart);
-
-      /* 난이도 필터 */
-      const matchesDifficulty = 
-        selectedDifficulties.includes('전체') || 
-        selectedDifficulties.includes(exercise.difficulty);
-
-      return matchesSearch && matchesBodyPart && matchesDifficulty;
-    });
-  }, [searchQuery, selectedBodyParts, selectedDifficulties]);
 
   /**
    * 운동 카드 클릭 핸들러
@@ -151,6 +189,16 @@ export default function ExerciseContent({
   const handleBackFromDetail = () => {
     setSelectedExerciseId(null);
     onExerciseSelect?.(null);
+  };
+
+  /**
+ * 맨 위로 스크롤
+ */
+  const handleScrollToTop = () => {
+    const appMain = document.querySelector('.app-main');
+    if (appMain) {
+      appMain.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   /**
@@ -182,63 +230,92 @@ export default function ExerciseContent({
             placeholder="운동 검색..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
         </div>
 
         {/* 부위별 필터 */}
         <div className="filter-group">
-            {BODY_PARTS.map((bodyPart) => (
-                <button
-                key={bodyPart}
-                className={`filter-btn ${
-                    selectedBodyParts.includes(bodyPart) ? 'active' : ''
-                }`}
-                onClick={() => handleBodyPartClick(bodyPart)}
-                >
-                {bodyPart}
-                </button>
-            ))}
-        </div>
-
-        {/* 난이도별 필터 */}
-        <div className="filter-group">
-            {DIFFICULTIES.map((difficulty) => (
-                <button
-                key={difficulty}
-                className={`filter-btn ${
-                    selectedDifficulties.includes(difficulty) ? 'active' : ''
-                }`}
-                onClick={() => handleDifficultyClick(difficulty)}
-                >
-                {difficulty}
-                </button>
-            ))}
+          {BODY_PART_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              className={`filter-btn ${selectedBodyPart === option.value ? 'active' : ''}`}
+              onClick={() => handleBodyPartClick(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* 운동 목록 */}
       <div className="exercise-list">
-        {filteredExercises.length > 0 ? (
-          <div className="exercise-grid">
-            {filteredExercises.map((exercise) => (
-              <button 
-                key={exercise.id} 
-                className="exercise-card"
-                onClick={() => handleExerciseClick(exercise.id)}
-              >
-                <div className="exercise-card-thumbnail">
-                  <span className="exercise-card-emoji">{exercise.thumbnail}</span>
-                </div>
-                <div className="exercise-card-info">
-                  <p className="exercise-card-name">{exercise.name}</p>
-                  <div className="exercise-card-tags">
-                    <span className="exercise-card-tag bodypart">{exercise.bodyPart}</span>
-                    <span className="exercise-card-tag difficulty">{exercise.difficulty}</span>
-                  </div>
-                </div>
-              </button>
-            ))}
+        {isLoading ? (
+          <div className="exercise-loading">
+            <Loader className="spinner" size={32} />
+            <p>운동 목록을 불러오는 중...</p>
           </div>
+        ) : error ? (
+          <div className="exercise-error">
+            <p>{error}</p>
+            <button onClick={() => fetchExercises(true)}>다시 시도</button>
+          </div>
+        ) : exercises.length > 0 ? (
+          <>
+            <div className="exercise-grid">
+              {exercises.map((exercise) => (
+                <button
+                  key={exercise.exerciseId}
+                  className="exercise-card"
+                  onClick={() => handleExerciseClick(exercise.exerciseId)}
+                >
+                  <div className="exercise-card-thumbnail">
+                    {exercise.imageUrl ? (
+                      <img
+                        src={exercise.imageUrl}
+                        alt={exercise.name}
+                        className="exercise-card-image"
+                      />
+                    ) : (
+                      <span className="exercise-card-emoji">💪</span>
+                    )}
+                  </div>
+                  <div className="exercise-card-info">
+                    <p className="exercise-card-name">{exercise.name}</p>
+                    <div className="exercise-card-tags">
+                      <span className="exercise-card-tag bodypart">
+                        {BODY_PART_LABELS[exercise.bodyPart]}
+                      </span>
+                      <span className="exercise-card-tag difficulty">
+                        {DIFFICULTY_LABELS[exercise.difficulty]}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* 무한 스크롤 트리거 */}
+            <div ref={loadMoreRef} className="exercise-load-more">
+              {isLoadingMore && (
+                <div className="exercise-loading-more">
+                  <Loader className="spinner" size={24} />
+                  <span>불러오는 중...</span>
+                </div>
+              )}
+              {!hasNext && exercises.length > 0 && (
+                <div className="exercise-end-section">
+                  <p className="exercise-end-message">모든 운동을 확인했습니다.</p>
+                  <button
+                    className="exercise-scroll-top-btn"
+                    onClick={handleScrollToTop}
+                  >
+                    맨 위로 올라가기
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
         ) : (
           <div className="exercise-empty">
             <p className="exercise-empty-text">검색 결과가 없습니다</p>

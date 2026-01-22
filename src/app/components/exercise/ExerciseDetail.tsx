@@ -1,25 +1,21 @@
 /**
- * ExerciseDetailContent.tsx
- * 운동 상세 콘텐츠 컴포넌트
- * - 뒤로가기 바
- * - 운동 썸네일 이미지
- * - 운동명 및 태그
- * - 운동 방법 및 상세 설명
- * - 주의사항
- * - 유튜브 영상 썸네일
+ * ExerciseDetail.tsx
+ * 운동 상세 페이지 컴포넌트
+ * - 운동 상세 정보 표시
+ * - 유튜브 영상 링크
  * - 대체 운동 추천
- * 
- * 주의: 헤더/네비게이션은 Dashboard에서 관리
  */
 
-import { useMemo, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { DUMMY_EXERCISE_DETAILS } from '../../../data/exercises';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, AlertTriangle, Loader } from 'lucide-react';
+import { getExerciseDetail } from '../../../api/exercise';
+import type { ExerciseDetail, AlternativeExercise } from '../../../api/types/exercise';
+import { BODY_PART_LABELS, DIFFICULTY_LABELS } from '../../../api/types/exercise';
 
 /**
- * 컴포넌트 Props 타입 정의
+ * Props 타입 정의
  */
-interface ExerciseDetailContentProps {
+interface ExerciseDetailProps {
   exerciseId: number;
   onBack: () => void;
   onSelectExercise: (id: number) => void;
@@ -27,144 +23,184 @@ interface ExerciseDetailContentProps {
 
 /**
  * ExerciseDetailContent 컴포넌트
- * 운동 상세 정보 UI 렌더링 (콘텐츠만)
  */
-export default function ExerciseDetailContent({ 
-  exerciseId, 
+export default function ExerciseDetailContent({
+  exerciseId,
   onBack,
   onSelectExercise,
-}: ExerciseDetailContentProps) {
+}: ExerciseDetailProps) {
   /**
-   * exerciseId 변경 시 스크롤 맨 위로
+   * 상태 관리
+   */
+  const [exercise, setExercise] = useState<ExerciseDetail | null>(null);
+  const [alternatives, setAlternatives] = useState<AlternativeExercise[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  /**
+   * 운동 상세 조회
    */
   useEffect(() => {
     const appMain = document.querySelector('.app-main');
     if (appMain) {
       appMain.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    const fetchExerciseDetail = async () => {
+      setIsLoading(true);
+      setError('');
+
+      try {
+        const response = await getExerciseDetail(exerciseId);
+        setExercise(response.exercise);
+        setAlternatives(response.alternatives);
+      } catch (err) {
+        console.error('운동 상세 조회 실패:', err);
+        setError('운동 정보를 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchExerciseDetail();
   }, [exerciseId]);
 
   /**
-   * 현재 운동 데이터 찾기
+   * 로딩 상태
    */
-  const exercise = useMemo(() => {
-    return DUMMY_EXERCISE_DETAILS.find(ex => ex.id === exerciseId);
-  }, [exerciseId]);
-
-  /**
-   * 대체 운동 목록 (같은 부위, 현재 운동 제외)
-   */
-  const alternativeExercises = useMemo(() => {
-    if (!exercise) return [];
-    return DUMMY_EXERCISE_DETAILS
-      .filter(ex => ex.bodyPart === exercise.bodyPart && ex.id !== exercise.id)
-      .slice(0, 3);
-  }, [exercise]);
-
-  /**
-   * 운동을 찾지 못한 경우
-   */
-  if (!exercise) {
+  if (isLoading) {
     return (
-      <main className="app-main">
-        <div className="exercise-empty">
-          <p className="exercise-empty-text">운동 정보를 찾을 수 없습니다</p>
+      <div className="exercise-detail">
+        <header className="exercise-detail-header">
+          <button className="exercise-detail-back-btn" onClick={onBack}>
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="exercise-detail-title">운동 상세</h1>
+          <div className="exercise-detail-header-spacer" />
+        </header>
+        <div className="exercise-detail-loading">
+          <Loader className="spinner" size={32} />
+          <p>운동 정보를 불러오는 중...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   /**
-   * 메인 콘텐츠 렌더링
+   * 에러 상태
    */
+  if (error || !exercise) {
+    return (
+      <div className="exercise-detail">
+        <header className="exercise-detail-header">
+          <button className="exercise-detail-back-btn" onClick={onBack}>
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="exercise-detail-title">운동 상세</h1>
+          <div className="exercise-detail-header-spacer" />
+        </header>
+        <div className="exercise-detail-error">
+          <p>{error || '운동을 찾을 수 없습니다.'}</p>
+          <button onClick={onBack}>목록으로 돌아가기</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <main className="exercise-detail-main">
-      {/* 뒤로가기 바 */}
-      <div className="exercise-detail-back-bar">
-        <button className="exercise-detail-back" onClick={onBack}>
-          <ArrowLeft size={20} />
+    <div className="exercise-detail">
+      {/* 헤더 */}
+      <header className="exercise-detail-header">
+        <button className="exercise-detail-back-btn" onClick={onBack}>
+          <ArrowLeft size={24} />
         </button>
-      </div>
+        <h1 className="exercise-detail-title">{exercise.name}</h1>
+        <div className="exercise-detail-header-spacer" />
+      </header>
 
-      {/* 썸네일 이미지 */}
-      <div className="exercise-detail-thumbnail">
-        <span className="exercise-detail-emoji">{exercise.thumbnail}</span>
-      </div>
+      {/* 콘텐츠 */}
+      <main className="exercise-detail-content">
+        {/* 운동 이미지 */}
+        <div className="exercise-detail-image-section">
+          {exercise.imageUrl ? (
+            <img
+              src={exercise.imageUrl}
+              alt={exercise.name}
+              className="exercise-detail-image"
+            />
+          ) : (
+            <div className="exercise-detail-image-placeholder">
+              <span>💪</span>
+            </div>
+          )}
+        </div>
 
-      {/* 운동명 및 태그 */}
-      <div className="exercise-detail-title-section">
-        <h1 className="exercise-detail-name">{exercise.name}</h1>
+        {/* 태그 */}
         <div className="exercise-detail-tags">
-          <span className="exercise-card-tag bodypart">{exercise.bodyPart}</span>
-          <span className="exercise-card-tag difficulty">{exercise.difficulty}</span>
+          <span className="exercise-detail-tag bodypart">
+            {BODY_PART_LABELS[exercise.bodyPart]}
+          </span>
+          <span className="exercise-detail-tag difficulty">
+            {DIFFICULTY_LABELS[exercise.difficulty]}
+          </span>
         </div>
-      </div>
 
-      {/* 운동 설명 */}
-      <div className="exercise-detail-section">
-        <p className="exercise-detail-description">{exercise.description}</p>
-      </div>
+        {/* 설명 */}
+        <section className="exercise-detail-section">
+          <h2 className="exercise-detail-section-title">운동 설명</h2>
+          <p className="exercise-detail-description">{exercise.description}</p>
+        </section>
 
-      {/* 운동 방법 */}
-      <div className="exercise-detail-section">
-        <h2 className="exercise-detail-section-title">운동 방법</h2>
-        <ol className="exercise-detail-instructions">
-          {exercise.instructions.map((instruction, index) => (
-            <li key={index} className="exercise-detail-instruction-item">
-              <span className="exercise-detail-instruction-number">{index + 1}</span>
-              <span className="exercise-detail-instruction-text">{instruction}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
+        {/* 주의사항 */}
+        {exercise.precautions && (
+          <section className="exercise-detail-section">
+            <h2 className="exercise-detail-section-title">
+              <AlertTriangle size={18} />
+              주의사항
+            </h2>
+            <p className="exercise-detail-precautions">{exercise.precautions}</p>
+          </section>
+        )}
 
-      {/* 주의사항 */}
-      <div className="exercise-detail-section">
-        <h2 className="exercise-detail-section-title">주의사항</h2>
-        <ul className="exercise-detail-cautions">
-          {exercise.cautions.map((caution, index) => (
-            <li key={index} className="exercise-detail-caution-item">
-              {caution}
-            </li>
-          ))}
-        </ul>
-      </div>
+        {/* 유튜브 영상 */}
+        {exercise.youtubeUrl && (
+          <section className="exercise-detail-section">
+            <h2 className="exercise-detail-section-title">운동 영상</h2>
+            <iframe
+              className="exercise-detail-video"
+              src={exercise.youtubeUrl.replace('watch?v=', 'embed/')}
+              title={`${exercise.name} 영상`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </section>
+        )}
 
-      {/* 유튜브 영상 */}
-      <div className="exercise-detail-section">
-        <h2 className="exercise-detail-section-title">운동 영상</h2>
-        <iframe
-          className="exercise-detail-video"
-          src={exercise.youtubeUrl.replace('watch?v=', 'embed/')}
-          title={`${exercise.name} 영상`}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      </div>
-
-      {/* 대체 운동 */}
-      {alternativeExercises.length > 0 && (
-        <div className="exercise-detail-section">
-          <h2 className="exercise-detail-section-title">대체 운동</h2>
-          <div className="exercise-detail-alternatives">
-            {alternativeExercises.map((alt) => (
-              <button 
-                key={alt.id} 
-                className="exercise-alternative-card"
-                onClick={() => onSelectExercise(alt.id)}
-              >
-                <div className="exercise-alternative-thumbnail">
-                  <span className="exercise-alternative-emoji">{alt.thumbnail}</span>
-                </div>
-                <div className="exercise-alternative-info">
-                  <p className="exercise-alternative-name">{alt.name}</p>
-                  <span className="exercise-alternative-difficulty">{alt.difficulty}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </main>
+        {/* 대체 운동 */}
+        {alternatives.length > 0 && (
+          <section className="exercise-detail-section">
+            <h2 className="exercise-detail-section-title">대체 운동</h2>
+            <div className="exercise-detail-alternatives">
+              {alternatives.map((alt) => (
+                <button
+                  key={alt.exerciseId}
+                  className="exercise-detail-alternative-card"
+                  onClick={() => onSelectExercise(alt.exerciseId)}
+                >
+                  <div className="exercise-detail-alternative-thumbnail">
+                    {alt.imageUrl ? (
+                      <img src={alt.imageUrl} alt={alt.name} />
+                    ) : (
+                      <span>💪</span>
+                    )}
+                  </div>
+                  <span className="exercise-detail-alternative-name">{alt.name}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
   );
 }

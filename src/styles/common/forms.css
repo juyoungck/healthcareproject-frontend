@@ -31,6 +31,36 @@
 }
 
 /**
+ * 라벨 + 상태 메시지 행
+ */
+.form-label-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.form-label-row .form-label {
+  margin-bottom: 0;
+}
+
+/**
+ * 라벨 옆 상태 메시지
+ */
+.form-label-status {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+}
+
+.form-label-status.success {
+  color: var(--color-gray-500);
+}
+
+.form-label-status.error {
+  color: var(--color-error);
+}
+
+/**
  * ===========================================
  * 입력 필드
  * ===========================================
@@ -112,6 +142,15 @@
   height: var(--icon-size-lg);
   color: var(--color-gray-400);
   cursor: pointer;
+}
+
+/**
+ * 입력 필드 내부 버튼 (중복확인 등)
+ */
+.form-input-btn {
+  position: absolute;
+  right: var(--spacing-md);
+  height: var(--element-size-sm);
 }
 
 .form-input-toggle:hover {

@@ -304,7 +304,15 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
                 </div>
               )}
               {!hasMore && displayedPosts.length > 0 && (
-                <p className="board-end-message">모든 게시글을 불러왔습니다.</p>
+                <div className="board-end-section">
+                  <p className="board-end-message">모든 게시글을 불러왔습니다.</p>
+                  <button
+                    className="board-scroll-top-btn"
+                    onClick={handleScrollToTop}
+                  >
+                    맨 위로 올라가기
+                  </button>
+                </div>
               )}
             </div>
           </>
@@ -312,8 +320,8 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
       </div>
 
       {/* 글쓰기 플로팅 버튼 */}
-      <button 
-        className="board-write-fab" 
+      <button
+        className="board-write-fab"
         onClick={() => {
           if (!isLoggedIn) {
             alert('로그인이 필요합니다.');
