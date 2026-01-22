@@ -843,11 +843,3 @@
 .month-calendar-marker.memo.complete {
   background-color: var(--color-yellow-400);
 }
-/**
- * 월간 마커 - 기본 스타일
- */
-.month-calendar-marker {
-  width: calc(var(--spacing-xs) * 1.2);
-  height: calc(var(--spacing-xs) * 1.2);
-  border-radius: var(--border-radius-full);
-}

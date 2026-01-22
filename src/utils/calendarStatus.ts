@@ -6,7 +6,6 @@
 import {
   WorkoutDietStatus,
   VideoPtStatus,
-  MemoStatus,
 } from '../api/types/calendar';
 
 /**
@@ -106,14 +105,8 @@ export const getVideoPtClass = (status: VideoPtStatus | undefined): string => {
  * @param status - API 응답 상태
  * @returns CSS 클래스명
  */
-export const getMemoClass = (status: MemoStatus | undefined): string => {
-  if (!status) return 'none';
-
-  /** TODO: 백엔드 확정 후 변경될 수 있음 */
-  const statusMap: Record<MemoStatus, string> = {
-    NONE: 'none',
-    HAS_MEMO: 'complete',
-  };
-
-  return statusMap[status] || 'none';
+export const getMemoClass = (memo: { exists: boolean } | undefined): string => {
+  if (!memo) return 'none';
+  
+  return memo.exists ? 'complete' : 'none';
 };

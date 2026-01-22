@@ -27,12 +27,6 @@ export type WorkoutDietStatus = 'NONE' | 'COMPLETE' | 'INCOMPLETE' | 'FAILED';
 export type VideoPtStatus = 'NONE' | 'HAS_RESERVATION';
 
 /**
- * 메모 상태
- * TODO: 백엔드 확정 후 변경될 수 있음
- */
-export type MemoStatus = 'NONE' | 'HAS_MEMO';
-
-/**
  * ===========================================
  * 주간 컬러코드 API
  * GET /api/me/calendar/weekly?startDate={startDate}
@@ -48,7 +42,9 @@ export interface DayStatusItem {
   diet: { status: WorkoutDietStatus };
   videoPt: { status: VideoPtStatus };
   /** TODO: 메모 상태 - 백엔드 확정 후 변경될 수 있음 */
-  memo: { status: MemoStatus };
+  memo: {
+  exists: boolean;
+};
 }
 
 /**
