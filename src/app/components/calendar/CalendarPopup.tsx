@@ -11,18 +11,18 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { DailyRecord } from '../../../types/calendar';
 import { formatDateShort, getDateKey, getStatusText } from '../../../utils/calendar';
+import { getDailyDetail } from '../../../api/calendar';
+import { getMemo, putMemo } from '../../../api/memo';
+import { DailyDetailResponse } from '../../../api/types/calendar';
 
 /**
  * ===========================================
  * Props 타입 정의
  * ===========================================
  */
-
 interface CalendarPopupProps {
   /** 선택된 날짜 */
   date: Date;
-  /** 해당 날짜의 기록 */
-  record: DailyRecord;
   /** 팝업 닫기 핸들러 */
   onClose: () => void;
   /** 운동 상세 페이지 이동 핸들러 */
@@ -31,8 +31,8 @@ interface CalendarPopupProps {
   onNavigateToDiet?: () => void;
   /** 화상PT 상세 페이지 이동 핸들러 */
   onNavigateToPT?: () => void;
-  /** 메모 저장 핸들러 */
-  onSaveMemo?: (dateKey: string, memoText: string) => void;
+  /** 메모 저장 성공 콜백 (마커 업데이트용) */
+  onMemoSaved?: (dateKey: string, hasContent: boolean) => void;
 }
 
 /**
@@ -43,27 +43,73 @@ interface CalendarPopupProps {
 
 export default function CalendarPopup({
   date,
-  record,
   onClose,
   onNavigateToWorkout,
   onNavigateToDiet,
   onNavigateToPT,
-  onSaveMemo,
+  onMemoSaved,
 }: CalendarPopupProps) {
+  
   /**
    * ===========================================
    * 상태 관리
    * ===========================================
    */
 
+  /** 일일 상세 데이터 */
+  const [dailyDetail, setDailyDetail] = useState<DailyDetailResponse | null>(null);
+
   /** 메모 텍스트 상태 */
-  const [memoText, setMemoText] = useState(record.memo || '');
+  const [memoText, setMemoText] = useState('');
+
+  /** 초기 메모 텍스트 (변경 여부 비교용) */
+  const [initialMemoText, setInitialMemoText] = useState('');
+
+  /** 데이터 로딩 상태 */
+  const [isLoading, setIsLoading] = useState(true);
+
+  /** 메모 저장 중 상태 */
+  const [isSaving, setIsSaving] = useState(false);
+
+  /** 에러 메시지 */
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   /**
    * ===========================================
    * 이펙트
    * ===========================================
    */
+
+  /**
+   * 팝업 열릴 때 일일 상세 + 메모 조회
+   */
+  useEffect(() => {
+    const fetchData = async () => {
+      const dateKey = getDateKey(date);
+      setIsLoading(true);
+      setErrorMessage(null);
+
+      try {
+        /* 일일 상세 조회 */
+        const detailResponse = await getDailyDetail(dateKey);
+        setDailyDetail(detailResponse);
+
+        /* 메모 내용 설정 */
+        const content = detailResponse.memo?.content || '';
+        setMemoText(content);
+        setInitialMemoText(content);
+      } catch (error) {
+        /* 데이터가 없는 경우도 정상 처리 */
+        setDailyDetail(null);
+        setMemoText('');
+        setInitialMemoText('');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [date]);
 
   /**
    * ESC 키로 팝업 닫기
@@ -91,7 +137,7 @@ export default function CalendarPopup({
    * 운동 항목 클릭
    */
   const handleWorkoutClick = () => {
-    if (onNavigateToWorkout && record.status.workout !== 'none') {
+    if (onNavigateToWorkout && dailyDetail?.workout?.exists) {
       onNavigateToWorkout();
     }
   };
@@ -100,7 +146,7 @@ export default function CalendarPopup({
    * 식단 항목 클릭
    */
   const handleDietClick = () => {
-    if (onNavigateToDiet && record.status.diet !== 'none') {
+    if (onNavigateToDiet && dailyDetail?.diet?.exists) {
       onNavigateToDiet();
     }
   };
@@ -109,19 +155,41 @@ export default function CalendarPopup({
    * 화상PT 항목 클릭
    */
   const handlePTClick = () => {
-    if (onNavigateToPT && record.status.pt !== 'none') {
+    if (onNavigateToPT && dailyDetail?.videoPt?.exists) {
       onNavigateToPT();
     }
   };
 
   /**
-   * 메모 저장 및 팝업 닫기
+   * 메모 저장 (API 호출)
    */
-  const handleSaveMemo = () => {
-    if (onSaveMemo) {
-      onSaveMemo(getDateKey(date), memoText);
+  const handleSaveMemo = async () => {
+    const dateKey = getDateKey(date);
+    const trimmedText = memoText.trim();
+
+    /* 변경사항 없으면 그냥 닫기 */
+    if (trimmedText === initialMemoText) {
+      onClose();
+      return;
     }
-    onClose();
+
+    setIsSaving(true);
+    setErrorMessage(null);
+
+    try {
+      await putMemo(dateKey, trimmedText);
+
+      /* 마커 업데이트 콜백 호출 */
+      if (onMemoSaved) {
+        onMemoSaved(dateKey, trimmedText.length > 0);
+      }
+
+      onClose();
+    } catch (error) {
+      setErrorMessage('메모 저장에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   /**
@@ -147,103 +215,103 @@ export default function CalendarPopup({
 
         {/* 콘텐츠 */}
         <div className="calendar-popup-content">
-          {/* 운동 */}
-          <button
-            className="calendar-popup-item"
-            onClick={handleWorkoutClick}
-            disabled={record.status.workout === 'none'}
-          >
-            <div className="calendar-popup-item-header">
-              <span className="calendar-popup-item-title workout">운동</span>
-              <span className={`calendar-popup-item-status ${record.status.workout}`}>
-                {getStatusText(record.status.workout)}
-              </span>
-            </div>
-            {record.workout ? (
-              <div className="calendar-popup-item-body">
-                <div className="calendar-popup-item-row">
-                  <span>{record.workout.bodyPart}</span>
-                  <span>{record.workout.duration}분</span>
-                </div>
-                <div className="calendar-popup-item-detail">
-                  {record.workout.exercises}
-                </div>
-              </div>
-            ) : (
-              <div className="calendar-popup-item-empty">기록 없음</div>
-            )}
-          </button>
-
-          {/* 식단 */}
-          <button
-            className="calendar-popup-item"
-            onClick={handleDietClick}
-            disabled={record.status.diet === 'none'}
-          >
-            <div className="calendar-popup-item-header">
-              <span className="calendar-popup-item-title diet">식단</span>
-              <span className={`calendar-popup-item-status ${record.status.diet}`}>
-                {getStatusText(record.status.diet)}
-              </span>
-            </div>
-            {record.diet ? (
-              <div className="calendar-popup-item-body">
-                <div className="calendar-popup-item-row">
-                  <span>{record.diet.mealCount}끼</span>
-                  <span>{record.diet.totalCalories.toLocaleString()}kcal</span>
-                </div>
-              </div>
-            ) : (
-              <div className="calendar-popup-item-empty">기록 없음</div>
-            )}
-          </button>
-
-          {/* 화상PT */}
-          <button
-            className="calendar-popup-item"
-            onClick={handlePTClick}
-            disabled={record.status.pt === 'none'}
-          >
-            <div className="calendar-popup-item-header">
-              <span className="calendar-popup-item-title pt">화상PT</span>
-              <span className={`calendar-popup-item-status ${record.status.pt}`}>
-                {getStatusText(record.status.pt)}
-              </span>
-            </div>
-            {record.pt ? (
-              <div className="calendar-popup-item-body">
-                <div className="calendar-popup-item-row">
-                  <span>{record.pt.roomTitle}</span>
-                  <span>{record.pt.trainerName}</span>
-                  <span>{record.pt.duration}분</span>
-                </div>
-              </div>
-            ) : (
-              <div className="calendar-popup-item-empty">기록 없음</div>
-            )}
-          </button>
-
-          {/* 메모 */}
-          <div className="calendar-popup-item memo-section">
-            <div className="calendar-popup-item-header">
-              <span className="calendar-popup-item-title memo">📝 메모</span>
-            </div>
-            <div className="calendar-popup-memo-body">
-              <textarea
-                className="calendar-popup-memo-input"
-                placeholder="메모를 입력하세요..."
-                value={memoText}
-                onChange={(e) => setMemoText(e.target.value)}
-                rows={3}
-              />
+          {isLoading ? (
+            <div className="calendar-popup-loading">불러오는 중...</div>
+          ) : (
+            <>
+              {/* 운동 */}
               <button
-                className="calendar-popup-memo-save"
-                onClick={handleSaveMemo}
+                className="calendar-popup-item"
+                onClick={handleWorkoutClick}
+                disabled={!dailyDetail?.workout?.exists}
               >
-                저장
+                <div className="calendar-popup-item-header">
+                  <span className="calendar-popup-item-title workout">운동</span>
+                </div>
+                {dailyDetail?.workout?.exists ? (
+                  <div className="calendar-popup-item-body">
+                    <div className="calendar-popup-item-row">
+                      <span>{dailyDetail.workout.summary}</span>
+                    </div>
+                    {dailyDetail.workout.itemsPreview && (
+                      <div className="calendar-popup-item-detail">
+                        {dailyDetail.workout.itemsPreview.join(', ')}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="calendar-popup-item-empty">기록 없음</div>
+                )}
               </button>
-            </div>
-          </div>
+
+              {/* 식단 */}
+              <button
+                className="calendar-popup-item"
+                onClick={handleDietClick}
+                disabled={!dailyDetail?.diet?.exists}
+              >
+                <div className="calendar-popup-item-header">
+                  <span className="calendar-popup-item-title diet">식단</span>
+                </div>
+                {dailyDetail?.diet?.exists ? (
+                  <div className="calendar-popup-item-body">
+                    <div className="calendar-popup-item-row">
+                      <span>{dailyDetail.diet.summary}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="calendar-popup-item-empty">기록 없음</div>
+                )}
+              </button>
+
+              {/* 화상PT */}
+              <button
+                className="calendar-popup-item"
+                onClick={handlePTClick}
+                disabled={!dailyDetail?.videoPt?.exists}
+              >
+                <div className="calendar-popup-item-header">
+                  <span className="calendar-popup-item-title pt">화상PT</span>
+                </div>
+                {dailyDetail?.videoPt?.exists ? (
+                  <div className="calendar-popup-item-body">
+                    <div className="calendar-popup-item-row">
+                      <span>{dailyDetail.videoPt.summary}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="calendar-popup-item-empty">기록 없음</div>
+                )}
+              </button>
+
+              {/* 메모 */}
+              <div className="calendar-popup-item memo-section">
+                <div className="calendar-popup-item-header">
+                  <span className="calendar-popup-item-title memo">📝 메모</span>
+                </div>
+                <div className="calendar-popup-memo-body">
+                  <textarea
+                    className="calendar-popup-memo-input"
+                    placeholder="메모를 입력하세요..."
+                    value={memoText}
+                    onChange={(e) => setMemoText(e.target.value)}
+                    rows={3}
+                    disabled={isSaving}
+                  />
+                  {errorMessage && (
+                    <div className="calendar-popup-memo-error">{errorMessage}</div>
+                  )}
+                  <button
+                    className="calendar-popup-memo-save"
+                    onClick={handleSaveMemo}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? '저장 중...' : '저장'}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

@@ -693,3 +693,153 @@
 .calendar-popup-memo-save:hover {
   opacity: 0.9;
 }
+
+/**
+ * ===========================================
+ * 팝업 로딩/에러 스타일
+ * ===========================================
+ */
+
+/**
+ * 로딩 표시
+ */
+.calendar-popup-loading {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-gray-500);
+}
+
+/**
+ * 메모 에러 메시지
+ */
+.calendar-popup-memo-error {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-xs);
+}
+
+/**
+ * 상태 도트 - 운동 색상
+ */
+.week-calendar-status-dot.workout.none,
+.week-calendar-status-dot.workout.failed {
+  background-color: var(--color-gray-300);
+}
+
+.week-calendar-status-dot.workout.incomplete {
+  background-color: var(--color-sky-400);
+}
+
+.week-calendar-status-dot.workout.complete {
+  background-color: var(--color-blue-500);
+}
+
+.week-calendar-status-dot.workout.scheduled {
+  background-color: var(--color-blue-800);
+}
+
+/**
+ * 상태 도트 - 식단 색상
+ */
+.week-calendar-status-dot.diet.none,
+.week-calendar-status-dot.diet.failed {
+  background-color: var(--color-gray-300);
+}
+
+.week-calendar-status-dot.diet.incomplete {
+  background-color: var(--color-lime-400);
+}
+
+.week-calendar-status-dot.diet.complete {
+  background-color: var(--color-green-500);
+}
+
+.week-calendar-status-dot.diet.scheduled {
+  background-color: var(--color-teal-600);
+}
+
+/**
+ * 상태 도트 - 화상PT 색상
+ */
+.week-calendar-status-dot.pt.none {
+  background-color: var(--color-gray-300);
+}
+
+.week-calendar-status-dot.pt.complete,
+.week-calendar-status-dot.pt.scheduled {
+  background-color: var(--color-purple-500);
+}
+
+/**
+ * 상태 도트 - 메모 색상
+ */
+.week-calendar-status-dot.memo.none {
+  background-color: var(--color-gray-300);
+}
+
+.week-calendar-status-dot.memo.complete {
+  background-color: var(--color-yellow-400);
+}
+
+/**
+ * 월간 마커 - 운동 색상
+ */
+.month-calendar-marker.workout.none,
+.month-calendar-marker.workout.failed {
+  background-color: var(--color-gray-300);
+}
+
+.month-calendar-marker.workout.incomplete {
+  background-color: var(--color-sky-400);
+}
+
+.month-calendar-marker.workout.complete {
+  background-color: var(--color-blue-500);
+}
+
+.month-calendar-marker.workout.scheduled {
+  background-color: var(--color-blue-800);
+}
+
+/**
+ * 월간 마커 - 식단 색상
+ */
+.month-calendar-marker.diet.none,
+.month-calendar-marker.diet.failed {
+  background-color: var(--color-gray-300);
+}
+
+.month-calendar-marker.diet.incomplete {
+  background-color: var(--color-lime-400);
+}
+
+.month-calendar-marker.diet.complete {
+  background-color: var(--color-green-500);
+}
+
+.month-calendar-marker.diet.scheduled {
+  background-color: var(--color-teal-600);
+}
+
+/**
+ * 월간 마커 - 화상PT 색상
+ */
+.month-calendar-marker.pt.none {
+  background-color: var(--color-gray-300);
+}
+
+.month-calendar-marker.pt.complete,
+.month-calendar-marker.pt.scheduled {
+  background-color: var(--color-purple-500);
+}
+
+/**
+ * 월간 마커 - 메모 색상
+ */
+.month-calendar-marker.memo.none {
+  background-color: var(--color-gray-300);
+}
+
+.month-calendar-marker.memo.complete {
+  background-color: var(--color-yellow-400);
+}
