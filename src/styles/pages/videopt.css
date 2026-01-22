@@ -130,6 +130,11 @@
   color: var(--color-warning);
 }
 
+.pt-status-badge.ended {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-600);
+}
+
 .pt-status-badge.private {
   background-color: var(--color-private-light);
   color: var(--color-private);

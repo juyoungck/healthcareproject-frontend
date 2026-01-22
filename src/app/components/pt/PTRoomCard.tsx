@@ -57,6 +57,14 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
         </span>
       );
     }
+
+    if (room.status === 'ENDED') {
+      return (
+        <span className="pt-status-badge ended">
+          종료
+        </span>
+      );
+    }
     
     return null;
   };

@@ -164,6 +164,14 @@ export default function PTRoomDetailModal({
         </span>
       );
     }
+
+    if (room.status === 'ENDED') {
+      return (
+        <span className="pt-status-badge ended">
+          종료
+        </span>
+      );
+    }
     
     return null;
   };
@@ -240,9 +248,15 @@ export default function PTRoomDetailModal({
               <span className="pt-detail-info-value">
                 {room.status === 'LIVE' 
                   ? '지금 진행중'
-                  : room.scheduledAt 
-                    ? formatDateTime(room.scheduledAt)
-                    : '-'
+                  : room.status === 'ENDED'
+                    ? roomDetail?.startedAt
+                      ? formatDateTime(roomDetail.startedAt)
+                      : room.scheduledAt
+                        ? formatDateTime(room.scheduledAt)
+                        : '-'
+                    : room.scheduledAt 
+                      ? formatDateTime(room.scheduledAt)
+                      : '-'
                 }
               </span>
             </div>

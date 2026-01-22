@@ -133,6 +133,7 @@ export interface GetPTRoomDetailResponse {
   title: string;
   description: string;
   scheduledAt: string | null;
+  startedAt: string | null;
   trainer: PTTrainerInfo;
   entryCode: string | null;
   isPrivate: boolean;
