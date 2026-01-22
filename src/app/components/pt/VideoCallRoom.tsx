@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../../../contexts/AuthContext';
 import { 
   Headphones, 
   HeadphoneOff,
@@ -34,6 +35,7 @@ interface VideoCallRoomProps {
   onLeave: () => void;
   isTrainer?: boolean;
   userName?: string;
+  userProfileImage?: string | null;
 }
 
 /**
@@ -48,8 +50,11 @@ export default function VideoCallRoom({
     room, 
     onLeave, 
     isTrainer = false,
-    userName = '사용자'
+    userName = '사용자',
+    userProfileImage = null
  }: VideoCallRoomProps) {
+  const { user: userInfo } = useAuth();
+
   /**
    * 비디오 엘리먼트 참조
    */
@@ -372,7 +377,7 @@ export default function VideoCallRoom({
                   width: '100%', 
                   height: '100%', 
                   objectFit: 'cover',
-                  display: localStream ? 'block' : 'none'
+                  display: localStream && !isVideoOff ? 'block' : 'none'
                 }}
               />
             ) : (
@@ -391,16 +396,22 @@ export default function VideoCallRoom({
                   width: '100%', 
                   height: '100%', 
                   objectFit: 'cover',
-                  display: mainParticipant.stream ? 'block' : 'none'
+                  display: localStream ? 'block' : 'none'
                 }}
               />
             )
           ) : null}
           
           {/* 스트림 없을 때 플레이스홀더 */}
-          {(!mainParticipant || (mainParticipant.isLocal ? !localStream : !mainParticipant.stream)) && (
+          {(!mainParticipant || (mainParticipant.isLocal ? !localStream || isVideoOff : !mainParticipant.stream)) && (
             <div className="vc-video-placeholder">
-              <User size={64} />
+              {mainParticipant?.isLocal && userInfo?.profileImageUrl ? (
+                <img src={userInfo.profileImageUrl} alt="프로필" className="mypage-profile-image" />
+              ) : userInfo?.profileImageUrl ? (
+	              <img src={userInfo.profileImageUrl} alt="프로필" className="mypage-profile-image" />
+              ) : (
+                <User size={48} className="mypage-profile-placeholder" />
+              )}
             </div>
           )}
           
@@ -431,15 +442,23 @@ export default function VideoCallRoom({
                         width: '100%', 
                         height: '100%', 
                         objectFit: 'cover',
-                        display: localStream ? 'block' : 'none'
+                        display: localStream && !isVideoOff ? 'block' : 'none'
                       }}
                     />
-                    {!localStream && (
-                      <div className="vc-sub-video-placeholder">
+                    {(!localStream || isVideoOff) && (
+                    <div className="vc-sub-video-placeholder">
+                      {userProfileImage ? (
+                        <img 
+                          src={userProfileImage} 
+                          alt={participant.name} 
+                          className="vc-sub-video-profile-img"
+                        />
+                      ) : (
                         <User size={24} />
-                      </div>
-                    )}
-                  </>
+                      )}
+                    </div>
+                  )}
+                </>
                 ) : (
                   /* 다른 참가자 영상 (서브) */
                   <>
@@ -461,12 +480,16 @@ export default function VideoCallRoom({
                       }}
                     />
                     {!participant.stream && (
-                      <div className="vc-sub-video-placeholder">
-                        <User size={24} />
-                      </div>
-                    )}
-                  </>
-                )}
+                    <div className="vc-sub-video-placeholder">
+                      {userInfo?.profileImageUrl ? (
+	                      <img src={userInfo.profileImageUrl} alt="프로필" className="mypage-profile-image" />
+                      ) : (
+                        <User size={24} className="mypage-profile-placeholder" />
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
                 <span className="vc-sub-video-name">
                   {participant.name}
                 </span>
