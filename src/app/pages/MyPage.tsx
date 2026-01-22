@@ -7,7 +7,7 @@
  * - 로그아웃/회원탈퇴
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   ArrowLeft,
@@ -28,13 +28,16 @@ import {
   Settings,
   GraduationCap,
   Clock,
-  UserMinus
+  UserMinus,
+  ImagePlus,
+  RotateCcw
 } from 'lucide-react';
 import SettingsPage from './SettingsPage';
 import TrainerApplyModal, { TrainerApplyData } from '../components/auth/TrainerApplyModal';
 import { getProfile, getInjuries, getAllergies, updateNickname, updatePhoneNumber, updateProfileImage } from '../../api/me';
 import type { ProfileResponse, InjuryItem } from '../../api/types/me';
 import { CURRENT_USER_TRAINER_STATUS } from '../../data/users';
+import { uploadImage } from '../../api/upload';
 
 const ALLERGY_LABEL_MAP: Record<string, string> = {
   WHEAT: '밀',
@@ -99,6 +102,11 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
   const [showPhoneNumberModal, setShowPhoneNumberModal] = useState(false);
   const [editPhoneNumber, setEditPhoneNumber] = useState('');
   const [isUpdatingPhoneNumber, setIsUpdatingPhoneNumber] = useState(false);
+
+  /* 프로필 이미지 업로드 */
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [showProfileSheet, setShowProfileSheet] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /**
    * ===========================================
@@ -235,6 +243,87 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
       alert('전화번호 수정에 실패했습니다.');
     } finally {
       setIsUpdatingPhoneNumber(false);
+    }
+  };
+
+  /**
+ * 기본 사진으로 변경 핸들러
+ */
+  const handleResetProfileImage = async () => {
+    if (!userInfo?.profileImageUrl) {
+      alert('이미 기본 사진입니다.');
+      setShowProfileSheet(false);
+      return;
+    }
+
+    if (!confirm('기본 사진으로 변경하시겠습니까?')) {
+      return;
+    }
+
+    setIsUploadingImage(true);
+
+    try {
+      await updateProfileImage({ profileImageUrl: null });
+      updateUser({ profileImageUrl: null });
+      alert('기본 사진으로 변경되었습니다.');
+    } catch (error) {
+      console.error('프로필 이미지 초기화 실패:', error);
+      alert('기본 사진으로 변경에 실패했습니다.');
+    } finally {
+      setIsUploadingImage(false);
+      setShowProfileSheet(false);
+    }
+  };
+
+  /**
+   * 사진 변경하기 클릭 핸들러
+   */
+  const handleChangePhoto = () => {
+    setShowProfileSheet(false);
+    fileInputRef.current?.click();
+  };
+
+  /**
+ * 프로필 이미지 업로드 핸들러
+ */
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    /* 파일 크기 체크 (5MB) */
+    if (file.size > 5 * 1024 * 1024) {
+      alert('파일 크기는 5MB 이하만 가능합니다.');
+      return;
+    }
+
+    /* 이미지 타입 체크 */
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드 가능합니다.');
+      return;
+    }
+
+    setIsUploadingImage(true);
+
+    try {
+      /* 1. 이미지 업로드 → URL 받기 */
+      const imageUrl = await uploadImage(file);
+
+      /* 2. 프로필 이미지 URL 저장 API 호출 */
+      await updateProfileImage({ profileImageUrl: imageUrl });
+
+      /* 3. Context 상태 업데이트 */
+      updateUser({ profileImageUrl: imageUrl });
+
+      alert('프로필 이미지가 변경되었습니다.');
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error);
+      alert('이미지 업로드에 실패했습니다.');
+    } finally {
+      setIsUploadingImage(false);
+      /* input 초기화 */
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -449,9 +538,26 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
           ) : (
             <User size={48} className="mypage-profile-placeholder" />
           )}
-          <button className="mypage-profile-edit-btn">
-            <Camera size={16} />
-          </button>
+          <>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ display: 'none' }}
+            />
+            <button
+              className="mypage-profile-edit-btn"
+              onClick={() => setShowProfileSheet(true)}
+              disabled={isUploadingImage}
+            >
+              {isUploadingImage ? (
+                <div className="mypage-image-spinner" />
+              ) : (
+                <Camera size={16} />
+              )}
+            </button>
+          </>
         </div>
         <div className="mypage-profile-info">
           <div className="mypage-nickname-row">
@@ -714,7 +820,43 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
           </div>
         </div>
       )}
-
+      {/* 프로필 이미지 바텀 시트 */}
+      {showProfileSheet && (
+        <div
+          className="profile-bottom-sheet-overlay"
+          onClick={() => setShowProfileSheet(false)}
+        >
+          <div
+            className="profile-bottom-sheet"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="profile-bottom-sheet-handle" />
+            <div className="profile-bottom-sheet-menu">
+              <button
+                className="profile-bottom-sheet-item"
+                onClick={handleChangePhoto}
+              >
+                <ImagePlus size={20} />
+                <span>사진 변경하기</span>
+              </button>
+              <button
+                className="profile-bottom-sheet-item"
+                onClick={handleResetProfileImage}
+              >
+                <RotateCcw size={20} />
+                <span>기본 사진으로 변경</span>
+              </button>
+            </div>
+            <div className="profile-bottom-sheet-divider" />
+            <button
+              className="profile-bottom-sheet-cancel"
+              onClick={() => setShowProfileSheet(false)}
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

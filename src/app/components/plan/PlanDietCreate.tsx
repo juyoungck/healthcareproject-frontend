@@ -53,14 +53,28 @@ const DIET_GOALS = [
  * 알러지 데이터
  */
 const ALLERGIES = [
-  { id: 'peanut', label: '땅콩' },
-  { id: 'milk', label: '우유' },
-  { id: 'egg', label: '달걀' },
-  { id: 'shellfish', label: '갑각류' },
-  { id: 'wheat', label: '밀가루' },
-  { id: 'soy', label: '대두' },
-  { id: 'nuts', label: '견과류' },
-  { id: 'none', label: '없음' },
+  /* 곡물 */
+  { id: 'WHEAT', label: '밀' },
+  { id: 'BUCKWHEAT', label: '메밀' },
+   /* 콩/씨앗 */
+  { id: 'SOY', label: '대두' },
+  { id: 'SESAME', label: '참깨' },
+  /* 견과류 */
+  { id: 'PEANUT', label: '땅콩' },
+  { id: 'TREE_NUT', label: '견과류' },
+  /* 해산물 */
+  { id: 'CRUSTACEAN', label: '갑각류' },
+  { id: 'MOLLUSK', label: '연체류' },
+  { id: 'FISH', label: '생선' },
+  /* 동물성 */
+  { id: 'EGG', label: '계란' },
+  { id: 'MILK', label: '우유' },
+  { id: 'BEEF', label: '소고기' },
+  { id: 'PORK', label: '돼지고기' },
+  { id: 'CHICKEN', label: '닭고기' },
+  /* 기타 */
+  { id: 'SULFITE', label: '아황산류' },
+  { id: 'NONE', label: '없음' },
 ];
 
 /**

@@ -27,10 +27,10 @@ type SignupStep = 'info' | 'verify' | 'complete';
 /**
  * SignupModal 컴포넌트
  */
-export default function SignupModal({ 
-  onClose, 
+export default function SignupModal({
+  onClose,
   onSignupComplete,
-  onSwitchToLogin 
+  onSwitchToLogin
 }: SignupModalProps) {
   /**
    * 단계 상태
@@ -121,7 +121,7 @@ export default function SignupModal({
 
     try {
       const result = await checkEmail({ email });
-      
+
       if (result.available) {
         setIsEmailChecked(true);
         setIsEmailAvailable(true);
@@ -131,8 +131,14 @@ export default function SignupModal({
         setIsEmailAvailable(false);
         setError('이미 사용 중인 이메일입니다.');
       }
-    } catch {
-      setError('이메일 확인에 실패했습니다.');
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { error?: { code?: string } } } };
+      if (axiosError.response?.data?.error?.code === 'AUTH-006') {
+        setIsEmailChecked(true);
+        setIsEmailAvailable(false);
+      } else {
+        setError('이메일 확인에 실패했습니다.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -227,7 +233,7 @@ export default function SignupModal({
 
       /* 토큰 저장 */
       saveTokens(tokens);
-      
+
       setStep('complete');
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -277,9 +283,16 @@ export default function SignupModal({
           <form className="modal-form" onSubmit={handleInfoSubmit}>
             {/* 이메일 */}
             <div className="form-group">
-              <label className="form-label" htmlFor="signup-email">
-                이메일 *
-              </label>
+              <div className="form-label-row">
+                <label className="form-label" htmlFor="signup-email">
+                  이메일 *
+                </label>
+                {isEmailChecked && (
+                  <span className={`form-label-status ${isEmailAvailable ? 'success' : 'error'}`}>
+                    {isEmailAvailable ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.'}
+                  </span>
+                )}
+              </div>
               <div className="form-input-wrapper">
                 <Mail className="form-input-icon" size={20} />
                 <input
@@ -299,9 +312,6 @@ export default function SignupModal({
                   {isEmailChecked && isEmailAvailable ? '확인완료' : '중복확인'}
                 </button>
               </div>
-              {isEmailChecked && isEmailAvailable && (
-                <p className="form-success">사용 가능한 이메일입니다.</p>
-              )}
             </div>
 
             {/* 비밀번호 */}
@@ -434,7 +444,7 @@ export default function SignupModal({
             </div>
 
             {!isEmailSent ? (
-              <button 
+              <button
                 type="button"
                 className="form-submit-btn"
                 onClick={handleSendVerification}
@@ -461,15 +471,15 @@ export default function SignupModal({
 
                 {error && <p className="form-error">{error}</p>}
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="form-submit-btn"
                   disabled={isLoading}
                 >
                   {isLoading ? '확인 중...' : '인증 확인'}
                 </button>
 
-                <button 
+                <button
                   type="button"
                   className="form-link form-link-center"
                   onClick={handleSendVerification}
@@ -495,7 +505,7 @@ export default function SignupModal({
               맞춤 운동과 식단 추천을 위해<br />
               간단한 정보를 입력해주세요
             </p>
-            <button 
+            <button
               className="form-submit-btn"
               onClick={handleComplete}
             >
@@ -539,7 +549,7 @@ export default function SignupModal({
         {step !== 'complete' && (
           <div className="modal-footer">
             <span className="modal-footer-text">이미 계정이 있으신가요?</span>
-            <button 
+            <button
               className="modal-footer-link"
               onClick={onSwitchToLogin}
             >
