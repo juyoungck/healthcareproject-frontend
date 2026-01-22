@@ -91,7 +91,7 @@ export interface CreatePTRoomResponse {
  * ===========================================
  */
 
-export type PTRoomTab = 'ALL' | 'LIVE' | 'RESERVED' | 'MY_RESERVATIONS' | 'MY_PT';
+export type PTRoomTab = 'ALL' | 'LIVE' | 'RESERVED' | 'MY_PT';
 
 export interface GetPTRoomListParams {
   tab?: PTRoomTab;
@@ -174,7 +174,7 @@ export interface LeavePTRoomResponse {
  */
 
 export interface UpdatePTRoomStatusRequest {
-  status: 'LIVE' | 'ENDED';
+  status: 'LIVE' | 'ENDED' | 'CANCELLED';
 }
 
 export interface UpdatePTRoomStatusResponse {
@@ -193,55 +193,6 @@ export interface GetPTRoomParticipantsResponse {
   ptRoomId: number;
   count: number;
   users: PTParticipantUser[];
-}
-
-/**
- * ===========================================
- * 예약 생성 API (POST /api/pt-reservations)
- * ===========================================
- */
-
-export interface CreatePTReservationRequest {
-  entryCode?: string | null;
-}
-
-export interface CreatePTReservationResponse {
-  ptReservationId: number;
-  ptRoomId: number;
-  status: 'REQUESTED' | 'CANCELLED';
-  reservedAt: string;
-}
-
-/**
- * ===========================================
- * 예약 취소 API (POST /api/pt-reservations/cancel)
- * ===========================================
- */
-
-export interface CancelPTReservationResponse {
-  ptRoomId: number;
-  status: 'CANCELLED';
-  cancelledAt: string;
-}
-
-/**
- * ===========================================
- * 예약자 목록 조회 API (GET /api/pt-rooms/{ptRoomId}/reservations)
- * ===========================================
- */
-
-export interface PTReservedUser {
-  ptReservationId: string;
-  user: {
-    userHandle: string;
-    nickname: string;
-    profileImageUrl: string | null;
-  };
-  createdAt: string;
-}
-
-export interface GetPTReservationsResponse {
-  reservedUser: PTReservedUser[];
 }
 
 /**
@@ -276,7 +227,7 @@ export interface KickPTParticipantResponse {
 /**
  * 필터 타입 (UI용)
  */
-export type PTFilterType = 'all' | 'live' | 'reserved' | 'my-reservation' | 'myRoom';
+export type PTFilterType = 'all' | 'live' | 'reserved' | 'myRoom';
 
 /**
  * 필터 ↔ API 탭 변환 맵
@@ -285,7 +236,6 @@ export const filterToTab: Record<PTFilterType, PTRoomTab> = {
   'all': 'ALL',
   'live': 'LIVE',
   'reserved': 'RESERVED',
-  'my-reservation': 'MY_RESERVATIONS',
   'myRoom': 'MY_PT',
 };
 
@@ -293,6 +243,5 @@ export const tabToFilter: Record<PTRoomTab, PTFilterType> = {
   'ALL': 'all',
   'LIVE': 'live',
   'RESERVED': 'reserved',
-  'MY_RESERVATIONS': 'my-reservation',
   'MY_PT': 'myRoom',
 };

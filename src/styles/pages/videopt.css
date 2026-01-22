@@ -326,6 +326,16 @@
   background-color: var(--color-gray-50);
 }
 
+.pt-action-btn.danger {
+  background-color: var(--color-white);
+  color: var(--color-error);
+  border: var(--border-width-sm) solid var(--color-error);
+}
+
+.pt-action-btn.danger:hover {
+  background-color: var(--color-error-light);
+}
+
 .pt-action-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
