@@ -6,20 +6,21 @@
  * - 날짜 클릭 시 상세 팝업 표시
  * - 이전/다음 달 이동
  */
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ArrowLeft, BarChart2 } from 'lucide-react';
-import { DailyStatus, DailyRecord } from '../../../types/calendar';
 import { WEEK_DAYS } from '../../../constants/calendar';
 import {
   getDateKey,
   isToday,
   isSameDate,
-  generateCalendarDays,
-} from '../../../utils/calendar';
-import { calendarDummyData } from '../../../data/calendars';
+  generateCalendarDays } from '../../../utils/calendar';
+import {
+  getWorkoutDietClass,
+  getVideoPtClass,
+  getMemoClass } from '../../../utils/calendarStatus';
+import { getWeeklyCalendar } from '../../../api/calendar';
+import { DayStatusItem } from '../../../api/types/calendar';
 import CalendarPopup from './CalendarPopup';
-
 /**
  * ===========================================
  * Props 타입 정의
@@ -61,8 +62,11 @@ export default function MonthCalendar({
   /** 선택된 날짜 (팝업용) */
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  /** 캘린더 데이터 (메모 저장용 로컬 상태) */
-  const [localCalendarData, setLocalCalendarData] = useState<Record<string, DailyRecord>>(calendarDummyData);
+  /** 캘린더 상태 데이터 (API 응답) */
+  const [calendarStatus, setCalendarStatus] = useState<Record<string, DayStatusItem>>({});
+
+  /** 로딩 상태 */
+  const [isLoading, setIsLoading] = useState(false);
 
   /**
    * ===========================================
@@ -75,6 +79,45 @@ export default function MonthCalendar({
 
   /** 달력 날짜 배열 (6주 42일) */
   const calendarDays = generateCalendarDays(currentDate);
+
+  /**
+   * ===========================================
+   * 이펙트
+   * ===========================================
+   */
+
+  /**
+   * 월 변경 시 주간 컬러코드 API 호출
+   * TODO: 월간 전용 API가 생기면 변경 필요
+   */
+  useEffect(() => {
+    const fetchCalendarStatus = async () => {
+      setIsLoading(true);
+
+      try {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const startDateKey = getDateKey(firstDay);
+
+        /* TODO: 현재는 주간 API 사용, 월간 API 생기면 변경 */
+        const response = await getWeeklyCalendar(startDateKey);
+
+        const statusMap: Record<string, DayStatusItem> = {};
+        response.days.forEach((day) => {
+          statusMap[day.date] = day;
+        });
+
+        setCalendarStatus(statusMap);
+      } catch (error) {
+        console.error('캘린더 상태 조회 실패:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCalendarStatus();
+  }, [currentDate]);
 
   /**
    * ===========================================
@@ -118,28 +161,26 @@ export default function MonthCalendar({
 
   /**
    * ===========================================
-   * 이벤트 핸들러 - 메모 저장
+   * 이벤트 핸들러 - 메모 저장 콜백
    * ===========================================
    */
 
   /**
-   * 메모 저장 및 상태 업데이트
+   * 메모 저장 성공 시 마커 업데이트
+   * @param dateKey - 날짜 키 (YYYY-MM-DD)
+   * @param hasContent - 메모 내용 존재 여부
    */
-  const handleSaveMemo = (dateKey: string, memoText: string) => {
-    setLocalCalendarData((prev) => ({
+  const handleMemoSaved = (dateKey: string, hasContent: boolean) => {
+    setCalendarStatus((prev) => ({
       ...prev,
       [dateKey]: {
         ...prev[dateKey],
-        status: {
-          ...(prev[dateKey]?.status || {
-            workout: 'none',
-            diet: 'none',
-            pt: 'none',
-            memo: 'none',
-          }),
-          memo: memoText.trim() ? 'complete' : 'none',
-        },
-        memo: memoText.trim() || undefined,
+        date: dateKey,
+        workout: prev[dateKey]?.workout || { status: 'NONE' },
+        diet: prev[dateKey]?.diet || { status: 'NONE' },
+        videoPt: prev[dateKey]?.videoPt || { status: 'NONE' },
+        /** TODO: 메모 상태 - 백엔드 확정 후 변경될 수 있음 */
+        memo: { status: hasContent ? 'HAS_MEMO' : 'NONE' },
       },
     }));
   };
@@ -181,9 +222,8 @@ export default function MonthCalendar({
         {WEEK_DAYS.map((day, index) => (
           <div
             key={day}
-            className={`month-calendar-weekday ${
-              index === 0 ? 'sunday' : index === 6 ? 'saturday' : ''
-            }`}
+            className={`month-calendar-weekday ${index === 0 ? 'sunday' : index === 6 ? 'saturday' : ''
+              }`}
           >
             {day}
           </div>
@@ -194,32 +234,27 @@ export default function MonthCalendar({
       <div className="month-calendar-grid">
         {calendarDays.map(({ date, isCurrentMonth }, index) => {
           const dateKey = getDateKey(date);
-          const record = localCalendarData[dateKey];
-          const status: DailyStatus | undefined = record?.status;
+          const dayStatus = calendarStatus[dateKey];
           const dayOfWeek = date.getDay();
 
           return (
             <button
               key={index}
-              className={`month-calendar-cell ${!isCurrentMonth ? 'other-month' : ''} ${
-                isToday(date) ? 'today' : ''
-              } ${selectedDate && isSameDate(date, selectedDate) ? 'selected' : ''} ${
-                dayOfWeek === 0 ? 'sunday' : dayOfWeek === 6 ? 'saturday' : ''
-              }`}
+              className={`month-calendar-cell ${!isCurrentMonth ? 'other-month' : ''} ${isToday(date) ? 'today' : ''
+                } ${selectedDate && isSameDate(date, selectedDate) ? 'selected' : ''} ${dayOfWeek === 0 ? 'sunday' : dayOfWeek === 6 ? 'saturday' : ''
+                }`}
               onClick={() => handleDateClick(date)}
             >
               {/* 날짜 */}
               <span className="month-calendar-date">{date.getDate()}</span>
 
               {/* 마커 */}
-              {status && (
-                <div className="month-calendar-markers">
-                  <div className={`month-calendar-marker workout ${status.workout}`} />
-                  <div className={`month-calendar-marker diet ${status.diet}`} />
-                  <div className={`month-calendar-marker pt ${status.pt}`} />
-                  <div className={`month-calendar-marker memo ${status.memo}`} />
-                </div>
-              )}
+              <div className="month-calendar-markers">
+                <div className={`month-calendar-marker workout ${getWorkoutDietClass(dayStatus?.workout?.status, dateKey)}`} />
+                <div className={`month-calendar-marker diet ${getWorkoutDietClass(dayStatus?.diet?.status, dateKey)}`} />
+                <div className={`month-calendar-marker pt ${getVideoPtClass(dayStatus?.videoPt?.status)}`} />
+                <div className={`month-calendar-marker memo ${getMemoClass(dayStatus?.memo?.status)}`} />
+              </div>
             </button>
           );
         })}
@@ -249,16 +284,11 @@ export default function MonthCalendar({
       {selectedDate && (
         <CalendarPopup
           date={selectedDate}
-          record={
-            localCalendarData[getDateKey(selectedDate)] || {
-              status: { workout: 'none', diet: 'none', pt: 'none', memo: 'none' },
-            }
-          }
           onClose={handleClosePopup}
           onNavigateToWorkout={onNavigateToWorkout}
           onNavigateToDiet={onNavigateToDiet}
           onNavigateToPT={onNavigateToPT}
-          onSaveMemo={handleSaveMemo}
+          onMemoSaved={handleMemoSaved}
         />
       )}
     </div>

@@ -6,19 +6,17 @@
  * - 전체보기 클릭 시 월간 캘린더로 이동
  * - 스와이프/드래그로 주 이동
  */
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
-import { DailyStatus, DailyRecord } from '../../../types/calendar';
 import { WEEK_DAYS } from '../../../constants/calendar';
 import {
-  getDateKey,
-  isToday,
-  getWeekStartDate,
-  getWeekDates,
-  getWeekOfMonth,
+  getDateKey, isToday, getWeekStartDate, getWeekDates, getWeekOfMonth,
 } from '../../../utils/calendar';
-import { calendarDummyData } from '../../../data/calendars';
+import {
+  getWorkoutDietClass, getVideoPtClass, getMemoClass,
+} from '../../../utils/calendarStatus';
+import { getWeeklyCalendar } from '../../../api/calendar';
+import { DayStatusItem } from '../../../api/types/calendar';
 import CalendarPopup from './CalendarPopup';
 
 /**
@@ -70,8 +68,11 @@ export default function WeekCalendar({
   /** 마우스 시작 X 좌표 (드래그용) */
   const [mouseStartX, setMouseStartX] = useState<number | null>(null);
 
-  /** 캘린더 데이터 (메모 저장용 로컬 상태) */
-  const [localCalendarData, setLocalCalendarData] = useState<Record<string, DailyRecord>>(calendarDummyData);
+  /** 캘린더 상태 데이터 (API 응답) */
+  const [calendarStatus, setCalendarStatus] = useState<Record<string, DayStatusItem>>({});
+
+  /** 로딩 상태 */
+  const [isLoading, setIsLoading] = useState(false);
 
   /**
    * ===========================================
@@ -84,6 +85,39 @@ export default function WeekCalendar({
 
   /** 주차 표시 텍스트 (예: "1월 2주차") */
   const weekLabel = getWeekOfMonth(weekStartDate);
+
+  /**
+   * ===========================================
+   * 이펙트
+   * ===========================================
+   */
+
+  /**
+   * 주 변경 시 주간 컬러코드 API 호출
+   */
+  useEffect(() => {
+    const fetchCalendarStatus = async () => {
+      setIsLoading(true);
+
+      try {
+        const startDateKey = getDateKey(weekStartDate);
+        const response = await getWeeklyCalendar(startDateKey);
+
+        const statusMap: Record<string, DayStatusItem> = {};
+        response.days.forEach((day) => {
+          statusMap[day.date] = day;
+        });
+
+        setCalendarStatus(statusMap);
+      } catch (error) {
+        console.error('주간 캘린더 상태 조회 실패:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCalendarStatus();
+  }, [weekStartDate]);
 
   /**
    * ===========================================
@@ -107,28 +141,26 @@ export default function WeekCalendar({
 
   /**
    * ===========================================
-   * 이벤트 핸들러 - 메모 저장
+   * 이벤트 핸들러 - 메모 저장 콜백
    * ===========================================
    */
 
   /**
-   * 메모 저장 및 상태 업데이트
+   * 메모 저장 성공 시 마커 업데이트
+   * @param dateKey - 날짜 키 (YYYY-MM-DD)
+   * @param hasContent - 메모 내용 존재 여부
    */
-  const handleSaveMemo = (dateKey: string, memoText: string) => {
-    setLocalCalendarData((prev) => ({
+  const handleMemoSaved = (dateKey: string, hasContent: boolean) => {
+    setCalendarStatus((prev) => ({
       ...prev,
       [dateKey]: {
         ...prev[dateKey],
-        status: {
-          ...(prev[dateKey]?.status || {
-            workout: 'none',
-            diet: 'none',
-            pt: 'none',
-            memo: 'none',
-          }),
-          memo: memoText.trim() ? 'complete' : 'none',
-        },
-        memo: memoText.trim() || undefined,
+        date: dateKey,
+        workout: prev[dateKey]?.workout || { status: 'NONE' },
+        diet: prev[dateKey]?.diet || { status: 'NONE' },
+        videoPt: prev[dateKey]?.videoPt || { status: 'NONE' },
+        /** TODO: 메모 상태 - 백엔드 확정 후 변경될 수 있음 */
+        memo: { status: hasContent ? 'HAS_MEMO' : 'NONE' },
       },
     }));
   };
@@ -269,13 +301,7 @@ export default function WeekCalendar({
       <div className="week-calendar-grid">
         {weekDates.map((date, index) => {
           const dateKey = getDateKey(date);
-          const record = localCalendarData[dateKey];
-          const status: DailyStatus = record?.status || {
-            workout: 'none',
-            diet: 'none',
-            pt: 'none',
-            memo: 'none',
-          };
+          const dayStatus = calendarStatus[dateKey];
 
           return (
             <div key={index} className="week-calendar-day-column">
@@ -283,9 +309,8 @@ export default function WeekCalendar({
               <span className={`week-calendar-day-label ${isToday(date) ? 'today' : ''}`}>
                 {date.getDate()}
                 <span
-                  className={`week-calendar-weekday ${
-                    index === 0 ? 'sunday' : index === 6 ? 'saturday' : ''
-                  }`}
+                  className={`week-calendar-weekday ${index === 0 ? 'sunday' : index === 6 ? 'saturday' : ''
+                    }`}
                 >
                   ({WEEK_DAYS[index]})
                 </span>
@@ -293,16 +318,15 @@ export default function WeekCalendar({
 
               {/* 날짜 셀 */}
               <button
-                className={`week-calendar-day-cell ${isToday(date) ? 'today' : ''} ${
-                  selectedDayIndex === index ? 'selected' : ''
-                }`}
+                className={`week-calendar-day-cell ${isToday(date) ? 'today' : ''} ${selectedDayIndex === index ? 'selected' : ''
+                  }`}
                 onClick={() => handleDayClick(index)}
               >
                 <div className="week-calendar-status-dots">
-                  <div className={`week-calendar-status-dot workout ${status.workout}`} />
-                  <div className={`week-calendar-status-dot diet ${status.diet}`} />
-                  <div className={`week-calendar-status-dot pt ${status.pt}`} />
-                  <div className={`week-calendar-status-dot memo ${status.memo}`} />
+                  <div className={`week-calendar-status-dot workout ${getWorkoutDietClass(dayStatus?.workout?.status, dateKey)}`} />
+                  <div className={`week-calendar-status-dot diet ${getWorkoutDietClass(dayStatus?.diet?.status, dateKey)}`} />
+                  <div className={`week-calendar-status-dot pt ${getVideoPtClass(dayStatus?.videoPt?.status)}`} />
+                  <div className={`week-calendar-status-dot memo ${getMemoClass(dayStatus?.memo?.status)}`} />
                 </div>
               </button>
             </div>
@@ -334,16 +358,11 @@ export default function WeekCalendar({
       {selectedDayIndex !== null && (
         <CalendarPopup
           date={weekDates[selectedDayIndex]}
-          record={
-            localCalendarData[getDateKey(weekDates[selectedDayIndex])] || {
-              status: { workout: 'none', diet: 'none', pt: 'none', memo: 'none' },
-            }
-          }
           onClose={handleClosePopup}
           onNavigateToWorkout={onNavigateToWorkout}
           onNavigateToDiet={onNavigateToDiet}
           onNavigateToPT={onNavigateToPT}
-          onSaveMemo={handleSaveMemo}
+          onMemoSaved={handleMemoSaved}
         />
       )}
     </div>
