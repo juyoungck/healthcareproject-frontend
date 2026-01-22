@@ -20,6 +20,9 @@ interface PTRoomCardProps {
  */
 const formatDateTime = (dateString: string): string => {
   const date = new Date(dateString);
+  
+  /* 로컬 시간(한국시간) 기준으로 표시 */
+  const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
   const hours = date.getHours();
@@ -27,7 +30,7 @@ const formatDateTime = (dateString: string): string => {
   const ampm = hours >= 12 ? '오후' : '오전';
   const hour12 = hours % 12 || 12;
   
-  return `${month}/${day} ${ampm} ${hour12}:${minutes}`;
+  return `${year}년 ${month}월 ${day}일 ${ampm} ${hour12}:${minutes}`;
 };
 
 /**
@@ -119,7 +122,10 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
         <div className="pt-meta-item">
           <Users className="pt-meta-icon" />
           <span>
-            {room.participants.current}/{room.participants.max ?? '∞'}명
+            {room.status === 'LIVE' 
+              ? `${room.participants.current}/${room.participants.max ?? '∞'}명`
+              : `최대 ${room.participants.max ?? '∞'}명`
+            }
           </span>
         </div>
       </div>

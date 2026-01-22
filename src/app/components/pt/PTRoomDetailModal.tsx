@@ -7,8 +7,7 @@
 import { useState } from 'react';
 import { 
   X, 
-  User, 
-  Users as UsersIcon,
+  User,
   KeyRound, 
   Users, 
   Lock, 
@@ -26,13 +25,11 @@ interface PTRoomDetailModalProps {
   room: PTRoomListItem;
   roomDetail?: GetPTRoomDetailResponse | null;
   onClose: () => void;
-  onJoin: (room: PTRoomListItem, entryCode?: string) => void;
-  onReserve: (room: PTRoomListItem, entryCode?: string) => void;
-  onCancelReservation?: (room: PTRoomListItem) => void;
-  isReserved?: boolean;
+  onJoin: (room: PTRoomListItem, entryCode?: string) => Promise<void>;
   isTrainer?: boolean;
   isMyRoom?: boolean;
   onStartRoom?: (room: PTRoomListItem) => void;
+  onCancelRoom?: (room: PTRoomListItem) => void;
   isLoading?: boolean;
 }
 
@@ -41,6 +38,8 @@ interface PTRoomDetailModalProps {
  */
 const formatDateTime = (dateString: string): string => {
   const date = new Date(dateString);
+  
+  /* 로컬 시간(한국시간) 기준으로 표시 */
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
@@ -60,12 +59,10 @@ export default function PTRoomDetailModal({
   roomDetail,
   onClose, 
   onJoin,
-  onReserve,
-  onCancelReservation,
-  isReserved = false,
   isTrainer = false,
   isMyRoom = false,
   onStartRoom,
+  onCancelRoom,
   isLoading = false
 }: PTRoomDetailModalProps) {
   /**
@@ -75,8 +72,6 @@ export default function PTRoomDetailModal({
   const [codeError, setCodeError] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [showCodePopup, setShowCodePopup] = useState(false);
-  const [codePopupType, setCodePopupType] = useState<'join' | 'reserve'>('join');
-  const [showParticipants, setShowParticipants] = useState(false);
 
   /**
    * 모달 외부 클릭 핸들러
@@ -91,8 +86,7 @@ export default function PTRoomDetailModal({
    * 참여하기 버튼 클릭 핸들러
    */
   const handleJoinClick = () => {
-    if (room.visibility === 'private') {
-      setCodePopupType('join');
+    if (room.isPrivate) {
       setEntryCode('');
       setCodeError('');
       setShowCodePopup(true);
@@ -102,23 +96,9 @@ export default function PTRoomDetailModal({
   };
 
   /**
-   * 예약하기 버튼 클릭 핸들러
-   */
-  const handleReserveClick = () => {
-    if (room.visibility === 'private') {
-      setCodePopupType('reserve');
-      setEntryCode('');
-      setCodeError('');
-      setShowCodePopup(true);
-    } else {
-      onReserve(room);
-    }
-  };
-
-  /**
    * 코드 입력 팝업 확인 핸들러
    */
-  const handleCodeSubmit = () => {
+  const handleCodeSubmit = async () => {
     if (!entryCode.trim()) {
       setCodeError('입장 코드를 입력해주세요.');
       return;
@@ -130,12 +110,12 @@ export default function PTRoomDetailModal({
       return;
     }
 
-    setShowCodePopup(false);
-    
-    if (codePopupType === 'join') {
-      onJoin(room, entryCode.toUpperCase());
-    } else {
-      onReserve(room, entryCode.toUpperCase());
+    try {
+      await onJoin(room, entryCode.toUpperCase());
+      setShowCodePopup(false);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error?.message || '입장에 실패했습니다.';
+      setCodeError(errorMessage);
     }
   };
 
@@ -149,20 +129,11 @@ export default function PTRoomDetailModal({
   };
 
   /**
-   * 예약 취소 핸들러
-   */
-  const handleCancelReservation = () => {
-    if (onCancelReservation) {
-      onCancelReservation(room);
-    }
-  };
-
-  /**
    * 링크 복사 핸들러
    */
   const handleCopyLink = async () => {
-    /* TODO: 실제 구현 시 공유 링크 생성 */
-    const shareLink = `https://example.com/pt/room/${room.id}`;
+    const baseUrl = window.location.origin;
+    const shareLink = `${baseUrl}/pt/room/${room.ptRoomId}`;
     
     try {
       await navigator.clipboard.writeText(shareLink);
@@ -210,11 +181,11 @@ export default function PTRoomDetailModal({
   const canStartRoom = (): boolean => {
     if (!room.scheduledAt || room.status !== 'SCHEDULED') return false;
     
-    const now = new Date();
-    const scheduledTime = new Date(room.scheduledAt);
-    const diffMinutes = (scheduledTime.getTime() - now.getTime()) / (1000 * 60);
+    const now = Date.now();
+    const scheduledTime = new Date(room.scheduledAt).getTime();
+    const diffMinutes = (scheduledTime - now) / (1000 * 60);
     
-    return diffMinutes <= 10 && diffMinutes > -60; // 10분 전 ~ 시작 후 60분까지
+    return diffMinutes <= 10 && diffMinutes > -60;
   };
 
   return (
@@ -245,7 +216,9 @@ export default function PTRoomDetailModal({
           </div>
 
           {/* 방 설명 */}
-          <p className="pt-detail-description">{room.description}</p>
+          {roomDetail?.description && (
+            <p className="pt-detail-description">{roomDetail.description}</p>
+          )}
 
           {/* 상세 정보 */}
           <div className="pt-detail-info-list">
@@ -279,8 +252,13 @@ export default function PTRoomDetailModal({
               <Users className="pt-detail-info-icon" />
               <span className="pt-detail-info-label">참여</span>
               <span className="pt-detail-info-value">
-                {room.participants.current}/{room.participants.max ?? '∞'}명
-                {isFull && <span style={{ color: 'var(--color-error)', marginLeft: '8px' }}>(마감)</span>}
+                {room.status === 'LIVE' 
+                  ? `${room.participants.current}/${room.participants.max ?? '∞'}명`
+                  : `최대 ${room.participants.max ?? '∞'}명`
+                }
+                {room.status === 'LIVE' && isFull && (
+                  <span style={{ color: 'var(--color-error)', marginLeft: '8px' }}>(마감)</span>
+                )}
               </span>
             </div>
           </div>
@@ -299,67 +277,44 @@ export default function PTRoomDetailModal({
               </button>
             )}
 
-            {/* 예약중인 방 - 예약하기/취소 */}
-            {room.status === 'SCHEDULED' && (
-              <>
-                {/* 트레이너 본인 방인 경우 */}
-                {isTrainer && isMyRoom ? (
-                  <>
-                    {/* 참여자 목록 버튼 */}
-                    <button 
-                      className="pt-action-btn secondary"
-                      onClick={() => setShowParticipants(true)}
-                    >
-                      <UsersIcon size={20} />
-                      참여자 목록 ({roomDetail?.participants.count || 0}명)
-                    </button>
-                    
-                    {/* 입장 코드 표시 (비공개 방) */}
-                    {room.isPrivate && roomDetail?.entryCode && (
-                      <div className="pt-entry-code-display">
-                        <span className="pt-entry-code-label">입장 코드</span>
-                        <span className="pt-entry-code-value">{roomDetail.entryCode}</span>
-                      </div>
-                    )}
-                    
-                    {/* 시작하기 버튼 */}
-                    <button 
-                      className="pt-action-btn primary"
-                      onClick={() => onStartRoom?.(room)}
-                      disabled={!canStartRoom()}
-                    >
-                      <Video size={20} />
-                      {canStartRoom() ? '시작하기' : '시작 대기중'}
-                    </button>
-                    
-                    {!canStartRoom() && room.scheduledAt && (
-                      <p className="pt-start-hint">
-                        예약 시간 10분 전부터 시작할 수 있습니다
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  /* 일반 사용자 - 기존 예약/취소 버튼 */
-                  <>
-                    {isReserved ? (
-                      <button 
-                        className="pt-action-btn secondary"
-                        onClick={handleCancelReservation}
-                      >
-                        예약 취소
-                      </button>
-                    ) : (
-                      <button 
-                        className="pt-action-btn primary"
-                        onClick={handleReserveClick}
-                        disabled={isFull}
-                      >
-                        <Calendar size={20} />
-                        {isFull ? '예약 마감' : '예약하기'}
-                      </button>
-                    )}
-                  </>
+            {/* 예약중인 방 - 트레이너 전용 */}
+            {room.status === 'SCHEDULED' && isTrainer && isMyRoom && (
+              <>    
+                {/* 입장 코드 표시 (비공개 방) */}
+                {room.isPrivate && (
+                  <div className="pt-entry-code-display">
+                    <span className="pt-entry-code-label">입장 코드</span>
+                    <span className="pt-entry-code-value">
+                      {roomDetail?.entryCode || (isLoading ? '로딩중...' : '-')}
+                    </span>
+                  </div>
                 )}
+                
+                {/* 시작하기 버튼 */}
+                <button 
+                  className="pt-action-btn primary"
+                  onClick={() => onStartRoom?.(room)}
+                  disabled={!canStartRoom()}
+                >
+                  <Video size={20} />
+                  {canStartRoom() ? '시작하기' : '시작 대기중'}
+                </button>
+                
+                {!canStartRoom() && room.scheduledAt && (
+                  <p className="pt-start-hint">
+                    예약 시간 10분 전부터 시작할 수 있습니다
+                  </p>
+                )}
+                
+                {/* 예약 취소 버튼 */}
+                <button 
+                  className="pt-action-btn danger"
+                  onClick={() => onCancelRoom?.(room)}
+                  disabled={isLoading}
+                >
+                  <X size={20} />
+                  예약 취소
+                </button>
               </>
             )}
 
@@ -411,44 +366,8 @@ export default function PTRoomDetailModal({
                       취소
                     </button>
                     <button className="pt-code-popup-btn confirm" onClick={handleCodeSubmit}>
-                      {codePopupType === 'join' ? '참여하기' : '예약하기'}
+                      참여하기
                     </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 참여자 목록 팝업 */}
-            {showParticipants && (
-              <div className="modal-overlay" style={{ zIndex: 'var(--z-modal)' }} onClick={(e) => {
-                if (e.target === e.currentTarget) setShowParticipants(false);
-              }}>
-                <div className="pt-participants-popup">
-                  <div className="pt-participants-header">
-                    <h3 className="pt-participants-title">참여자 목록</h3>
-                    <button className="modal-close-btn" onClick={() => setShowParticipants(false)}>
-                      <X size={20} />
-                    </button>
-                  </div>
-                  
-                  <div className="pt-participants-list">
-                    {roomDetail?.participants.users && roomDetail.participants.users.length > 0 ? (
-                      roomDetail.participants.users.map((participant, index) => (
-                        <div key={participant.handle} className="pt-participant-item">
-                          <span className="pt-participant-number">{index + 1}</span>
-                          <span className="pt-participant-name">{participant.nickname}</span>
-                          {participant.role === 'TRAINER' && (
-                            <span className="pt-participant-role">트레이너</span>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="pt-participants-empty">아직 참여자가 없습니다</p>
-                    )}
-                  </div>
-                  
-                  <div className="pt-participants-footer">
-                    <span>총 {roomDetail?.participants.count || 0} / {room.participants.max ? room.participants.max - 1 : '∞'}명</span>
                   </div>
                 </div>
               </div>

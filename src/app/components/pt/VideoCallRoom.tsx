@@ -17,11 +17,14 @@ import {
   Monitor,
   MonitorOff,
   MoreVertical,
-  User
+  User,
+  Lock,
+  Copy,
+  Check
 } from 'lucide-react';
 import type { GetPTRoomDetailResponse } from '../../../api/types/pt';
 import { useJanus } from '../../../hooks/useJanus';
-import { leavePTRoom } from '../../../api/pt';
+import { leavePTRoom, updatePTRoomStatus } from '../../../api/pt';
 
 /**
  * Props 타입 정의
@@ -47,7 +50,6 @@ export default function VideoCallRoom({
     isTrainer = false,
     userName = '사용자'
  }: VideoCallRoomProps) {
-
   /**
    * 비디오 엘리먼트 참조
    */
@@ -59,7 +61,7 @@ export default function VideoCallRoom({
    * Janus 훅 사용
    * janusRoomKey를 숫자로 변환
    */
-  const janusRoomId = room.janusRoomKey ? parseInt(room.janusRoomKey, 10) : room.ptRoomId;
+  const janusRoomId = room.janusRoomKey ? parseInt(room.janusRoomKey, 10) : 30000 + room.ptRoomId;
 
   const {
     connectionStatus,
@@ -91,6 +93,7 @@ export default function VideoCallRoom({
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [mainVideoId, setMainVideoId] = useState<string>('local');
   const [callDuration, setCallDuration] = useState(0);
+  const [isCodeCopied, setIsCodeCopied] = useState(false);
 
   /**
    * 트레이너 입장 시 메인 화면으로 설정
@@ -194,6 +197,21 @@ export default function VideoCallRoom({
   };
 
   /**
+   * 입장 코드 복사
+   */
+  const handleCopyEntryCode = async () => {
+    if (!room.entryCode) return;
+    
+    try {
+      await navigator.clipboard.writeText(room.entryCode);
+      setIsCodeCopied(true);
+      setTimeout(() => setIsCodeCopied(false), 2000);
+    } catch (err) {
+      console.error('코드 복사 실패:', err);
+    }
+  };
+
+  /**
    * 종료 버튼 클릭 핸들러
    */
   const handleLeaveClick = () => {
@@ -208,6 +226,10 @@ export default function VideoCallRoom({
     disconnect();
     
     try {
+      /* 트레이너인 경우 방 종료 후 퇴장 */
+      if (isTrainer) {
+        await updatePTRoomStatus(room.ptRoomId, { status: 'ENDED' });
+      }
       await leavePTRoom(room.ptRoomId);
     } catch (err) {
       console.error('퇴장 API 호출 실패:', err);
@@ -311,12 +333,27 @@ export default function VideoCallRoom({
             {renderConnectionStatus()}
           </div>
         </div>
-        
-        {connectionStatus === 'connected' && (
-          <div className="videocall-timer">
-            {formatDuration(callDuration)}
-          </div>
-        )}
+
+        <div className="videocall-header-right">
+          {room.isPrivate && room.entryCode && (
+            <div className="videocall-entry-code">
+              <Lock size={12} />
+              <span className="videocall-entry-code-value">{room.entryCode}</span>
+              <button 
+                className="videocall-entry-code-copy"
+                onClick={handleCopyEntryCode}
+              >
+                {isCodeCopied ? <Check size={12} /> : <Copy size={12} />}
+              </button>
+            </div>
+          )}
+          
+          {connectionStatus === 'connected' && (
+            <div className="videocall-timer">
+              {formatDuration(callDuration)}
+            </div>
+          )}
+        </div>
       </header>
 
       {/* 비디오 영역 */}

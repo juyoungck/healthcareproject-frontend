@@ -12,8 +12,6 @@ import {
   Lock,
   Minus,
   Plus,
-  Copy,
-  Check
 } from 'lucide-react';
 import type { CreatePTRoomRequest, CreatePTRoomResponse } from '../../../api/types/pt';
 
@@ -52,13 +50,40 @@ export default function PTCreateRoomModal({
   isLoading = false
 }: PTCreateRoomModalProps) {
   /**
+   * 오늘 날짜 및 분 (최소 선택 날짜/분)
+   */
+  const getDefaultDateTime = () => {
+    const now = new Date();
+    const minutes = now.getMinutes();
+    const roundedMinutes = Math.ceil(minutes / 5) * 5;
+    
+    now.setMinutes(roundedMinutes);
+    now.setSeconds(0);
+    
+    if (roundedMinutes === 60) {
+      now.setHours(now.getHours() + 1);
+      now.setMinutes(0);
+    }
+    
+    /* 로컬 시간 기준으로 날짜/시간 포맷 */
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    
+    const date = `${year}-${month}-${day}`;
+    const time = `${hours}:${mins}`;
+    
+    return { date, time };
+  };
+
+  /**
    * 폼 상태 관리
    */
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [roomType, setRoomType] = useState<RoomType>('LIVE');
-  const [scheduledDate, setScheduledDate] = useState('');
-  const [scheduledTime, setScheduledTime] = useState('');
   const [maxParticipants, setMaxParticipants] = useState(6);
   const [isPrivate, setIsPrivate] = useState(false);
   
@@ -66,9 +91,14 @@ export default function PTCreateRoomModal({
    * 상태 관리
    */
   const [error, setError] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
-  const [isCopied, setIsCopied] = useState(false);
 
+  /**
+   * 시간 관리
+   */
+  const defaultDateTime = getDefaultDateTime();
+  const [scheduledDate, setScheduledDate] = useState(defaultDateTime.date);
+  const [scheduledTime, setScheduledTime] = useState(defaultDateTime.time);
+  
   /**
    * 모달 외부 클릭 핸들러
    */
@@ -97,30 +127,10 @@ export default function PTCreateRoomModal({
   };
 
   /**
-   * 비공개 토글 시 입장 코드 생성
+   * 비공개 토글
    */
   const handlePrivateToggle = () => {
-    const newValue = !isPrivate;
-    setIsPrivate(newValue);
-    
-    if (newValue && !generatedCode) {
-      /* 랜덤 6자리 코드 생성 */
-      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-      setGeneratedCode(code);
-    }
-  };
-
-  /**
-   * 코드 복사
-   */
-  const handleCopyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(generatedCode);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      console.error('코드 복사 실패:', err);
-    }
+    setIsPrivate(!isPrivate);
   };
 
   /**
@@ -149,8 +159,8 @@ export default function PTCreateRoomModal({
 
     /* 방 생성 데이터 전달 */
     const scheduledAt = roomType === 'RESERVED' && scheduledDate && scheduledTime
-      ? `${scheduledDate}T${scheduledTime}:00`
-      : null;
+      ? new Date(`${scheduledDate}T${scheduledTime}:00`).toISOString()
+      : null;   
 
     await onCreate({
       roomType,
@@ -161,11 +171,6 @@ export default function PTCreateRoomModal({
       isPrivate,
     });
   };
-
-  /**
-   * 오늘 날짜 (최소 선택 날짜)
-   */
-  const today = new Date().toISOString().split('T')[0];
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
@@ -250,13 +255,16 @@ export default function PTCreateRoomModal({
                   className="pt-datetime-input"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
-                  min={today}
+                  onKeyDown={(e) => e.preventDefault()}
+                  min={defaultDateTime.date}
                 />
                 <input
                   type="time"
                   className="pt-datetime-input"
                   value={scheduledTime}
                   onChange={(e) => setScheduledTime(e.target.value)}
+                  onKeyDown={(e) => e.preventDefault()}
+                  min={scheduledDate === defaultDateTime.date ? defaultDateTime.time : undefined}
                 />
               </div>
             </div>
@@ -303,57 +311,6 @@ export default function PTCreateRoomModal({
               onClick={handlePrivateToggle}
             />
           </div>
-
-          {/* 생성된 입장 코드 표시 */}
-          {isPrivate && generatedCode && (
-            <div 
-              style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 'var(--spacing-md)',
-                backgroundColor: 'var(--color-pt-light)',
-                borderRadius: 'var(--border-radius-md)'
-              }}
-            >
-              <div>
-                <p style={{ 
-                  fontSize: 'var(--font-size-xs)', 
-                  color: 'var(--color-gray-600)',
-                  marginBottom: '4px'
-                }}>
-                  입장 코드
-                </p>
-                <p style={{ 
-                  fontSize: 'var(--font-size-xl)', 
-                  fontWeight: 'var(--font-weight-bold)',
-                  color: 'var(--color-pt)',
-                  letterSpacing: '0.2em'
-                }}>
-                  {generatedCode}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleCopyCode}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: 'var(--spacing-sm) var(--spacing-md)',
-                  fontSize: 'var(--font-size-sm)',
-                  color: 'var(--color-pt)',
-                  backgroundColor: 'var(--color-white)',
-                  border: '1px solid var(--color-pt)',
-                  borderRadius: 'var(--border-radius-sm)',
-                  cursor: 'pointer'
-                }}
-              >
-                {isCopied ? <Check size={16} /> : <Copy size={16} />}
-                {isCopied ? '복사됨' : '복사'}
-              </button>
-            </div>
-          )}
 
           {/* 에러 메시지 */}
           {error && (
