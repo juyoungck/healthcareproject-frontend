@@ -23,9 +23,9 @@ import {
   Copy,
   Check
 } from 'lucide-react';
-import type { GetPTRoomDetailResponse } from '../../../api/types/pt';
 import { useJanus } from '../../../hooks/useJanus';
-import { leavePTRoom, updatePTRoomStatus } from '../../../api/pt';
+import { leavePTRoom, updatePTRoomStatus, getPTRoomParticipants } from '../../../api/pt';
+import type { GetPTRoomDetailResponse, PTParticipantUser } from '../../../api/types/pt';
 
 /**
  * Props 타입 정의
@@ -89,6 +89,11 @@ export default function VideoCallRoom({
     trainerName: room.trainer.nickname,
     onError: (error) => {
       console.error('Janus 에러:', error);
+    },
+    onRoomDestroyed: () => {
+      /* 트레이너가 방을 종료했을 때 자동 퇴장 */
+      console.log('방이 종료되어 퇴장합니다.');
+      onLeave();
     }
   });
 
@@ -99,6 +104,9 @@ export default function VideoCallRoom({
   const [mainVideoId, setMainVideoId] = useState<string>('local');
   const [callDuration, setCallDuration] = useState(0);
   const [isCodeCopied, setIsCodeCopied] = useState(false);
+
+  /* 참여자 프로필 정보 */
+  const [participantProfiles, setParticipantProfiles] = useState<Map<string, PTParticipantUser>>(new Map());
 
   /**
    * 트레이너 입장 시 메인 화면으로 설정
@@ -116,6 +124,36 @@ export default function VideoCallRoom({
       setMainVideoId(trainer.id);
     }
   }, [participants, isTrainer]);
+
+  /**
+   * 참여자 프로필 정보 주기적 조회
+   */
+  useEffect(() => {
+    if (connectionStatus !== 'connected') return;
+
+    const fetchParticipantProfiles = async () => {
+      try {
+        const response = await getPTRoomParticipants(room.ptRoomId);
+        const profileMap = new Map<string, PTParticipantUser>();
+        
+        response.users.forEach(user => {
+          profileMap.set(user.handle, user);
+        });
+        
+        setParticipantProfiles(profileMap);
+      } catch (err) {
+        console.error('참여자 프로필 조회 실패:', err);
+      }
+    };
+
+    /* 초기 조회 */
+    fetchParticipantProfiles();
+
+    /* 10초마다 갱신 (참여자 변경 감지) */
+    const interval = setInterval(fetchParticipantProfiles, 10000);
+
+    return () => clearInterval(interval);
+  }, [connectionStatus, room.ptRoomId]);
 
   /**
    * 컴포넌트 마운트 시 연결 시작
@@ -167,6 +205,31 @@ export default function VideoCallRoom({
       return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  /**
+   * 참가자의 프로필 이미지 URL 가져오기
+   */
+  const getParticipantProfileImage = (participant: typeof participants[0]): string | null => {
+    /* 로컬(나)인 경우 내 프로필 사용 */
+    if (participant.isLocal) {
+      return userInfo?.profileImageUrl || null;
+    }
+    
+    /* 트레이너인 경우 room에서 가져옴 */
+    if (participant.isTrainer) {
+      return room.trainer.profileImageUrl || null;
+    }
+    
+    /* 그 외 참가자는 API에서 가져온 프로필 사용 */
+    /* participant.name이 nickname이므로, 프로필 맵에서 nickname으로 찾기 */
+    for (const [, profile] of participantProfiles) {
+      if (profile.nickname === participant.name) {
+        return profile.profileImageUrl || null;
+      }
+    }
+    
+    return null;
   };
 
   /**
@@ -405,10 +468,12 @@ export default function VideoCallRoom({
           {/* 스트림 없을 때 플레이스홀더 */}
           {(!mainParticipant || (mainParticipant.isLocal ? !localStream || isVideoOff : !mainParticipant.stream)) && (
             <div className="vc-video-placeholder">
-              {mainParticipant?.isLocal && userInfo?.profileImageUrl ? (
-                <img src={userInfo.profileImageUrl} alt="프로필" className="mypage-profile-image" />
-              ) : userInfo?.profileImageUrl ? (
-	              <img src={userInfo.profileImageUrl} alt="프로필" className="mypage-profile-image" />
+              {mainParticipant && getParticipantProfileImage(mainParticipant) ? (
+                <img 
+                  src={getParticipantProfileImage(mainParticipant)!} 
+                  alt={mainParticipant.name} 
+                  className="vc-video-profile-img" 
+                />
               ) : (
                 <User size={48} className="mypage-profile-placeholder" />
               )}
@@ -447,9 +512,9 @@ export default function VideoCallRoom({
                     />
                     {(!localStream || isVideoOff) && (
                     <div className="vc-sub-video-placeholder">
-                      {userProfileImage ? (
+                      {getParticipantProfileImage(participant) ? (
                         <img 
-                          src={userProfileImage} 
+                          src={getParticipantProfileImage(participant)!} 
                           alt={participant.name} 
                           className="vc-sub-video-profile-img"
                         />
@@ -481,10 +546,14 @@ export default function VideoCallRoom({
                     />
                     {!participant.stream && (
                     <div className="vc-sub-video-placeholder">
-                      {userInfo?.profileImageUrl ? (
-	                      <img src={userInfo.profileImageUrl} alt="프로필" className="mypage-profile-image" />
+                      {getParticipantProfileImage(participant) ? (
+                        <img 
+                          src={getParticipantProfileImage(participant)!} 
+                          alt={participant.name} 
+                          className="vc-sub-video-profile-img"
+                        />
                       ) : (
-                        <User size={24} className="mypage-profile-placeholder" />
+                        <User size={24} />
                       )}
                     </div>
                   )}
