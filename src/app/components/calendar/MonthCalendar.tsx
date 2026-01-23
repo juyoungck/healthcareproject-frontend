@@ -13,11 +13,13 @@ import {
   getDateKey,
   isToday,
   isSameDate,
-  generateCalendarDays } from '../../../utils/calendar';
+  generateCalendarDays
+} from '../../../utils/calendar';
 import {
   getWorkoutDietClass,
   getVideoPtClass,
-  getMemoClass } from '../../../utils/calendarStatus';
+  getMemoClass
+} from '../../../utils/calendarStatus';
 import { getWeeklyCalendar } from '../../../api/calendar';
 import { DayStatusItem } from '../../../api/types/calendar';
 import CalendarPopup from './CalendarPopup';
@@ -86,22 +88,21 @@ export default function MonthCalendar({
    * ===========================================
    */
 
-  /**
-   * 월 변경 시 주간 컬러코드 API 호출
-   * TODO: 월간 전용 API가 생기면 변경 필요
-   */
   useEffect(() => {
     const fetchCalendarStatus = async () => {
       setIsLoading(true);
 
       try {
+        /* 현재 월의 1일 ~ 말일만 요청 (최대 31일) */
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         const firstDay = new Date(year, month, 1);
-        const startDateKey = getDateKey(firstDay);
+        const lastDay = new Date(year, month + 1, 0);
 
-        /* TODO: 현재는 주간 API 사용, 월간 API 생기면 변경 */
-        const response = await getWeeklyCalendar(startDateKey);
+        const startDateKey = getDateKey(firstDay);
+        const endDateKey = getDateKey(lastDay);
+
+        const response = await getWeeklyCalendar(startDateKey, endDateKey);
 
         const statusMap: Record<string, DayStatusItem> = {};
         response.days.forEach((day) => {
@@ -118,6 +119,7 @@ export default function MonthCalendar({
 
     fetchCalendarStatus();
   }, [currentDate]);
+
 
   /**
    * ===========================================
@@ -166,10 +168,10 @@ export default function MonthCalendar({
    */
 
   /**
-   * 메모 저장 성공 시 마커 업데이트
-   * @param dateKey - 날짜 키 (YYYY-MM-DD)
-   * @param hasContent - 메모 내용 존재 여부
-   */
+ * 메모 저장 성공 시 마커 업데이트
+ * @param dateKey - 날짜 키 (YYYY-MM-DD)
+ * @param hasContent - 메모 내용 존재 여부
+ */
   const handleMemoSaved = (dateKey: string, hasContent: boolean) => {
     setCalendarStatus((prev) => ({
       ...prev,
@@ -179,8 +181,7 @@ export default function MonthCalendar({
         workout: prev[dateKey]?.workout || { status: 'NONE' },
         diet: prev[dateKey]?.diet || { status: 'NONE' },
         videoPt: prev[dateKey]?.videoPt || { status: 'NONE' },
-        /** TODO: 메모 상태 - 백엔드 확정 후 변경될 수 있음 */
-        memo: { status: hasContent ? 'HAS_MEMO' : 'NONE' },
+        memo: { exists: hasContent },
       },
     }));
   };
@@ -253,7 +254,7 @@ export default function MonthCalendar({
                 <div className={`month-calendar-marker workout ${getWorkoutDietClass(dayStatus?.workout?.status, dateKey)}`} />
                 <div className={`month-calendar-marker diet ${getWorkoutDietClass(dayStatus?.diet?.status, dateKey)}`} />
                 <div className={`month-calendar-marker pt ${getVideoPtClass(dayStatus?.videoPt?.status)}`} />
-                <div className={`month-calendar-marker memo ${getMemoClass(dayStatus?.memo?.status)}`} />
+                <div className={`month-calendar-marker memo ${getMemoClass(dayStatus?.memo)}`} />
               </div>
             </button>
           );

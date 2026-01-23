@@ -101,7 +101,13 @@ export default function WeekCalendar({
 
       try {
         const startDateKey = getDateKey(weekStartDate);
-        const response = await getWeeklyCalendar(startDateKey);
+
+        /* 주 종료일 계산 (시작일 + 6일) */
+        const weekEndDate = new Date(weekStartDate);
+        weekEndDate.setDate(weekStartDate.getDate() + 6);
+        const endDateKey = getDateKey(weekEndDate);
+
+        const response = await getWeeklyCalendar(startDateKey, endDateKey);
 
         const statusMap: Record<string, DayStatusItem> = {};
         response.days.forEach((day) => {
@@ -129,6 +135,8 @@ export default function WeekCalendar({
    * 날짜 클릭 시 팝업 열기
    */
   const handleDayClick = (index: number) => {
+    console.log('handleDayClick 호출:', index);
+    console.log('현재 selectedDayIndex:', selectedDayIndex);
     setSelectedDayIndex(index);
   };
 
@@ -136,6 +144,7 @@ export default function WeekCalendar({
    * 팝업 닫기
    */
   const handleClosePopup = () => {
+    console.log('handleClosePopup 호출');
     setSelectedDayIndex(null);
   };
 
@@ -159,8 +168,7 @@ export default function WeekCalendar({
         workout: prev[dateKey]?.workout || { status: 'NONE' },
         diet: prev[dateKey]?.diet || { status: 'NONE' },
         videoPt: prev[dateKey]?.videoPt || { status: 'NONE' },
-        /** TODO: 메모 상태 - 백엔드 확정 후 변경될 수 있음 */
-        memo: { status: hasContent ? 'HAS_MEMO' : 'NONE' },
+        memo: { exists: hasContent },
       },
     }));
   };
@@ -326,7 +334,7 @@ export default function WeekCalendar({
                   <div className={`week-calendar-status-dot workout ${getWorkoutDietClass(dayStatus?.workout?.status, dateKey)}`} />
                   <div className={`week-calendar-status-dot diet ${getWorkoutDietClass(dayStatus?.diet?.status, dateKey)}`} />
                   <div className={`week-calendar-status-dot pt ${getVideoPtClass(dayStatus?.videoPt?.status)}`} />
-                  <div className={`week-calendar-status-dot memo ${getMemoClass(dayStatus?.memo?.status)}`} />
+                  <div className={`week-calendar-status-dot memo ${getMemoClass(dayStatus?.memo)}`} />
                 </div>
               </button>
             </div>

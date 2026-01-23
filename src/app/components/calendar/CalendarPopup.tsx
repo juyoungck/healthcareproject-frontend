@@ -52,6 +52,15 @@ export default function CalendarPopup({
   
   /**
    * ===========================================
+   * 파생 데이터
+   * ===========================================
+   */
+  
+  /** 날짜 키 (YYYY-MM-DD) - useEffect 의존성용 */
+  const dateKey = getDateKey(date);
+
+  /**
+   * ===========================================
    * 상태 관리
    * ===========================================
    */
@@ -85,7 +94,6 @@ export default function CalendarPopup({
    */
   useEffect(() => {
     const fetchData = async () => {
-      const dateKey = getDateKey(date);
       setIsLoading(true);
       setErrorMessage(null);
 
@@ -109,7 +117,7 @@ export default function CalendarPopup({
     };
 
     fetchData();
-  }, [date]);
+  }, [dateKey]);
 
   /**
    * ESC 키로 팝업 닫기
@@ -164,7 +172,6 @@ export default function CalendarPopup({
    * 메모 저장 (API 호출)
    */
   const handleSaveMemo = async () => {
-    const dateKey = getDateKey(date);
     const trimmedText = memoText.trim();
 
     /* 변경사항 없으면 그냥 닫기 */
