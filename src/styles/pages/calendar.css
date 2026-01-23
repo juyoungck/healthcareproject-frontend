@@ -469,13 +469,15 @@
   transform: translate(-50%, -50%);
   width: 90%;
   max-width: var(--container-lg);
+  max-height: 85vh;
   background-color: var(--color-white);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-xl);
   z-index: var(--z-modal);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
-
 /**
  * 팝업 헤더
  */
@@ -519,7 +521,7 @@
   flex-direction: column;
   padding: var(--spacing-md);
   gap: var(--spacing-sm);
-  max-height: var(--container-xl);
+  flex: 1;
   overflow-y: auto;
 }
 
