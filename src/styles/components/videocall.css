@@ -606,7 +606,7 @@
 
 .vc-leave-popup {
   width: 100%;
-  max-width: var(--container-sm);
+  max-width: var(--container-md);
   background-color: var(--color-white);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-xl);
@@ -673,4 +673,14 @@
 
 .vc-leave-popup-btn.confirm:hover {
   background-color: #b91c1c;
+}
+
+.vc-leave-popup-icon.ended {
+  background: var(--color-warning);
+  color: white;
+}
+
+.vc-leave-popup-icon.admin {
+  background: var(--color-error);
+  color: white;
 }

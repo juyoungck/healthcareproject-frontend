@@ -23,7 +23,7 @@ import {
   Copy,
   Check
 } from 'lucide-react';
-import { useJanus } from '../../../hooks/useJanus';
+import { useJanus, RoomEndReason } from '../../../hooks/useJanus';
 import { leavePTRoom, updatePTRoomStatus, getPTRoomParticipants } from '../../../api/pt';
 import type { GetPTRoomDetailResponse, PTParticipantUser } from '../../../api/types/pt';
 
@@ -90,10 +90,13 @@ export default function VideoCallRoom({
     onError: (error) => {
       console.error('Janus 에러:', error);
     },
-    onRoomDestroyed: () => {
-      /* 트레이너가 방을 종료했을 때 자동 퇴장 */
-      console.log('방이 종료되어 퇴장합니다.');
-      onLeave();
+    onRoomDestroyed: (reason) => {
+      console.log('방이 종료되어 퇴장합니다. 사유:', reason);
+      if (!isTrainer) {
+        setRoomEndReason(reason);
+      } else {
+        onLeave();
+      }
     }
   });
 
@@ -104,6 +107,7 @@ export default function VideoCallRoom({
   const [mainVideoId, setMainVideoId] = useState<string>('local');
   const [callDuration, setCallDuration] = useState(0);
   const [isCodeCopied, setIsCodeCopied] = useState(false);
+  const [roomEndReason, setRoomEndReason] = useState<RoomEndReason | null>(null);
 
   /* 참여자 프로필 정보 */
   const [participantProfiles, setParticipantProfiles] = useState<Map<string, PTParticipantUser>>(new Map());
@@ -665,6 +669,40 @@ export default function VideoCallRoom({
                   onClick={handleLeaveConfirm}
                 >
                   종료하기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 방 종료 알림 팝업 (일반 유저용) */}
+        {roomEndReason && (
+          <div className="modal-overlay" style={{ zIndex: 'var(--z-modal)' }}>
+            <div className="vc-leave-popup">
+              <div className={`vc-leave-popup-icon ${roomEndReason === 'ADMIN_CLOSED' ? 'admin' : 'ended'}`}>
+                <Phone size={32} />
+              </div>
+              <h3 className="vc-leave-popup-title">
+                {roomEndReason === 'ADMIN_CLOSED' 
+                  ? 'PT가 강제 종료되었습니다' 
+                  : 'PT가 종료되었습니다'
+                }
+              </h3>
+              <p className="vc-leave-popup-desc">
+                {roomEndReason === 'ADMIN_CLOSED' 
+                  ? '관리자에 의해 화상PT가 강제 종료되었습니다.'
+                  : '트레이너가 화상PT를 종료했습니다.'
+                }
+              </p>
+              <div className="vc-leave-popup-actions">
+                <button 
+                  className="vc-leave-popup-btn confirm"
+                  onClick={() => {
+                    setRoomEndReason(null);
+                    onLeave();
+                  }}
+                >
+                  확인
                 </button>
               </div>
             </div>

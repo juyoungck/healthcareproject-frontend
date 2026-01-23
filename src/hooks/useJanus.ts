@@ -30,6 +30,9 @@ export interface JanusParticipant {
  */
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'failed';
 
+/** 방 종료 사유 */
+export type RoomEndReason = 'TRAINER_LEFT' | 'ADMIN_CLOSED' | 'UNKNOWN';
+
 /**
  * useJanus 훅 옵션
  */
@@ -38,7 +41,7 @@ interface UseJanusOptions {
   displayName: string;
   trainerName?: string;
   onError?: (error: string) => void;
-  onRoomDestroyed?: () => void;
+  onRoomDestroyed?: (reason: RoomEndReason) => void;
 }
 
 /**
@@ -93,6 +96,8 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
    */
   const myIdRef = useRef<number | null>(null);
   const myPvtIdRef = useRef<number | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const isDisconnectingRef = useRef<boolean>(false);
 
   /**
    * 새 원격 피드 구독
@@ -284,12 +289,12 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
                         setParticipants(prev => prev.filter(p => p.id !== `remote-${msg.unpublished}`));
                       }
                     }
-                    
+
                     /* 방이 파괴됨 */
                     if (msg.destroyed) {
                       console.log('관리자에 의해 방이 종료되었습니다.');
                       disconnect();
-                      onRoomDestroyed?.();
+                      onRoomDestroyed?.('ADMIN_CLOSED');
                     }
 
                     /* 트레이너 퇴장 감지 (일반 유저인 경우) */
@@ -300,7 +305,7 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
                       if (leavingParticipant) {
                         console.log('트레이너가 퇴장했습니다. 방을 종료합니다.');
                         disconnect();
-                        onRoomDestroyed?.();
+                        onRoomDestroyed?.('TRAINER_LEFT');
                       }
                     }
                     
@@ -314,6 +319,7 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
               
               onlocalstream: (stream: MediaStream) => {
                 setLocalStream(stream);
+                localStreamRef.current = stream;
                 setConnectionStatus('connected');
                 
                 /* 로컬 참가자 추가 */
@@ -336,6 +342,7 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
               
               oncleanup: () => {
                 setLocalStream(null);
+                localStreamRef.current = null;
               }
             });
           },
@@ -380,9 +387,16 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
    * 연결 해제
    */
   const disconnect = useCallback(() => {
+    if (isDisconnectingRef.current) {
+      console.log('이미 disconnect 진행 중');
+      return;
+    }
+    isDisconnectingRef.current = true;
+    
     /* 로컬 스트림 트랙 정리 (카메라/마이크 해제) */
-    if (localStream) {
-      localStream.getTracks().forEach(track => {
+    const stream = localStreamRef.current;
+    if (stream) {
+      stream.getTracks().forEach(track => {
         track.stop();
         console.log('트랙 정지:', track.kind);
       });
@@ -390,7 +404,11 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
 
     /* 모든 원격 피드 해제 */
     feedsRef.current.forEach(feed => {
-      feed.detach();
+      try {
+        feed.detach();
+      } catch (e) {
+        console.error('피드 해제 에러:', e);
+      }
     });
     feedsRef.current.clear();
     
@@ -407,8 +425,23 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
     
     /* Janus 세션 종료 */
     if (janusRef.current) {
-      janusRef.current.destroy();
-      janusRef.current = null;
+      const janus = janusRef.current;
+      janusRef.current = null;  // 먼저 null로 설정하여 추가 요청 방지
+      
+      try {
+        janus.destroy({
+          unload: true,  // 페이지 언로드처럼 처리 (추가 요청 안 함)
+          success: () => {
+            console.log('Janus 세션 정상 종료');
+          },
+          error: (err: string) => {
+            // 이미 종료된 세션이면 무시
+            console.log('Janus 세션 종료:', err);
+          }
+        });
+      } catch (e) {
+        // 무시
+      }
     }
     
     setParticipants([]);
@@ -418,7 +451,12 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
     setIsMicMuted(false);
     setIsVideoOff(false);
     setIsScreenSharing(false);
-  }, [localStream]);
+
+    /* disconnect 완료 후 플래그 리셋 */
+    setTimeout(() => {
+      isDisconnectingRef.current = false;
+    }, 100);
+  }, []);
 
   /**
    * 소리 듣기 토글 (헤드셋)
@@ -481,6 +519,7 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
         const newStream = publisherRef.current.webrtcStuff?.myStream;
         if (newStream) {
             setLocalStream(newStream);
+            localStreamRef.current = newStream;
         }
       },
       error: (error: Error) => {
@@ -515,6 +554,7 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
         const newStream = publisherRef.current.webrtcStuff?.myStream;
         if (newStream) {
             setLocalStream(newStream);
+            localStreamRef.current = newStream;
         }
       },
       error: (error: Error) => {
@@ -531,6 +571,26 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
       disconnect();
     };
   }, [disconnect]);
+
+  // 디버깅용 - 나중에 삭제
+  useEffect(() => {
+    (window as any).__simulateTrainerLeft = () => {
+      console.log('트레이너 퇴장 시뮬레이션');
+      disconnect();
+      onRoomDestroyed?.('TRAINER_LEFT');
+    };
+    
+    (window as any).__simulateAdminClosed = () => {
+      console.log('관리자 강제 종료 시뮬레이션');
+      disconnect();
+      onRoomDestroyed?.('ADMIN_CLOSED');
+    };
+    
+    return () => {
+      delete (window as any).__simulateTrainerLeft;
+      delete (window as any).__simulateAdminClosed;
+    };
+  }, [disconnect, onRoomDestroyed]);
 
   return {
     connectionStatus,
