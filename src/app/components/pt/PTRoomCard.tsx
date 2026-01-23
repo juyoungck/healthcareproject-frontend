@@ -4,9 +4,10 @@
  * 방 목록에서 각 방을 표시하는 카드
  */
 
+import { useState } from 'react';
 import { User, Clock, Users, Lock } from 'lucide-react';
-import { useAuth } from '../../../contexts/AuthContext';
 import type { PTRoomListItem } from '../../../api/types/pt';
+import TrainerProfileModal from './TrainerProfileModal';
 
 /**
  * Props 타입 정의
@@ -38,7 +39,11 @@ const formatDateTime = (dateString: string): string => {
  * PTRoomCard 컴포넌트
  */
 export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
-  const { user: userInfo } = useAuth();
+  /**
+   * 트레이너 프로필
+   */
+  const [showTrainerProfile, setShowTrainerProfile] = useState(false);
+
   /**
    * 상태 뱃지 렌더링
    */
@@ -87,6 +92,7 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
   };
 
   return (
+    <>
     <div className="pt-room-card" onClick={() => onClick(room)}>
       {/* 카드 헤더 */}
       <div className="pt-room-card-header">
@@ -98,12 +104,22 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
       </div>
 
       {/* 트레이너 정보 */}
-      <div className="pt-room-trainer">
-        <div className="pt-trainer-avatar">
-          {userInfo?.profileImageUrl ? (
-            <img src={userInfo.profileImageUrl} alt="프로필" className="mypage-profile-image" />
+      <div className="pt-room-trainer"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowTrainerProfile(true);
+        }}
+        style={{ cursor: 'pointer' }}
+      >
+        <div className="pt-trainer-profile">
+          {room.trainer.profileImageUrl ? (
+            <img 
+              src={room.trainer.profileImageUrl} 
+              alt={room.trainer.nickname}
+              className="pt-trainer-profile-img"
+            />
           ) : (
-            <User size={48} className="mypage-profile-placeholder" />
+            <User className="pt-trainer-profile-icon" />
           )}
         </div>
         <span className="pt-trainer-name">{room.trainer.nickname} 트레이너</span>
@@ -136,5 +152,14 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
         </div>
       </div>
     </div>
+
+    {/* 트레이너 프로필 모달 */}
+    {showTrainerProfile && (
+      <TrainerProfileModal 
+        trainer={room.trainer}
+        onClose={() => setShowTrainerProfile(false)}
+      />
+    )}
+    </>
   );
 }

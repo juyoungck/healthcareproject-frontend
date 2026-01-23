@@ -22,6 +22,7 @@ export interface JanusParticipant {
   isAudioMuted?: boolean;
   isMicMuted?: boolean;
   isVideoOff?: boolean;
+  profileImageUrl?: string | null;
 }
 
 /**
@@ -37,6 +38,7 @@ interface UseJanusOptions {
   displayName: string;
   trainerName?: string;
   onError?: (error: string) => void;
+  onRoomDestroyed?: () => void;
 }
 
 /**
@@ -67,7 +69,7 @@ interface UseJanusReturn {
 /**
  * Janus WebRTC 연결 관리 훅
  */
-export function useJanus({ roomId, displayName, trainerName, onError }: UseJanusOptions): UseJanusReturn {
+export function useJanus({ roomId, displayName, trainerName, onError, onRoomDestroyed }: UseJanusOptions): UseJanusReturn {
   /**
    * Janus 인스턴스 참조
    */
@@ -282,6 +284,26 @@ export function useJanus({ roomId, displayName, trainerName, onError }: UseJanus
                         setParticipants(prev => prev.filter(p => p.id !== `remote-${msg.unpublished}`));
                       }
                     }
+                    
+                    /* 방이 파괴됨 */
+                    if (msg.destroyed) {
+                      console.log('관리자에 의해 방이 종료되었습니다.');
+                      disconnect();
+                      onRoomDestroyed?.();
+                    }
+
+                    /* 트레이너 퇴장 감지 (일반 유저인 경우) */
+                    if (msg.leaving && trainerName) {
+                      const leavingParticipant = participants.find(
+                        p => p.id === `remote-${msg.leaving}` && p.isTrainer
+                      );
+                      if (leavingParticipant) {
+                        console.log('트레이너가 퇴장했습니다. 방을 종료합니다.');
+                        disconnect();
+                        onRoomDestroyed?.();
+                      }
+                    }
+                    
                   }
                 }
                 
@@ -358,6 +380,14 @@ export function useJanus({ roomId, displayName, trainerName, onError }: UseJanus
    * 연결 해제
    */
   const disconnect = useCallback(() => {
+    /* 로컬 스트림 트랙 정리 (카메라/마이크 해제) */
+    if (localStream) {
+      localStream.getTracks().forEach(track => {
+        track.stop();
+        console.log('트랙 정지:', track.kind);
+      });
+    }
+
     /* 모든 원격 피드 해제 */
     feedsRef.current.forEach(feed => {
       feed.detach();
@@ -366,7 +396,12 @@ export function useJanus({ roomId, displayName, trainerName, onError }: UseJanus
     
     /* 퍼블리셔 해제 */
     if (publisherRef.current) {
-      publisherRef.current.send({ message: { request: 'unpublish' } });
+      try {
+       publisherRef.current.send({ message: { request: 'unpublish' } });
+       publisherRef.current.hangup();
+      } catch (e) {
+        console.error('퍼블리셔 해제 에러:', e);
+      }
       publisherRef.current = null;
     }
     
@@ -379,7 +414,11 @@ export function useJanus({ roomId, displayName, trainerName, onError }: UseJanus
     setParticipants([]);
     setLocalStream(null);
     setConnectionStatus('idle');
-  }, []);
+    setIsAudioMuted(false);
+    setIsMicMuted(false);
+    setIsVideoOff(false);
+    setIsScreenSharing(false);
+  }, [localStream]);
 
   /**
    * 소리 듣기 토글 (헤드셋)
