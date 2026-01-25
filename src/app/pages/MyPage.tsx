@@ -38,6 +38,7 @@ import { getProfile, getInjuries, getAllergies, updateNickname, updatePhoneNumbe
 import type { ProfileResponse, InjuryItem } from '../../api/types/me';
 import { CURRENT_USER_TRAINER_STATUS } from '../../data/users';
 import { uploadImage } from '../../api/upload';
+import { applyTrainer } from '../../api/trainer';
 
 const ALLERGY_LABEL_MAP: Record<string, string> = {
   WHEAT: '밀',
@@ -74,7 +75,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
   /**
    * 상태 관리
    */
-  const { user: userInfo, updateUser } = useAuth();
+  const { user: userInfo, updateUser, refreshUser } = useAuth();
 
   /* 로딩/에러 */
   const [isLoading, setIsLoading] = useState(true);
@@ -108,6 +109,8 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
   const [showProfileSheet, setShowProfileSheet] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /* 트레이너 신청 로딩 */
+  const [isApplyingTrainer, setIsApplyingTrainer] = useState(false);
   /**
    * ===========================================
    * 유저 데이터 로드
@@ -330,11 +333,50 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
   /**
    * 트레이너 등록 신청 완료 핸들러
    */
-  const handleTrainerApply = (data: TrainerApplyData) => {
-    console.log('트레이너 신청 데이터:', data);
-    /* TODO: API 연동 - POST /api/trainer/application */
-    alert('트레이너 등록 신청이 완료되었습니다.\n관리자 승인 후 트레이너로 활동할 수 있습니다.');
-    setShowTrainerModal(false);
+  const handleTrainerApply = async (data: TrainerApplyData) => {
+    setIsApplyingTrainer(true);
+
+    try {
+      /* 1. 파일들을 순차적으로 업로드하여 URL 배열 생성 */
+      const licenseUrls: string[] = [];
+      
+      for (const file of data.files) {
+        const url = await uploadImage(file);
+        licenseUrls.push(url);
+      }
+
+      /* 2. 트레이너 신청 API 호출 */
+      await applyTrainer({
+        licenseUrls,
+        bio: data.introduction,
+      });
+
+      /* 3. 성공 처리 */
+      alert('트레이너 등록 신청이 완료되었습니다.\n관리자 승인 후 트레이너로 활동할 수 있습니다.');
+      setShowTrainerModal(false);
+
+      /* 4. 사용자 정보 새로고침 (상태 반영) */
+      await refreshUser();
+
+    } catch (error: unknown) {
+      console.error('트레이너 신청 실패:', error);
+      
+      /* 에러 메시지 처리 */
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { code?: string } } };
+        const errorCode = axiosError.response?.data?.code;
+        
+        if (errorCode === 'TRAINER-002' || errorCode === 'ALREADY_SUBMITTED') {
+          alert('이미 트레이너 신청을 제출했습니다.');
+        } else {
+          alert('트레이너 신청에 실패했습니다. 다시 시도해주세요.');
+        }
+      } else {
+        alert('트레이너 신청에 실패했습니다. 다시 시도해주세요.');
+      }
+    } finally {
+      setIsApplyingTrainer(false);
+    }
   };
 
   /**
@@ -737,6 +779,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
         <TrainerApplyModal
           onClose={() => setShowTrainerModal(false)}
           onSubmit={handleTrainerApply}
+          isSubmitting={isApplyingTrainer}
         />
       )}
 

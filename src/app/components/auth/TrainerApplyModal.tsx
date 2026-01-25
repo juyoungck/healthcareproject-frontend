@@ -16,8 +16,10 @@ import { X, Upload, FileText, Image, Trash2 } from 'lucide-react';
 interface TrainerApplyModalProps {
   /** 모달 닫기 핸들러 */
   onClose: () => void;
-  /** 신청 완료 핸들러 */
-  onSubmit: (data: TrainerApplyData) => void;
+  /** 신청 완료 핸들러 (Promise 반환) */
+  onSubmit: (data: TrainerApplyData) => Promise<void>;
+  /** 로딩 상태 (외부 제어) */
+  isSubmitting?: boolean;
 }
 
 /**
@@ -37,6 +39,7 @@ export interface TrainerApplyData {
 export default function TrainerApplyModal({
   onClose,
   onSubmit,
+  isSubmitting = false,
 }: TrainerApplyModalProps) {
   /**
    * 상태 관리
@@ -93,7 +96,7 @@ export default function TrainerApplyModal({
   /**
    * 신청 제출 핸들러
    */
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!introduction.trim()) {
       alert('소개 문구를 작성해주세요.');
       return;
@@ -104,7 +107,7 @@ export default function TrainerApplyModal({
       return;
     }
 
-    onSubmit({
+    await onSubmit({
       introduction: introduction.trim(),
       files,
     });
@@ -199,11 +202,12 @@ export default function TrainerApplyModal({
 
         {/* 푸터 */}
         <div className="modal-footer">
-          <button className="btn-secondary" onClick={onClose}>
+          <button className="btn-secondary" onClick={onClose} disabled={isSubmitting}>
             취소
           </button>
-          <button className="btn-primary" onClick={handleSubmit}>
-            신청하기
+          <button 
+            className="btn-primary"  onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? '신청 중...' : '신청하기'}
           </button>
         </div>
       </div>
