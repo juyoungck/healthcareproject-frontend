@@ -5,8 +5,8 @@
 
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { 
-  ArrowLeft, 
+import {
+  ArrowLeft,
   ChevronRight,
   Bell,
   FileText,
@@ -93,11 +93,11 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
       contextLogout();
       onLogout();
     } catch (err: unknown) {
-        console.error('회원탈퇴 실패:', err);
-        const axiosError = err as { response?: { data?: { error?: { code?: string } } } };
-        const errorCode = axiosError.response?.data?.error?.code;
+      console.error('회원탈퇴 실패:', err);
+      const axiosError = err as { response?: { data?: { error?: { code?: string } } } };
+      const errorCode = axiosError.response?.data?.error?.code;
 
-        setWithdrawError(getErrorMessage(errorCode, '회원탈퇴에 실패했습니다. 다시 시도해주세요.'));
+      setWithdrawError(getErrorMessage(errorCode, '회원탈퇴에 실패했습니다. 다시 시도해주세요.'));
     } finally {
       setIsWithdrawing(false);
     }
@@ -124,7 +124,7 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
   const openPasswordModal = async () => {
     setShowPasswordModal(true);
     setPasswordError('');
-    
+
     try {
       const meData = await getMe();
       setUserEmail(meData.email);
@@ -187,7 +187,8 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
     try {
       await resetPassword({
         token: resetToken,
-        newPassword: newPassword,
+        email: userEmail,
+        password: newPassword,
       });
       alert('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
       closePasswordModal();
@@ -455,7 +456,7 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
             <p className="settings-withdraw-desc">
               탈퇴 시 모든 데이터가 삭제되며<br />복구할 수 없습니다.
             </p>
-            
+
             {/* 비밀번호 입력 */}
             <div className="settings-withdraw-password">
               <div className="form-input-wrapper">
@@ -475,14 +476,14 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
             </div>
 
             <div className="settings-withdraw-actions">
-              <button 
+              <button
                 className="settings-withdraw-btn cancel"
                 onClick={closeWithdrawModal}
                 disabled={isWithdrawing}
               >
                 취소
               </button>
-              <button 
+              <button
                 className="settings-withdraw-btn confirm"
                 onClick={confirmWithdraw}
                 disabled={isWithdrawing}
