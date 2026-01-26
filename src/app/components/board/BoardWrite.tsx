@@ -15,7 +15,7 @@ import { Editor } from '@toast-ui/react-editor';
 
 import { createPost, updatePost, getPostDetail } from '../../../api/board';
 import { PostCategory } from '../../../api/types/board';
-import { CATEGORY_MAP } from '../../../data/boards';
+import { uploadImage } from '../../../api/upload';
 
 /**
  * Props 타입 정의
@@ -109,25 +109,23 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
       return;
     }
 
-    /* 파일 크기 제한 (5MB) */
-    if (blob.size > 5 * 1024 * 1024) {
-      alert('이미지 크기는 5MB 이하만 가능합니다.');
-      return;
-    }
-
     try {
-      /* TODO: 실제 서버 업로드 API 호출 */
-      /* 현재는 로컬 미리보기 URL 사용 */
-      const localUrl = URL.createObjectURL(blob);
+      /* Blob을 File 객체로 변환 */
+      const fileName = `image_${Date.now()}.${blob.type.split('/')[1] || 'png'}`;
+      const file = new File([blob], fileName, { type: blob.type });
+
+      /* S3에 이미지 업로드 (POST 타입) */
+      const imageUrl = await uploadImage(file, 'POST');
       
       /* 이미지 카운트 증가 */
       setImageCount(prev => prev + 1);
       
       /* 콜백으로 이미지 URL 전달 */
-      callback(localUrl, '첨부 이미지');
+      callback(imageUrl, '첨부 이미지');
     } catch (error) {
       console.error('이미지 업로드 실패:', error);
-      alert('이미지 업로드에 실패했습니다.');
+      const errorMessage = error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.';
+      alert(errorMessage);
     }
   };
 

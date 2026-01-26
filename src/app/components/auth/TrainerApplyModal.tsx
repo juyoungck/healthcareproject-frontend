@@ -46,7 +46,7 @@ export default function TrainerApplyModal({
    */
   const [introduction, setIntroduction] = useState('');
   const [files, setFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<{ name: string; type: 'image' | 'pdf' }[]>([]);
+  const [previews, setPreviews] = useState<{ name: string; type: 'image' | 'document' }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /**
@@ -57,23 +57,48 @@ export default function TrainerApplyModal({
     if (!selectedFiles) return;
 
     const newFiles: File[] = [];
-    const newPreviews: { name: string; type: 'image' | 'pdf' }[] = [];
+    const newPreviews: { name: string; type: 'image' | 'document' }[] = [];
+
+    /* 허용 MIME 타입 */
+    const allowedTypes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/x-hwp',
+      'application/haansofthwp',
+    ];
+
+    /* 최대 파일 크기 (10MB) */
+    const maxFileSize = 10 * 1024 * 1024;
 
     Array.from(selectedFiles).forEach((file) => {
       /* 최대 5개 제한 */
       if (files.length + newFiles.length >= 5) return;
 
-      /* 이미지 또는 PDF만 허용 */
-      const isImage = file.type.startsWith('image/');
-      const isPdf = file.type === 'application/pdf';
-
-      if (isImage || isPdf) {
-        newFiles.push(file);
-        newPreviews.push({
-          name: file.name,
-          type: isImage ? 'image' : 'pdf',
-        });
+      /* 파일 크기 체크 */
+      if (file.size > maxFileSize) {
+        alert(`${file.name}: 파일 크기가 10MB를 초과합니다.`);
+        return;
       }
+
+      /* 파일 타입 체크 */
+      const isAllowed = allowedTypes.includes(file.type);
+      if (!isAllowed) {
+        alert(`${file.name}: 지원하지 않는 파일 형식입니다.`);
+        return;
+      }
+
+      const isImage = file.type.startsWith('image/');
+      newFiles.push(file);
+      newPreviews.push({
+        name: file.name,
+        type: isImage ? 'image' : 'document',
+      });
     });
 
     setFiles((prev) => [...prev, ...newFiles]);
@@ -156,7 +181,7 @@ export default function TrainerApplyModal({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,.pdf"
+              accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.hwp"
               multiple
               onChange={handleFileSelect}
               style={{ display: 'none' }}

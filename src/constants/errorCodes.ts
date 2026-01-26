@@ -108,13 +108,25 @@ export const ERROR_CODES = {
 
 
   /**
-     * ===========================================
-     * Trainer (TRAINER-xxx)
-     * ===========================================
-     */
+   * ===========================================
+   * Trainer (TRAINER-xxx)
+   * ===========================================
+   */
   TRAINER_INFO_NOT_FOUND: { code: 'TRAINER-001', message: '트레이너 정보를 찾을 수 없습니다.' },
-  ALREADY_SUBMITTED: { code: 'TRAINER-002', message: '이미 트레이너 신청을 제출했습니다.' },
+  ALREADY_EXISTS: { code: 'COMMON-409', message: '이미 존재하는 데이터입니다.' },
+
+  /**
+   * ===========================================
+   * Upload (UPLOAD-xxx)
+   * ===========================================
+   */
+  INVALID_UPLOAD_TYPE: { code: 'UPLOAD-001', message: '지원하지 않는 업로드 타입입니다.' },
+  INVALID_FILE_EXTENSION: { code: 'UPLOAD-002', message: '지원하지 않는 파일 형식입니다.' },
+  FILE_SIZE_EXCEEDED: { code: 'UPLOAD-003', message: '파일 크기가 10MB를 초과합니다.' },
+  PRESIGNED_URL_GENERATION_FAILED: { code: 'UPLOAD-004', message: '업로드 URL 생성에 실패했습니다.' },
+
 } as const;
+
 /**
  * ===========================================
  * 유틸리티 함수
