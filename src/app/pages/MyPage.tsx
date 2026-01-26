@@ -36,8 +36,7 @@ import SettingsPage from './SettingsPage';
 import TrainerApplyModal, { TrainerApplyData } from '../components/auth/TrainerApplyModal';
 import { getProfile, getInjuries, getAllergies, updateNickname, updatePhoneNumber, updateProfileImage } from '../../api/me';
 import type { ProfileResponse, InjuryItem } from '../../api/types/me';
-import { CURRENT_USER_TRAINER_STATUS } from '../../data/users';
-import { uploadImage } from '../../api/upload';
+import { uploadImage, uploadTrainerDocument } from '../../api/upload';
 import { applyTrainer } from '../../api/trainer';
 
 const ALLERGY_LABEL_MAP: Record<string, string> = {
@@ -293,23 +292,11 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
     const file = e.target.files?.[0];
     if (!file) return;
 
-    /* 파일 크기 체크 (5MB) */
-    if (file.size > 5 * 1024 * 1024) {
-      alert('파일 크기는 5MB 이하만 가능합니다.');
-      return;
-    }
-
-    /* 이미지 타입 체크 */
-    if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 업로드 가능합니다.');
-      return;
-    }
-
     setIsUploadingImage(true);
 
     try {
-      /* 1. 이미지 업로드 → URL 받기 */
-      const imageUrl = await uploadImage(file);
+      /* 1. 이미지 업로드 → URL 받기 (PROFILE 타입) */
+      const imageUrl = await uploadImage(file, 'PROFILE');
 
       /* 2. 프로필 이미지 URL 저장 API 호출 */
       await updateProfileImage({ profileImageUrl: imageUrl });
@@ -320,7 +307,8 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
       alert('프로필 이미지가 변경되었습니다.');
     } catch (error) {
       console.error('이미지 업로드 실패:', error);
-      alert('이미지 업로드에 실패했습니다.');
+      const errorMessage = error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.';
+      alert(errorMessage);
     } finally {
       setIsUploadingImage(false);
       /* input 초기화 */
@@ -337,11 +325,11 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
     setIsApplyingTrainer(true);
 
     try {
-      /* 1. 파일들을 순차적으로 업로드하여 URL 배열 생성 */
+      /* 1. 파일들을 순차적으로 업로드하여 URL 배열 생성 (TRAINER 타입) */
       const licenseUrls: string[] = [];
-      
+    
       for (const file of data.files) {
-        const url = await uploadImage(file);
+        const url = await uploadTrainerDocument(file);
         licenseUrls.push(url);
       }
 
@@ -366,7 +354,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
         const axiosError = error as { response?: { data?: { code?: string } } };
         const errorCode = axiosError.response?.data?.code;
         
-        if (errorCode === 'TRAINER-002' || errorCode === 'ALREADY_SUBMITTED') {
+        if (errorCode === 'COMMON-409' || errorCode === 'ALREADY_EXISTS') {
           alert('이미 트레이너 신청을 제출했습니다.');
         } else {
           alert('트레이너 신청에 실패했습니다. 다시 시도해주세요.');

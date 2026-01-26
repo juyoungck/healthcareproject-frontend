@@ -44,7 +44,8 @@ export interface ExerciseListParams {
   cursor?: number;
   limit?: number;
   keyword?: string;
-  bodyPart?: BodyPart;
+  bodyPart?: BodyPart,
+  difficulty?: Difficulty;
 }
 
 /**
@@ -134,4 +135,11 @@ export const BODY_PART_OPTIONS: Array<{ value: BodyPart | 'ALL'; label: string }
   { value: 'LEG', label: '하체' },
   { value: 'CORE', label: '코어' },
   { value: 'FULL_BODY', label: '전신' },
+];
+
+export const DIFFICULTY_OPTIONS: Array<{ value: Difficulty | 'ALL'; label: string }> = [
+  { value: 'ALL', label: '전체' },
+  { value: 'BEGINNER', label: '초급' },
+  { value: 'INTERMEDIATE', label: '중급' },
+  { value: 'ADVANCED', label: '고급' },
 ];

@@ -11,8 +11,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Loader } from 'lucide-react';
 import ExerciseDetailContent from '../components/exercise/ExerciseDetail';
 import { getExercises } from '../../api/exercise';
-import type { ExerciseListItem, BodyPart } from '../../api/types/exercise';
-import { BODY_PART_OPTIONS, BODY_PART_LABELS, DIFFICULTY_LABELS} from '../../api/types/exercise';
+import type { ExerciseListItem, BodyPart, Difficulty } from '../../api/types/exercise';
+import { BODY_PART_OPTIONS, DIFFICULTY_OPTIONS, BODY_PART_LABELS, DIFFICULTY_LABELS} from '../../api/types/exercise';
 
 /**
  * Props 타입 정의
@@ -44,6 +44,7 @@ export default function ExercisePage({
   /* 필터 */
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBodyPart, setSelectedBodyPart] = useState<BodyPart | 'ALL'>('ALL');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'ALL'>('ALL');
 
   /* 선택된 운동 ID (상세 페이지) */
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(initialExerciseId);
@@ -69,6 +70,7 @@ export default function ExercisePage({
         limit: 10,
         keyword: searchQuery || undefined,
         bodyPart: selectedBodyPart !== 'ALL' ? selectedBodyPart : undefined,
+        difficulty: selectedDifficulty !== 'ALL' ? selectedDifficulty : undefined,
       });
 
       setExercises(response.items);
@@ -96,6 +98,7 @@ export default function ExercisePage({
         limit: 10,
         keyword: searchQuery || undefined,
         bodyPart: selectedBodyPart !== 'ALL' ? selectedBodyPart : undefined,
+        difficulty: selectedDifficulty !== 'ALL' ? selectedDifficulty : undefined,
       });
 
       setExercises(prev => [...prev, ...response.items]);
@@ -176,6 +179,13 @@ export default function ExercisePage({
   };
 
   /**
+   * 난이도 필터 클릭 핸들러
+   */
+  const handleDifficultyClick = (difficulty: Difficulty | 'ALL') => {
+    setSelectedDifficulty(difficulty);
+  };
+
+  /**
    * 운동 카드 클릭 핸들러
    */
   const handleExerciseClick = (exerciseId: number) => {
@@ -245,6 +255,20 @@ export default function ExercisePage({
               {option.label}
             </button>
           ))}
+          </div>
+          <div className="filter-group">
+            {/* 난이도별 필터 */}
+            <div className="filter-group">
+              {DIFFICULTY_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  className={`filter-btn ${selectedDifficulty === option.value ? 'active' : ''}`}
+                  onClick={() => handleDifficultyClick(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
         </div>
       </div>
 
