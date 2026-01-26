@@ -26,7 +26,9 @@ export const ERROR_CODES = {
    * ===========================================
    */
   INVALID_REQUEST: { code: 'COMMON-001', message: '요청값이 올바르지 않습니다.' },
+  INVALID_DATA: { code: 'COMMON-002', message: '데이터가 유효하지 않습니다.' },
   NOT_FOUND: { code: 'COMMON-404', message: '대상을 찾을 수 없습니다.' },
+  ALREADY_EXISTS: { code: 'COMMON-409', message: '이미 존재하는 데이터입니다.' },
   INTERNAL_ERROR: { code: 'COMMON-500', message: '서버 오류가 발생했습니다.' },
 
   /**
@@ -41,8 +43,15 @@ export const ERROR_CODES = {
   LOGIN_FAILED: { code: 'AUTH-005', message: '이메일 또는 비밀번호가 올바르지 않습니다.' },
   EMAIL_DUPLICATED: { code: 'AUTH-006', message: '이미 사용 중인 이메일입니다.' },
   HANDLE_DUPLICATED: { code: 'AUTH-007', message: '이미 사용 중인 핸들입니다.' },
-  ALREADY_WITHDRAWN: { code: 'AUTH-008', message: '이미 탈퇴된 회원입니다.' },
+  TOO_MANY_REQUESTS: { code: 'AUTH-008', message: '동일한 요청을 너무 많이 생성했습니다.' },
+  ALREADY_WITHDRAWN: { code: 'AUTH-008', message: '이미 탈퇴된 회원입니다.' }, // TODO: 백엔드 코드 중복 수정 필요
   INVALID_PASSWORD: { code: 'AUTH-009', message: '비밀번호가 일치하지 않습니다.' },
+  INVALID_INPUT: { code: 'AUTH-009', message: '입력값이 올바르지 않습니다.' }, // TODO: 백엔드 코드 중복 수정 필요
+  SOCIAL_EMAIL_REQUIRED: { code: 'AUTH-010', message: '소셜 로그인에 이메일이 필요합니다.' },
+  SOCIAL_ACCOUNT_TAKEN: { code: 'AUTH-011', message: '이미 연동된 프로바이더입니다.' },
+  SOCIAL_ALREADY_CONNECTED: { code: 'AUTH-012', message: '이미 해당 프로바이더를 연동했습니다.' },
+  SOCIAL_ACCOUNT_NOT_CONNECTED: { code: 'AUTH-013', message: '해당 프로바이더가 연결되어있지 않습니다.' },
+  CANNOT_DISCONNECT_LAST_LOGIN_METHOD: { code: 'AUTH-014', message: '마지막 로그인 수단입니다.' },
 
   /**
    * ===========================================
@@ -96,7 +105,7 @@ export const ERROR_CODES = {
 
   /**
    * ===========================================
-   * PT / Reservation (R-xxx)
+   * PT / Reservation (R-xxx, P-xxx)
    * ===========================================
    */
   RESERVATION_NOT_ALLOWED: { code: 'R001', message: '예약이 불가능한 상태입니다.' },
@@ -105,6 +114,7 @@ export const ERROR_CODES = {
   INVALID_ENTRY_CODE: { code: 'R004', message: '참여 코드가 일치하지 않습니다.' },
   CANCEL_NOT_ALLOWED: { code: 'R005', message: '진행 중이거나 종료된 방의 예약은 취소할 수 없습니다.' },
   INVALID_STATUS_TRANSITION: { code: 'INVALID_STATUS_TRANSITION', message: '유효하지 않은 상태 변경 요청입니다.' },
+  NOT_JOINED: { code: 'P001', message: '해당 사용자는 현재 방에 참여 중이 아닙니다.' },
 
 
   /**
@@ -112,8 +122,8 @@ export const ERROR_CODES = {
    * Trainer (TRAINER-xxx)
    * ===========================================
    */
-  TRAINER_INFO_NOT_FOUND: { code: 'TRAINER-001', message: '트레이너 정보를 찾을 수 없습니다.' },
-  ALREADY_EXISTS: { code: 'COMMON-409', message: '이미 존재하는 데이터입니다.' },
+  NOT_TRAINER: { code: 'TRAINER-001', message: '트레이너 권한이 필요합니다.' },
+  ALREADY_SUBMITTED: { code: 'TRAINER-002', message: '이미 트레이너 신청을 제출했습니다.' },
 
   /**
    * ===========================================
@@ -125,6 +135,14 @@ export const ERROR_CODES = {
   FILE_SIZE_EXCEEDED: { code: 'UPLOAD-003', message: '파일 크기가 10MB를 초과합니다.' },
   PRESIGNED_URL_GENERATION_FAILED: { code: 'UPLOAD-004', message: '업로드 URL 생성에 실패했습니다.' },
 
+  /**
+   * ===========================================
+   * AI (AI-xxx)
+   * ===========================================
+   */
+  AI_JSON_PARSE_FAILED: { code: 'AI-001', message: 'AI 응답 파싱에 실패했습니다.' },
+  AI_ALLOWED_FOODS_BUILD_FAILED: { code: 'AI-002', message: 'AI 음식 화이트리스트 빌드 실패' },
+  AI_INVALID_OUTPUT: { code: 'AI-003', message: 'AI 산출물이 유효하지 않습니다.' },
 } as const;
 
 /**

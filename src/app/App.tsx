@@ -7,13 +7,14 @@
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import LandingPage from './pages/LandingPage';
+import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import OnboardingPage from './pages/OnboardingPage';
 import type { OnboardingData } from './pages/OnboardingPage';
 import Dashboard from './pages/Dashboard';
+import AdminPage from './pages/AdminPage';
 import { clearTokens, logout, getRefreshToken } from '../api/auth';
 import { getProfile, getInjuries, getAllergies } from '../api/me';
 import type { ProfileResponse, InjuryItem } from '../api/types/me';
-import AdminPage from './pages/AdminPage';
 
 /**
  * AppContent 컴포넌트
@@ -38,6 +39,47 @@ function AppContent() {
    * 마이페이지 상태 관리
    */
   const [returnToMyPage, setReturnToMyPage] = useState(false);
+
+  /**
+   * OAuth 콜백 상태 관리
+   */
+  const [isOAuthCallback, setIsOAuthCallback] = useState(() => {
+    return window.location.pathname === '/oauth/callback';
+  });
+
+  /**
+   * OAuth 로그인 성공 핸들러
+   */
+  const handleOAuthLoginSuccess = async () => {
+    /* URL 정리 */
+    window.history.replaceState({}, '', '/');
+    setIsOAuthCallback(false);
+    
+    /* 로그인 처리 → 온보딩 표시 (신규 가입자) */
+    await onLoginSuccess();
+    setShowOnboarding(true);
+  };
+
+  /**
+   * OAuth 연동 성공 핸들러
+   */
+  const handleOAuthConnectSuccess = () => {
+    /* URL 정리 후 마이페이지로 이동 */
+    window.history.replaceState({}, '', '/');
+    setIsOAuthCallback(false);
+    setReturnToMyPage(true);
+    alert('소셜 계정이 연동되었습니다.');
+  };
+
+  /**
+   * OAuth 에러 핸들러
+   */
+  const handleOAuthError = (message: string) => {
+    /* URL 정리 */
+    window.history.replaceState({}, '', '/');
+    setIsOAuthCallback(false);
+    alert(message);
+  };
 
   /**
    * API 응답 데이터를 OnboardingData 형식으로 변환
@@ -214,6 +256,19 @@ function AppContent() {
     setShowOnboardingEdit(false);
     setReturnToMyPage(true);
   };
+
+  /**
+   * OAuth 콜백 처리
+   */
+  if (isOAuthCallback) {
+    return (
+      <OAuthCallbackPage
+        onLoginSuccess={handleOAuthLoginSuccess}
+        onConnectSuccess={handleOAuthConnectSuccess}
+        onError={handleOAuthError}
+      />
+    );
+  }
 
   /**
    * 초기 로딩 중

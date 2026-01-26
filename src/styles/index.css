@@ -22,6 +22,7 @@
 
 /* 페이지별 스타일 */
 @import './pages/landing.css';
+@import './pages/oauth.css';
 @import './pages/onboarding.css';
 @import './pages/exercise.css';
 @import './pages/exercise-detail.css';
