@@ -11,6 +11,8 @@ import { useState } from 'react';
 import { X, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { login, saveTokens, getOAuthUrl } from '../../../api/auth';
 import type { SocialProvider } from '../../../api/types/auth';
+import { login, saveTokens } from '../../../api/auth';
+import ForgotPasswordModal from './ForgotPasswordModal';
 import { getErrorMessage } from '../../../constants/errorCodes';
 
 /**
@@ -26,10 +28,10 @@ interface LoginModalProps {
  * LoginModal 컴포넌트
  * 로그인 UI 및 로직 처리
  */
-export default function LoginModal({ 
-  onClose, 
-  onLoginSuccess, 
-  onSwitchToSignup 
+export default function LoginModal({
+  onClose,
+  onLoginSuccess,
+  onSwitchToSignup
 }: LoginModalProps) {
   /**
    * 폼 상태 관리
@@ -39,6 +41,7 @@ export default function LoginModal({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<'login' | 'forgot'>('login');
 
   /**
    * 로그인 폼 제출 핸들러
@@ -58,10 +61,10 @@ export default function LoginModal({
     try {
       /* 로그인 API 호출 */
       const tokens = await login({ email, password });
-      
+
       /* 토큰 저장 */
       saveTokens(tokens);
-      
+
       /* 로그인 성공 콜백 */
       onLoginSuccess();
     } catch (error: unknown) {
@@ -94,6 +97,17 @@ export default function LoginModal({
     }
   };
 
+  /* 비밀번호 찾기 모달 */
+  if (mode === 'forgot') {
+    return (
+      <ForgotPasswordModal
+        onClose={onClose}
+        onBackToLogin={() => setMode('login')}
+      />
+    );
+  }
+
+  /* 로그인 모달 */
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal-container">
@@ -153,51 +167,52 @@ export default function LoginModal({
           </div>
 
           {/* 에러 메시지 */}
-          {error && (
-            <p className="form-error">{error}</p>
-          )}
+          {error && <p className="form-error">{error}</p>}
 
           {/* 로그인 버튼 */}
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="form-submit-btn"
             disabled={isLoading}
           >
             {isLoading ? '로그인 중...' : '로그인'}
           </button>
 
-          {/* 아이디/비밀번호 찾기 */}
+          {/* 아이디 / 비밀번호 찾기 */}
           <div className="form-links">
             <button type="button" className="form-link">
               아이디 찾기
             </button>
             <span className="form-link-divider">|</span>
-            <button type="button" className="form-link">
+            <button
+              type="button"
+              className="form-link"
+              onClick={() => setMode('forgot')}
+            >
               비밀번호 찾기
             </button>
           </div>
         </form>
 
-        {/* 소셜 로그인 구분선 */}
+        {/* 소셜 로그인 */}
         <div className="social-divider">
           <span className="social-divider-text">또는</span>
         </div>
 
-        {/* 소셜 로그인 버튼 */}
         <div className="social-login-buttons">
-          <button 
+          <button
             className="social-btn social-btn-kakao"
             onClick={() => handleSocialLogin('KAKAO')}
           >
             <span className="social-btn-text">카카오로 시작하기</span>
           </button>
-          <button 
+          <button
             className="social-btn social-btn-naver"
             onClick={() => handleSocialLogin('NAVER')}
           >
             <span className="social-btn-text">네이버로 시작하기</span>
           </button>
-          <button 
+          <button
             className="social-btn social-btn-google"
             onClick={() => handleSocialLogin('GOOGLE')}
           >
@@ -205,10 +220,10 @@ export default function LoginModal({
           </button>
         </div>
 
-        {/* 회원가입 안내 */}
+        {/* 회원가입 */}
         <div className="modal-footer">
           <span className="modal-footer-text">아직 계정이 없으신가요?</span>
-          <button 
+          <button
             className="modal-footer-link"
             onClick={onSwitchToSignup}
           >
