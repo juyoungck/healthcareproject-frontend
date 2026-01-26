@@ -12,6 +12,9 @@ import type {
   EmailCheckResponse,
   LogoutRequest,
   ApiResponse,
+  PasswordResetRequest,
+  PasswordResetConfirm,
+  MessageResponse,
 } from './types/auth';
 
 /**
@@ -57,6 +60,46 @@ export const checkEmail = async (data: EmailCheckRequest): Promise<EmailCheckRes
 export const logout = async (data: LogoutRequest): Promise<void> => {
   await apiClient.post('/api/auth/logout', data);
 };
+
+/**
+ * ===========================================
+ * 비밀번호 재설정 관련
+ * ===========================================
+ */
+
+/**
+ * 비밀번호 재설정 메일 발송
+ * POST /api/auth/password/reset/request
+ */
+export const requestPasswordReset = async (
+  data: PasswordResetRequest
+): Promise<MessageResponse> => {
+  const response = await apiClient.post<ApiResponse<MessageResponse>>(
+    '/api/auth/password/reset/request',
+    data
+  );
+  return response.data.data;
+};
+
+/**
+ * 비밀번호 재설정 완료
+ * POST /api/auth/password/reset
+ */
+export const resetPassword = async (
+  data: PasswordResetConfirm
+): Promise<MessageResponse> => {
+  const response = await apiClient.post<ApiResponse<MessageResponse>>(
+    '/api/auth/password/reset',
+    data
+  );
+  return response.data.data;
+};
+
+/**
+ * ===========================================
+ * 토큰 관리 유틸리티
+ * ===========================================
+ */
 
 /**
  * 토큰을 로컬스토리지에 저장

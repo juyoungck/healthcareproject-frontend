@@ -102,7 +102,74 @@
   color: var(--color-gray-600);
   background-color: var(--color-gray-100);
 }
+/**
+ * ===========================================
+ * 모달 뒤로가기 버튼
+ * ===========================================
+ */
 
+.modal-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
+  color: var(--color-gray-400);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.modal-back-btn:hover {
+  color: var(--color-gray-600);
+  background-color: var(--color-gray-100);
+}
+
+/**
+ * ===========================================
+ * 모달 성공 화면
+ * ===========================================
+ */
+
+.modal-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-3xl) var(--spacing-xl);
+  text-align: center;
+}
+
+.modal-success-icon {
+  color: var(--color-success);
+  margin-bottom: var(--spacing-lg);
+}
+
+.modal-success-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-sm);
+}
+
+.modal-success-message {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--spacing-xl);
+}
+
+/**
+ * ===========================================
+ * 폼 설명 텍스트
+ * ===========================================
+ */
+
+.form-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  text-align: center;
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--spacing-xl);
+}
 /**
  * ===========================================
  * 모달 폼

@@ -16,6 +16,7 @@ import type {
   ProfileImageUpdateRequest,
   UserUpdateResponse,
   WithdrawRequest,
+  PasswordChangeRequest,
 } from './types/me';
 import type { ApiResponse } from './types/auth';
 
