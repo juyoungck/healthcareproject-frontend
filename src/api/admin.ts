@@ -1,5 +1,5 @@
 /**
- * admin.ts
+ * api/admin.ts
  * 관리자 패널 관련 API 함수
  */
 
@@ -10,23 +10,21 @@ import type {
   AdminExercise,
   AdminFood,
   AdminPTRoom,
-  TrainerApplication,
+  TrainerApplicant,
+  TrainerPendingResponse,
   Report,
   DashboardStats,
-  TodayActivity,
-  HealthCheckItem,
-  ErrorLog,
+  VersionInfo,
+  HealthInfo,
   PaginatedResponse,
   UserRole,
-  UserStatus,
   PostStatus,
   PostCategory,
   ReportStatus,
   ReportType,
   ExercisePart,
   ExerciseLevel,
-  PTRoomStatus,
-  TrainerApplicationStatus,
+  AdminPTRoomStatus,
 } from './types/admin';
 
 /** API 공통 응답 래퍼 */
@@ -51,40 +49,46 @@ export interface GetUsersParams {
 
 /**
  * 전체 회원 목록 조회
- * GET /api/admin/user
+ * GET /api/admin/users
  */
 export const getAdminUsers = async (
   params?: GetUsersParams
 ): Promise<PaginatedResponse<AdminUser>> => {
   const response = await apiClient.get<ApiResponse<PaginatedResponse<AdminUser>>>(
-    '/api/admin/user',
+    '/api/admin/users',
     { params }
   );
   return response.data.data;
 };
 
 /**
- * 회원 차단 (STOP 상태로 변경)
- * PATCH /api/admin/user/{userId}/ban
+ * 회원 상태 변경
+ * PATCH /api/admin/users/{userId}/status
+ */
+export const updateUserStatus = async (userId: number, status: 'ACTIVE' | 'SUSPENDED'): Promise<void> => {
+  await apiClient.patch(`/api/admin/users/${userId}/status`, { status });
+};
+
+/**
+ * 회원 차단 (SUSPENDED 상태로 변경)
  */
 export const banUser = async (userId: number): Promise<void> => {
-  await apiClient.patch(`/api/admin/user/${userId}/ban`);
+  await updateUserStatus(userId, 'SUSPENDED');
 };
 
 /**
  * 회원 차단 해제 (ACTIVE 상태로 변경)
- * PATCH /api/admin/user/{userId}/unban
  */
 export const unbanUser = async (userId: number): Promise<void> => {
-  await apiClient.patch(`/api/admin/user/${userId}/unban`);
+  await updateUserStatus(userId, 'ACTIVE');
 };
 
 /**
  * 회원 강제 탈퇴
- * DELETE /api/admin/user/{userId}
+ * DELETE /api/admin/users/{userId}
  */
 export const deleteUser = async (userId: number): Promise<void> => {
-  await apiClient.delete(`/api/admin/user/${userId}`);
+  await apiClient.delete(`/api/admin/users/${userId}`);
 };
 
 /**
@@ -93,23 +97,21 @@ export const deleteUser = async (userId: number): Promise<void> => {
  * ===========================================
  */
 
-/** 트레이너 신청 목록 조회 파라미터 */
-export interface GetTrainerApplicationsParams {
+/** 트레이너 대기자 목록 조회 파라미터 */
+export interface GetTrainerPendingParams {
   page?: number;
   size?: number;
-  status?: TrainerApplicationStatus;
-  keyword?: string;
 }
 
 /**
- * 트레이너 신청 목록 조회
- * GET /api/admin/trainer/application
+ * 트레이너 승인 대기자 목록 조회
+ * GET /api/admin/trainer/pending
  */
-export const getTrainerApplications = async (
-  params?: GetTrainerApplicationsParams
-): Promise<PaginatedResponse<TrainerApplication>> => {
-  const response = await apiClient.get<ApiResponse<PaginatedResponse<TrainerApplication>>>(
-    '/api/admin/trainer/application',
+export const getTrainerPending = async (
+  params?: GetTrainerPendingParams
+): Promise<TrainerPendingResponse> => {
+  const response = await apiClient.get<ApiResponse<TrainerPendingResponse>>(
+    '/api/admin/trainer/pending',
     { params }
   );
   return response.data.data;
@@ -160,11 +162,19 @@ export const getAdminPosts = async (
   return response.data.data;
 };
 
+/** 공지사항 등록 데이터 */
+export interface CreateNoticeData {
+  category: string;
+  title: string;
+  content: string;
+  isNotice: boolean;
+}
+
 /**
  * 공지사항 등록
  * POST /api/admin/board/notice
  */
-export const createNotice = async (data: { title: string; content: string }): Promise<void> => {
+export const createNotice = async (data: CreateNoticeData): Promise<void> => {
   await apiClient.post('/api/admin/board/notice', data);
 };
 
@@ -408,10 +418,8 @@ export const deleteFood = async (foodId: number): Promise<void> => {
 
 /** 화상PT 목록 조회 파라미터 */
 export interface GetPTRoomsParams {
-  page?: number;
-  size?: number;
-  status?: PTRoomStatus;
-  keyword?: string;
+  status?: AdminPTRoomStatus;
+  trainerHandle?: string;
 }
 
 /**
@@ -429,17 +437,6 @@ export const getAdminPTRooms = async (
 };
 
 /**
- * 화상PT 방 상세 조회
- * GET /api/admin/pt-rooms/{ptRoomId}
- */
-export const getAdminPTRoomDetail = async (ptRoomId: number): Promise<AdminPTRoom> => {
-  const response = await apiClient.get<ApiResponse<AdminPTRoom>>(
-    `/api/admin/pt-rooms/${ptRoomId}`
-  );
-  return response.data.data;
-};
-
-/**
  * 화상PT 방 강제 종료
  * DELETE /api/admin/pt-rooms/{ptRoomId}
  */
@@ -449,22 +446,16 @@ export const forceEndPTRoom = async (ptRoomId: number): Promise<void> => {
 
 /**
  * ===========================================
- * 대시보드/통계 API
+ * 대시보드 API
  * ===========================================
  */
-
-/** 대시보드 응답 */
-export interface DashboardResponse {
-  stats: DashboardStats;
-  todayActivity: TodayActivity;
-}
 
 /**
  * 대시보드 통계 조회
  * GET /api/admin/dashboard
  */
-export const getAdminDashboard = async (): Promise<DashboardResponse> => {
-  const response = await apiClient.get<ApiResponse<DashboardResponse>>(
+export const getAdminDashboard = async (): Promise<DashboardStats> => {
+  const response = await apiClient.get<ApiResponse<DashboardStats>>(
     '/api/admin/dashboard'
   );
   return response.data.data;
@@ -472,23 +463,24 @@ export const getAdminDashboard = async (): Promise<DashboardResponse> => {
 
 /**
  * ===========================================
- * 시스템 API
+ * 시스템 API (Version, Health)
  * ===========================================
  */
 
-/** 시스템 헬스 응답 */
-export interface SystemHealthResponse {
-  items: HealthCheckItem[];
-  errorLogs: ErrorLog[];
-}
+/**
+ * API 버전 정보 조회
+ * GET /api/version
+ */
+export const getVersion = async (): Promise<VersionInfo> => {
+  const response = await apiClient.get<ApiResponse<VersionInfo>>('/api/version');
+  return response.data.data;
+};
 
 /**
- * 시스템 헬스체크 조회
- * GET /api/admin/system/health
+ * 헬스 체크
+ * GET /api/health
  */
-export const getSystemHealth = async (): Promise<SystemHealthResponse> => {
-  const response = await apiClient.get<ApiResponse<SystemHealthResponse>>(
-    '/api/admin/system/health'
-  );
+export const getHealth = async (): Promise<HealthInfo> => {
+  const response = await apiClient.get<ApiResponse<HealthInfo>>('/api/health');
   return response.data.data;
 };

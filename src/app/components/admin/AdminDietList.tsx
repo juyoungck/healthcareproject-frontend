@@ -1,31 +1,22 @@
 /**
  * AdminDietList.tsx
- * 식단 관리 컴포넌트 (목록 + 등록/수정 모달 통합)
+ * 식단(음식) 관리 컴포넌트
  * 
- * TODO: 백엔드 완성 후 API 연동
- * - POST /api/admin/food (음식 등록)
- * - PUT /api/admin/food/{id} (음식 수정)
- * - DELETE /api/admin/food/{id} (음식 삭제)
+ * API:
+ * - GET /api/foods (음식 목록 - 일반 API)
+ * - POST /api/admin/food (음식 등록 - 관리자 API)
+ * 
+ * 수정/삭제는 백엔드 미구현으로 등록만 가능
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Trash2, AlertCircle, X } from 'lucide-react';
-import type { AdminFood } from '../../../types/admin';
-import { adminFoods } from '../../../data/admin';
-
-/**
- * ===========================================
- * 날짜 포맷
- * ===========================================
- */
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-};
+import { Search, Plus, AlertCircle, X, Trash2 } from 'lucide-react';
+import apiClient from '../../../api/client';
+import type {
+  FoodListItem,
+  FoodListParams,
+  FoodListResponse,
+} from '../../../api/types/food';
 
 /**
  * ===========================================
@@ -33,72 +24,135 @@ const formatDate = (dateString: string) => {
  * ===========================================
  */
 export default function AdminDietList() {
-  const [foods, setFoods] = useState<AdminFood[]>(adminFoods);
+  /** 상태 관리 */
+  const [foods, setFoods] = useState<FoodListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedFood, setSelectedFood] = useState<AdminFood | null>(null);
 
   /**
-   * 필터링된 목록
+   * 음식 목록 조회 (GET /api/foods)
    */
-  const filteredFoods = foods.filter((food) => {
-    if (searchKeyword) {
-      const keyword = searchKeyword.toLowerCase();
-      return food.name.toLowerCase().includes(keyword);
+  const fetchFoods = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const params: FoodListParams = {
+        limit: 100,
+      };
+
+      if (searchKeyword) {
+        params.keyword = searchKeyword;
+      }
+
+      const response = await apiClient.get<{ data: FoodListResponse }>('/api/foods', { params });
+      setFoods(response.data.data.items);
+    } catch (err) {
+      console.error('음식 목록 조회 실패:', err);
+      setError('음식 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
     }
-    return true;
-  });
+  };
+
+  /**
+   * 초기 로드
+   */
+  useEffect(() => {
+    fetchFoods();
+  }, []);
+
+  /**
+   * 검색 실행 (Enter 키)
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      fetchFoods();
+    }
+  };
 
   /**
    * 등록 모달 열기
    */
   const handleOpenCreateModal = () => {
-    setSelectedFood(null);
     setIsModalOpen(true);
   };
 
   /**
-   * 수정 모달 열기
+   * 등록 핸들러 (POST /api/foods)
    */
-  const handleOpenEditModal = (food: AdminFood) => {
-    setSelectedFood(food);
-    setIsModalOpen(true);
-  };
-
-  /**
-   * 저장 핸들러 (등록/수정)
-   * TODO: POST /api/admin/food 또는 PUT /api/admin/food/{id}
-   */
-  const handleSave = (data: Omit<AdminFood, 'id' | 'createdAt'>) => {
-    if (selectedFood) {
-      /* 수정 */
-      setFoods((prev) =>
-        prev.map((food) =>
-          food.id === selectedFood.id
-            ? { ...food, ...data }
-            : food
-        )
-      );
-    } else {
-      /* 등록 */
-      const newFood: AdminFood = {
+  const handleSave = async (data: {
+    name: string;
+    calories: number;
+    carbs: number;
+    protein: number;
+    fat: number;
+    allergyCodes: string;
+    imageUrl?: string;
+    nutritionUnit: string;
+    nutritionAmount: number;
+  }) => {
+    try {
+      await apiClient.post('/api/foods', {
         ...data,
-        id: Math.max(...foods.map((f) => f.id), 0) + 1,
-        createdAt: new Date().toISOString(),
-      };
-      setFoods((prev) => [newFood, ...prev]);
+        isActive: true,
+      });
+      setIsModalOpen(false);
+      fetchFoods();
+      alert('음식이 등록되었습니다.');
+    } catch (err) {
+      console.error('음식 등록 실패:', err);
+      alert('음식 등록에 실패했습니다.');
     }
-    setIsModalOpen(false);
   };
 
   /**
-   * 삭제 핸들러
-   * TODO: DELETE /api/admin/food/{id}
+   * 삭제 핸들러 (DELETE /api/foods/{id})
+   * TODO: 백엔드 API 구현 필요
    */
-  const handleDelete = (id: number) => {
-    if (!confirm('해당 음식을 삭제하시겠습니까?')) return;
-    setFoods((prev) => prev.filter((food) => food.id !== id));
+  const handleDelete = async (foodId: number) => {
+    if (!confirm('해당 음식을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+
+    try {
+      await apiClient.delete(`/api/foods/${foodId}`);
+      fetchFoods();
+      alert('음식이 삭제되었습니다.');
+    } catch (err) {
+      console.error('음식 삭제 실패:', err);
+      alert('음식 삭제에 실패했습니다.');
+    }
   };
+
+  /**
+   * 로딩 상태
+   */
+  if (isLoading) {
+    return (
+      <div className="admin-diet-list">
+        <h2 className="admin-section-title">식단 관리</h2>
+        <div className="admin-loading">로딩 중...</div>
+      </div>
+    );
+  }
+
+  /**
+   * 에러 상태
+   */
+  if (error) {
+    return (
+      <div className="admin-diet-list">
+        <h2 className="admin-section-title">식단 관리</h2>
+        <div className="admin-error">
+          <p>{error}</p>
+          <button onClick={fetchFoods} className="admin-btn primary">
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-diet-list">
@@ -109,6 +163,7 @@ export default function AdminDietList() {
           음식 등록
         </button>
       </div>
+      <p className="admin-section-count">전체 {foods.length}건</p>
 
       {/* 필터 영역 */}
       <div className="admin-filter-bar">
@@ -120,6 +175,7 @@ export default function AdminDietList() {
               placeholder="음식명 검색"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
             />
           </div>
         </div>
@@ -131,60 +187,53 @@ export default function AdminDietList() {
           <thead>
             <tr>
               <th>번호</th>
+              <th>이미지</th>
               <th>음식명</th>
-              <th>칼로리</th>
-              <th>탄수화물</th>
-              <th>단백질</th>
-              <th>지방</th>
               <th>알러지</th>
-              <th>등록일</th>
-              <th>관리</th>
+              <th>삭제</th>
             </tr>
           </thead>
           <tbody>
-            {filteredFoods.length === 0 ? (
+            {foods.length === 0 ? (
               <tr>
-                <td colSpan={9} className="admin-table-empty">
+                <td colSpan={5} className="admin-table-empty">
                   등록된 음식이 없습니다.
                 </td>
               </tr>
             ) : (
-              filteredFoods.map((food) => (
-                <tr key={food.id}>
-                  <td>{food.id}</td>
-                  <td className="admin-table-name">{food.name}</td>
-                  <td>{food.calories}kcal</td>
-                  <td>{food.carbs}g</td>
-                  <td>{food.protein}g</td>
-                  <td>{food.fat}g</td>
+              [...foods].sort((a, b) => b.foodId - a.foodId).map((food) => (
+                <tr key={food.foodId}>
+                  <td>{food.foodId}</td>
                   <td>
-                    {food.allergies.length > 0 ? (
+                    {food.imageUrl ? (
+                      <img
+                        src={food.imageUrl}
+                        alt={food.name}
+                        className="admin-table-img"
+                      />
+                    ) : (
+                      '-'
+                    )}
+                  </td>
+                  <td className="admin-table-name">{food.name}</td>
+                  <td>
+                    {food.allergyCodes ? (
                       <div className="admin-allergy-badges">
                         <AlertCircle size={14} className="admin-allergy-icon" />
-                        {food.allergies.join(', ')}
+                        {food.allergyCodes}
                       </div>
                     ) : (
                       '-'
                     )}
                   </td>
-                  <td>{formatDate(food.createdAt)}</td>
                   <td>
-                    <div className="admin-action-buttons">
-                      <button
-                        className="admin-action-btn edit"
-                        onClick={() => handleOpenEditModal(food)}
-                        title="수정"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        className="admin-action-btn delete"
-                        onClick={() => handleDelete(food.id)}
-                        title="삭제"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                    <button
+                      className="admin-action-btn delete"
+                      onClick={() => handleDelete(food.foodId)}
+                      title="삭제"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </td>
                 </tr>
               ))
@@ -193,10 +242,9 @@ export default function AdminDietList() {
         </table>
       </div>
 
-      {/* 등록/수정 모달 (통합) */}
+      {/* 등록 모달 */}
       {isModalOpen && (
         <DietModal
-          food={selectedFood}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSave}
         />
@@ -207,7 +255,7 @@ export default function AdminDietList() {
 
 /**
  * ===========================================
- * 음식 등록/수정 모달 (내부 컴포넌트로 통합)
+ * 음식 등록 모달
  * ===========================================
  */
 const ALLERGY_OPTIONS = [
@@ -222,34 +270,33 @@ const ALLERGY_OPTIONS = [
 ];
 
 interface DietModalProps {
-  food: AdminFood | null;
   onClose: () => void;
-  onSave: (data: Omit<AdminFood, 'id' | 'createdAt'>) => void;
+  onSave: (data: {
+    name: string;
+    calories: number;
+    carbs: number;
+    protein: number;
+    fat: number;
+    allergyCodes: string;
+    imageUrl?: string;
+    nutritionUnit: string;
+    nutritionAmount: number;
+  }) => void;
 }
 
-function DietModal({ food, onClose, onSave }: DietModalProps) {
+function DietModal({ onClose, onSave }: DietModalProps) {
   const [name, setName] = useState('');
   const [calories, setCalories] = useState<number>(0);
   const [carbs, setCarbs] = useState<number>(0);
   const [protein, setProtein] = useState<number>(0);
   const [fat, setFat] = useState<number>(0);
-  const [allergies, setAllergies] = useState<string[]>([]);
+  const [allergyCodes, setAllergyCodes] = useState<string[]>([]);
   const [imageUrl, setImageUrl] = useState('');
-
-  useEffect(() => {
-    if (food) {
-      setName(food.name);
-      setCalories(food.calories);
-      setCarbs(food.carbs);
-      setProtein(food.protein);
-      setFat(food.fat);
-      setAllergies(food.allergies);
-      setImageUrl(food.imageUrl || '');
-    }
-  }, [food]);
+  const [nutritionUnit, setNutritionUnit] = useState('g');
+  const [nutritionAmount, setNutritionAmount] = useState<number>(100);
 
   const handleAllergyToggle = (allergy: string) => {
-    setAllergies((prev) =>
+    setAllergyCodes((prev) =>
       prev.includes(allergy)
         ? prev.filter((a) => a !== allergy)
         : [...prev, allergy]
@@ -272,8 +319,10 @@ function DietModal({ food, onClose, onSave }: DietModalProps) {
       carbs,
       protein,
       fat,
-      allergies,
+      allergyCodes: allergyCodes.join(','),
       imageUrl: imageUrl.trim() || undefined,
+      nutritionUnit,
+      nutritionAmount,
     });
   };
 
@@ -288,9 +337,7 @@ function DietModal({ food, onClose, onSave }: DietModalProps) {
       <div className="admin-modal-container">
         {/* 헤더 */}
         <div className="admin-modal-header">
-          <h3 className="admin-modal-title">
-            {food ? '음식 수정' : '음식 등록'}
-          </h3>
+          <h3 className="admin-modal-title">음식 등록</h3>
           <button className="admin-modal-close" onClick={onClose}>
             <X size={24} />
           </button>
@@ -364,13 +411,45 @@ function DietModal({ food, onClose, onSave }: DietModalProps) {
           </div>
 
           <div className="admin-form-group">
+            <label className="admin-form-label">영양정보 기준</label>
+            <div className="admin-nutrition-grid">
+              <div className="admin-nutrition-item">
+                <label>단위</label>
+                <div className="admin-nutrition-input">
+                  <select
+                    value={nutritionUnit}
+                    onChange={(e) => setNutritionUnit(e.target.value)}
+                    className="admin-form-select"
+                  >
+                    <option value="g">g</option>
+                    <option value="ml">ml</option>
+                    <option value="인분">인분</option>
+                    <option value="개">개</option>
+                  </select>
+                </div>
+              </div>
+              <div className="admin-nutrition-item">
+                <label>기준량</label>
+                <div className="admin-nutrition-input">
+                  <input
+                    type="number"
+                    value={nutritionAmount}
+                    onChange={(e) => setNutritionAmount(Number(e.target.value))}
+                    min={1}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-form-group">
             <label className="admin-form-label">알러지 정보</label>
             <div className="admin-allergy-options">
               {ALLERGY_OPTIONS.map((allergy) => (
                 <button
                   key={allergy}
                   type="button"
-                  className={`admin-allergy-btn ${allergies.includes(allergy) ? 'active' : ''}`}
+                  className={`admin-allergy-btn ${allergyCodes.includes(allergy) ? 'active' : ''}`}
                   onClick={() => handleAllergyToggle(allergy)}
                 >
                   {allergy}
@@ -397,7 +476,7 @@ function DietModal({ food, onClose, onSave }: DietModalProps) {
             취소
           </button>
           <button className="admin-btn primary" onClick={handleSave}>
-            {food ? '수정' : '등록'}
+            등록
           </button>
         </div>
       </div>
