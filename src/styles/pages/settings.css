@@ -158,6 +158,34 @@
 }
 
 /**
+ * 폼 설명 텍스트
+ */
+.form-description {
+  color: var(--color-gray-600);
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+}
+
+/**
+ * 성공 메시지
+ */
+.form-success {
+  color: var(--color-diet);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/**
+ * 링크 버튼 중앙 정렬
+ */
+.form-link-center {
+  display: block;
+  text-align: center;
+  margin-top: var(--spacing-md);
+}
+
+/**
  * 위험 항목 (회원탈퇴)
  */
 .settings-item-danger .settings-item-icon,

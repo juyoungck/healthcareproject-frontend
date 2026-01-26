@@ -34,6 +34,7 @@
 @import './pages/mypage.css';
 @import './pages/settings.css';
 @import './pages/admin.css';
+@import './pages/resetpassword.css';
 
 /* 컴포넌트별 스타일 */
 @import './components/card.css';

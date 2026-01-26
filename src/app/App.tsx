@@ -10,6 +10,7 @@ import LandingPage from './pages/LandingPage';
 import OnboardingPage from './pages/OnboardingPage';
 import type { OnboardingData } from './pages/OnboardingPage';
 import Dashboard from './pages/Dashboard';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import { clearTokens, logout, getRefreshToken } from '../api/auth';
 import { getProfile, getInjuries, getAllergies } from '../api/me';
 import type { ProfileResponse, InjuryItem } from '../api/types/me';
@@ -34,10 +35,18 @@ function AppContent() {
    * 관리자 패널 상태 관리
    */
   const [showAdminPage, setShowAdminPage] = useState(false);
+
   /**
    * 마이페이지 상태 관리
    */
   const [returnToMyPage, setReturnToMyPage] = useState(false);
+
+  /**
+   * 비밀번호 재설정 페이지 감지
+   */
+  const [showResetPassword, setShowResetPassword] = useState(() => {
+    return window.location.pathname === '/reset-password';
+  });
 
   /**
    * API 응답 데이터를 OnboardingData 형식으로 변환
@@ -216,6 +225,14 @@ function AppContent() {
   };
 
   /**
+   * 비밀번호 재설정 완료 후 홈으로 이동
+   */
+  const handleResetPasswordComplete = () => {
+    window.history.replaceState({}, '', '/');
+    setShowResetPassword(false);
+  };
+
+  /**
    * 초기 로딩 중
    */
   if (isAuthLoading) {
@@ -223,6 +240,17 @@ function AppContent() {
       <div className="loading-screen">
         <p>로딩 중...</p>
       </div>
+    );
+  }
+
+  /**
+   * 비밀번호 재설정 페이지 (비로그인 상태에서만)
+   */
+  if (!isLoggedIn && showResetPassword) {
+    return (
+      <ResetPasswordPage 
+        onGoToHome={handleResetPasswordComplete} 
+      />
     );
   }
 
