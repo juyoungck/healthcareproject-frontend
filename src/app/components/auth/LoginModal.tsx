@@ -9,6 +9,8 @@
 
 import { useState } from 'react';
 import { X, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { login, saveTokens, getOAuthUrl } from '../../../api/auth';
+import type { SocialProvider } from '../../../api/types/auth';
 import { login, saveTokens } from '../../../api/auth';
 import ForgotPasswordModal from './ForgotPasswordModal';
 import { getErrorMessage } from '../../../constants/errorCodes';
@@ -78,11 +80,12 @@ export default function LoginModal({
 
   /**
    * 소셜 로그인 핸들러
-   * TODO: OAuth 연동 구현
+   * OAuth 인증 페이지로 리다이렉트
    */
-  const handleSocialLogin = (provider: 'kakao' | 'naver' | 'google') => {
-    console.log(`${provider} 로그인 시도`);
-    /* TODO: OAuth 리다이렉트 처리 */
+  const handleSocialLogin = (provider: SocialProvider) => {
+    /* state에 'login' 표시하여 로그인 용도임을 구분 */
+    const oauthUrl = getOAuthUrl(provider, `login_${provider}`);
+    window.location.href = oauthUrl;
   };
 
   /**
@@ -199,19 +202,19 @@ export default function LoginModal({
         <div className="social-login-buttons">
           <button
             className="social-btn social-btn-kakao"
-            onClick={() => handleSocialLogin('kakao')}
+            onClick={() => handleSocialLogin('KAKAO')}
           >
             <span className="social-btn-text">카카오로 시작하기</span>
           </button>
           <button
             className="social-btn social-btn-naver"
-            onClick={() => handleSocialLogin('naver')}
+            onClick={() => handleSocialLogin('NAVER')}
           >
             <span className="social-btn-text">네이버로 시작하기</span>
           </button>
           <button
             className="social-btn social-btn-google"
-            onClick={() => handleSocialLogin('google')}
+            onClick={() => handleSocialLogin('GOOGLE')}
           >
             <span className="social-btn-text">구글로 시작하기</span>
           </button>

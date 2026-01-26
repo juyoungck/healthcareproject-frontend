@@ -34,10 +34,13 @@ import {
 } from 'lucide-react';
 import SettingsPage from './SettingsPage';
 import TrainerApplyModal, { TrainerApplyData } from '../components/auth/TrainerApplyModal';
+import { getSocialConnections, disconnectSocialAccount, getOAuthUrl } from '../../api/auth';
+import type { SocialConnection, SocialProvider } from '../../api/types/auth';
 import { getProfile, getInjuries, getAllergies, updateNickname, updatePhoneNumber, updateProfileImage } from '../../api/me';
 import type { ProfileResponse, InjuryItem } from '../../api/types/me';
 import { uploadImage, uploadTrainerDocument } from '../../api/upload';
 import { applyTrainer } from '../../api/trainer';
+import { getErrorMessage } from '../../constants/errorCodes';
 
 const ALLERGY_LABEL_MAP: Record<string, string> = {
   WHEAT: '밀',
@@ -110,6 +113,13 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
 
   /* 트레이너 신청 로딩 */
   const [isApplyingTrainer, setIsApplyingTrainer] = useState(false);
+
+  /* 소셜 연동 정보 */
+  const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
+  const [hasPassword, setHasPassword] = useState(true);
+  const [isLoadingSocial, setIsLoadingSocial] = useState(false);
+  const [isSocialActionLoading, setIsSocialActionLoading] = useState(false);
+
   /**
    * ===========================================
    * 유저 데이터 로드
@@ -176,6 +186,29 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
       setIsLoading(false);
     }
   };
+
+  /**
+   * 소셜 연동 정보 로드
+   */
+  const fetchSocialConnections = async () => {
+    setIsLoadingSocial(true);
+    try {
+      const data = await getSocialConnections();
+      setSocialConnections(data.connections);
+      setHasPassword(data.hasPassword);
+    } catch (error) {
+      console.error('소셜 연동 정보 로드 실패:', error);
+    } finally {
+      setIsLoadingSocial(false);
+    }
+  };
+
+  /**
+   * 컴포넌트 마운트 시 소셜 연동 정보도 로드
+   */
+  useEffect(() => {
+    fetchSocialConnections();
+  }, []);
 
   /**
    * 닉네임 수정 핸들러
@@ -374,6 +407,65 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
     if (confirm('트레이너를 해제하시겠습니까?\n해제 후에도 다시 신청할 수 있습니다.')) {
       /* TODO: API 연동 - 트레이너 해제 */
       alert('트레이너가 해제되었습니다.');
+    }
+  };
+
+  /**
+   * 소셜 계정 연동 핸들러
+   */
+  const handleConnectSocial = (provider: SocialProvider) => {
+    /* state에 'connect' 표시하여 연동 용도임을 구분 */
+    const oauthUrl = getOAuthUrl(provider, `connect_${provider}`);
+    window.location.href = oauthUrl;
+  };
+
+  /**
+   * 소셜 계정 연동 해제 핸들러
+   */
+  const handleDisconnectSocial = async (provider: SocialProvider) => {
+    /* 마지막 로그인 수단 체크 */
+    if (!hasPassword && socialConnections.length <= 1) {
+      alert('마지막 로그인 수단은 해제할 수 없습니다.\n비밀번호를 먼저 설정해주세요.');
+      return;
+    }
+
+    const providerName = getProviderName(provider);
+    if (!confirm(`${providerName} 연동을 해제하시겠습니까?`)) {
+      return;
+    }
+
+    setIsSocialActionLoading(true);
+    try {
+      await disconnectSocialAccount({ provider });
+      alert('소셜 계정 연동이 해제되었습니다.');
+      /* 목록 새로고침 */
+      await fetchSocialConnections();
+    } catch (error: unknown) {
+      console.error('소셜 연동 해제 실패:', error);
+      const axiosError = error as { response?: { data?: { error?: { code?: string } } } };
+      const errorCode = axiosError.response?.data?.error?.code;
+      alert(getErrorMessage(errorCode, '연동 해제에 실패했습니다.'));
+    } finally {
+      setIsSocialActionLoading(false);
+    }
+  };
+
+  /**
+   * 소셜 제공자 연동 여부 확인
+   */
+  const isConnected = (provider: SocialProvider): boolean => {
+    return socialConnections.some(conn => conn.provider === provider);
+  };
+
+  /**
+   * 소셜 제공자 한글 이름
+   */
+  const getProviderName = (provider: SocialProvider): string => {
+    switch (provider) {
+      case 'KAKAO': return '카카오';
+      case 'NAVER': return '네이버';
+      case 'GOOGLE': return '구글';
+      default: return provider;
     }
   };
 
@@ -724,23 +816,80 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
       {/* 소셜 계정 연동 */}
       <div className="mypage-section">
         <h3 className="mypage-section-title">소셜 계정 연동</h3>
-        <div className="mypage-social-list">
-          <div className="mypage-social-item">
-            <div className="mypage-social-icon kakao">K</div>
-            <span className="mypage-social-name">카카오</span>
-            <button className="mypage-social-btn">연동하기</button>
+        {isLoadingSocial ? (
+          <div className="mypage-social-loading">로딩 중...</div>
+        ) : (
+          <div className="mypage-social-list">
+            {/* 카카오 */}
+            <div className="mypage-social-item">
+              <div className="mypage-social-icon kakao">K</div>
+              <span className="mypage-social-name">카카오</span>
+              {isConnected('KAKAO') ? (
+                <button
+                  className="mypage-social-btn connected"
+                  onClick={() => handleDisconnectSocial('KAKAO')}
+                  disabled={isSocialActionLoading}
+                >
+                  연동해제
+                </button>
+              ) : (
+                <button
+                  className="mypage-social-btn"
+                  onClick={() => handleConnectSocial('KAKAO')}
+                  disabled={isSocialActionLoading}
+                >
+                  연동하기
+                </button>
+              )}
+            </div>
+
+            {/* 네이버 */}
+            <div className="mypage-social-item">
+              <div className="mypage-social-icon naver">N</div>
+              <span className="mypage-social-name">네이버</span>
+              {isConnected('NAVER') ? (
+                <button
+                  className="mypage-social-btn connected"
+                  onClick={() => handleDisconnectSocial('NAVER')}
+                  disabled={isSocialActionLoading}
+                >
+                  연동해제
+                </button>
+              ) : (
+                <button
+                  className="mypage-social-btn"
+                  onClick={() => handleConnectSocial('NAVER')}
+                  disabled={isSocialActionLoading}
+                >
+                  연동하기
+                </button>
+              )}
+            </div>
+
+            {/* 구글 */}
+            <div className="mypage-social-item">
+              <div className="mypage-social-icon google">G</div>
+              <span className="mypage-social-name">구글</span>
+              {isConnected('GOOGLE') ? (
+                <button
+                  className="mypage-social-btn connected"
+                  onClick={() => handleDisconnectSocial('GOOGLE')}
+                  disabled={isSocialActionLoading}
+                >
+                  연동해제
+                </button>
+              ) : (
+                <button
+                  className="mypage-social-btn"
+                  onClick={() => handleConnectSocial('GOOGLE')}
+                  disabled={isSocialActionLoading}
+                >
+                  연동하기
+                </button>
+              )}
+            </div>
           </div>
-          <div className="mypage-social-item">
-            <div className="mypage-social-icon naver">N</div>
-            <span className="mypage-social-name">네이버</span>
-            <button className="mypage-social-btn">연동하기</button>
-          </div>
-          <div className="mypage-social-item">
-            <div className="mypage-social-icon google">G</div>
-            <span className="mypage-social-name">구글</span>
-            <button className="mypage-social-btn">연동하기</button>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* 트레이너 등록/상태 섹션 */}

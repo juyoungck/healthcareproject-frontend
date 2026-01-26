@@ -12,6 +12,12 @@ import type {
   EmailCheckResponse,
   LogoutRequest,
   ApiResponse,
+  SocialLoginRequest,
+  SocialLoginResponse,
+  SocialConnectRequest,
+  SocialDisconnectRequest,
+  SocialConnectionsResponse,
+  SocialProvider,
   PasswordResetRequest,
   PasswordResetConfirm,
   MessageResponse,
@@ -129,4 +135,96 @@ export const isAuthenticated = (): boolean => {
  */
 export const getRefreshToken = (): string | null => {
   return localStorage.getItem('refreshToken');
+};
+
+/**
+ * ===========================================
+ * 소셜 로그인 관련 API
+ * ===========================================
+ */
+
+/**
+ * 소셜 로그인 API
+ * POST /api/auth/social/login
+ */
+export const socialLogin = async (data: SocialLoginRequest): Promise<SocialLoginResponse> => {
+  const response = await apiClient.post<ApiResponse<SocialLoginResponse>>(
+    '/api/auth/social/login',
+    data
+  );
+  return response.data.data;
+};
+
+/**
+ * 소셜 계정 연동 API
+ * POST /api/me/social/connect
+ */
+export const connectSocialAccount = async (data: SocialConnectRequest): Promise<void> => {
+  await apiClient.post('/api/me/social/connect', data);
+};
+
+/**
+ * 소셜 계정 연동 해제 API
+ * POST /api/me/social/disconnect
+ */
+export const disconnectSocialAccount = async (data: SocialDisconnectRequest): Promise<void> => {
+  await apiClient.post('/api/me/social/disconnect', data);
+};
+
+/**
+ * 연동된 소셜 계정 목록 조회 API
+ * GET /api/auth/social
+ */
+export const getSocialConnections = async (): Promise<SocialConnectionsResponse> => {
+  const response = await apiClient.get<ApiResponse<SocialConnectionsResponse>>(
+    '/api/auth/social'
+  );
+  return response.data.data;
+};
+
+/**
+ * ===========================================
+ * OAuth URL 생성 유틸리티
+ * ===========================================
+ */
+
+const OAUTH_CONFIG = {
+  KAKAO: {
+    authUrl: 'https://kauth.kakao.com/oauth/authorize',
+    clientId: import.meta.env.VITE_KAKAO_CLIENT_ID,
+  },
+  NAVER: {
+    authUrl: 'https://nid.naver.com/oauth2.0/authorize',
+    clientId: import.meta.env.VITE_NAVER_CLIENT_ID,
+  },
+  GOOGLE: {
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+  },
+};
+
+const REDIRECT_URI = import.meta.env.VITE_OAUTH_REDIRECT_URI;
+
+/**
+ * OAuth 인증 URL 생성
+ * @param provider 소셜 제공자
+ * @param state 상태값 (CSRF 방지 및 추가 정보 전달용)
+ */
+export const getOAuthUrl = (provider: SocialProvider, state?: string): string => {
+  const config = OAUTH_CONFIG[provider];
+  const stateParam = state || provider;
+
+  switch (provider) {
+    case 'KAKAO':
+      return `${config.authUrl}?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&state=${stateParam}`;
+
+    case 'NAVER':
+      return `${config.authUrl}?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&state=${stateParam}`;
+
+    case 'GOOGLE':
+      return `${config.authUrl}?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=email%20profile&state=${stateParam}`;
+
+    default:
+      throw new Error(`Unsupported provider: ${provider}`);
+  }
 };

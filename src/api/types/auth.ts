@@ -111,3 +111,69 @@ export interface ApiResponse<T> {
   data: T;
   message?: string;
 }
+
+/**
+ * ===========================================
+ * 소셜 로그인 관련 타입
+ * ===========================================
+ */
+
+/**
+ * 소셜 제공자 타입
+ */
+export type SocialProvider = 'GOOGLE' | 'KAKAO' | 'NAVER';
+
+/**
+ * 소셜 로그인 요청 타입
+ * POST /api/auth/social/login
+ */
+export interface SocialLoginRequest {
+  provider: SocialProvider;
+  accessToken: string;
+}
+
+/**
+ * 소셜 로그인 응답 타입
+ */
+export interface SocialLoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+}
+
+/**
+ * 소셜 계정 연동 요청 타입
+ * POST /api/me/social/connect
+ */
+export interface SocialConnectRequest {
+  provider: SocialProvider;
+  accessToken: string;
+}
+
+/**
+ * 소셜 계정 연동 해제 요청 타입
+ * POST /api/me/social/disconnect
+ */
+export interface SocialDisconnectRequest {
+  provider: SocialProvider;
+}
+
+/**
+ * 소셜 연결 정보 타입
+ */
+export interface SocialConnection {
+  provider: SocialProvider;
+  providerUserId: string;
+  connectedAt: string;
+}
+
+/**
+ * 소셜 연결 목록 응답 타입
+ * GET /api/auth/social
+ */
+export interface SocialConnectionsResponse {
+  handle: string;
+  hasPassword: boolean;
+  connections: SocialConnection[];
+}
