@@ -105,8 +105,16 @@ export const ERROR_CODES = {
   INVALID_ENTRY_CODE: { code: 'R004', message: '참여 코드가 일치하지 않습니다.' },
   CANCEL_NOT_ALLOWED: { code: 'R005', message: '진행 중이거나 종료된 방의 예약은 취소할 수 없습니다.' },
   INVALID_STATUS_TRANSITION: { code: 'INVALID_STATUS_TRANSITION', message: '유효하지 않은 상태 변경 요청입니다.' },
-} as const;
 
+
+  /**
+     * ===========================================
+     * Trainer (TRAINER-xxx)
+     * ===========================================
+     */
+  TRAINER_INFO_NOT_FOUND: { code: 'TRAINER-001', message: '트레이너 정보를 찾을 수 없습니다.' },
+  ALREADY_SUBMITTED: { code: 'TRAINER-002', message: '이미 트레이너 신청을 제출했습니다.' },
+} as const;
 /**
  * ===========================================
  * 유틸리티 함수
