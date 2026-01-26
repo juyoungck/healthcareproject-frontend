@@ -241,60 +241,39 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
           </div>
         ) : (
           <>
-            {/* 공지사항 */}
-            {notices.map((post) => (
-              <button
-                key={`notice-${post.postId}`}
-                className="board-item notice"
-                onClick={() => onSelectPost(post.postId)}
-              >
-                <span className="board-category-badge notice">공지</span>
-                <div className="board-item-content">
-                  <div className="board-item-row">
-                    <span className="board-item-title">{post.title}</span>
-                    {post.commentCount > 0 && (
-                      <span className="board-item-comment-count">[{post.commentCount}]</span>
-                    )}
+            {/* 게시글 */}
+            {[...displayedPosts]
+              .sort((a, b) => {
+                if (a.isNotice && !b.isNotice) return -1;
+                if (!a.isNotice && b.isNotice) return 1;
+                return 0;
+              })
+              .map((post) => (
+                <button
+                  key={post.postId}
+                  className={`board-item ${post.isNotice ? 'notice' : ''}`}
+                  onClick={() => onSelectPost(post.postId)}
+                >
+                  <span className={`board-category-badge ${post.isNotice ? 'notice' : CATEGORY_MAP.toFrontend[post.category]}`}>
+                    {post.isNotice ? '공지' : CATEGORY_LABELS[CATEGORY_MAP.toFrontend[post.category]]}
+                  </span>
+                  <div className="board-item-content">
+                    <div className="board-item-row">
+                      <span className="board-item-title">{post.title}</span>
+                      {post.commentCount > 0 && (
+                        <span className="board-item-comment-count">[{post.commentCount}]</span>
+                      )}
+                    </div>
+                    <div className="board-item-meta">
+                      <span>{post.nickname}</span>
+                      <span className="board-item-divider">|</span>
+                      <span>{formatDate(post.createdAt)}</span>
+                      <span className="board-item-divider">|</span>
+                      <span>조회 {post.viewCount}</span>
+                    </div>
                   </div>
-                  <div className="board-item-meta">
-                    <span>{post.nickname}</span>
-                    <span className="board-item-divider">|</span>
-                    <span>{formatDate(post.createdAt)}</span>
-                    <span className="board-item-divider">|</span>
-                    <span>조회 {post.viewCount}</span>
-                  </div>
-                </div>
-              </button>
-            ))}
-
-            {/* 일반 게시글 */}
-            {displayedPosts.map((post) => (
-              <button
-                key={post.postId}
-                className="board-item"
-                onClick={() => onSelectPost(post.postId)}
-              >
-                <span className={`board-category-badge ${CATEGORY_MAP.toFrontend[post.category]}`}>
-                  {CATEGORY_LABELS[CATEGORY_MAP.toFrontend[post.category]]}
-                </span>
-                <div className="board-item-content">
-                  <div className="board-item-row">
-                    <span className="board-item-title">{post.title}</span>
-                    {post.commentCount > 0 && (
-                      <span className="board-item-comment-count">[{post.commentCount}]</span>
-                    )}
-                  </div>
-                  <div className="board-item-meta">
-                    <span>{post.nickname}</span>
-                    <span className="board-item-divider">|</span>
-                    <span>{formatDate(post.createdAt)}</span>
-                    <span className="board-item-divider">|</span>
-                    <span>조회 {post.viewCount}</span>
-                  </div>
-                </div>
-              </button>
-            ))}
-
+                </button>
+              ))}
             {/* 무한 스크롤 감지 영역 */}
             <div ref={loadMoreRef} className="board-load-more">
               {isLoading && (

@@ -1,6 +1,6 @@
 /**
- * types/admin.ts
- * 관리자 패널 관련 타입 정의
+ * api/types/admin.ts
+ * 관리자 패널 관련 타입 정의 (API 명세 기준)
  */
 
 /**
@@ -9,7 +9,7 @@
  * ===========================================
  */
 
-/** 페이징 응답 */
+/** 페이징 응답 (일반) */
 export interface PaginatedResponse<T> {
   total: number;
   list: T[];
@@ -48,19 +48,24 @@ export interface AdminUser {
 /** 트레이너 신청 상태 */
 export type TrainerApplicationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
-/** 트레이너 신청 데이터 */
-export interface TrainerApplication {
-  id: number;
-  userId: number;
-  userName: string;
-  userEmail: string;
+/** 트레이너 신청자 데이터 (GET /api/admin/trainer/pending) */
+export interface TrainerApplicant {
   handle: string;
-  introduction: string;
-  documents: string[];
-  status: TrainerApplicationStatus;
-  rejectReason?: string;
+  nickname: string;
+  profileImageUrl?: string;
+  licenceUrl: string[];
+  bio: string;
   createdAt: string;
-  reviewedAt?: string;
+}
+
+/** 트레이너 승인 대기자 목록 응답 */
+export interface TrainerPendingResponse {
+  applicant: TrainerApplicant[];
+  page: number;
+  size: number;
+  totalElements: number;
+  hasPrev: boolean;
+  hasNext: boolean;
 }
 
 /**
@@ -70,23 +75,26 @@ export interface TrainerApplication {
  */
 
 /** 게시글 상태 */
-export type PostStatus = 'VISIBLE' | 'HIDDEN' | 'DELETED';
+export type PostStatus = 'POSTED' | 'DELETED';
 
 /** 게시글 카테고리 */
 export type PostCategory = 'FREE' | 'QUESTION' | 'INFO' | 'NOTICE';
 
+/** 게시글 작성자 */
+export interface PostAuthor {
+  nickname: string;
+  handle: string;
+}
+
 /** 게시글 데이터 (관리자용) */
 export interface AdminPost {
   postId: number;
+  author: PostAuthor;
+  category: string;
   title: string;
-  authorName: string;
-  authorHandle: string;
-  category: PostCategory;
-  status: PostStatus;
-  reportCount: number;
   viewCount: number;
-  commentCount: number;
-  isPinned: boolean;
+  isNotice: boolean;
+  status: PostStatus;
   createdAt: string;
 }
 
@@ -164,76 +172,74 @@ export interface AdminFood {
  * ===========================================
  */
 
-/** 화상PT 방 상태 */
-export type PTRoomStatus = 'SCHEDULED' | 'LIVE' | 'ENDED';
+/** 화상PT 방 상태 (관리자 API) */
+export type AdminPTRoomStatus = 'ACTIVE' | 'SCHEDULED' | 'CLOSED';
+
+/** 화상PT 방 타입 */
+export type PTRoomType = 'PERSONAL' | 'GROUP';
+
+/** 화상PT 트레이너 정보 */
+export interface PTRoomTrainer {
+  nickname: string;
+  handle: string;
+}
 
 /** 화상PT 방 데이터 (관리자용) */
 export interface AdminPTRoom {
   ptRoomId: number;
+  trainer: PTRoomTrainer;
   title: string;
-  trainerName: string;
-  trainerHandle: string;
-  status: PTRoomStatus;
-  participantCount: number;
+  roomType: PTRoomType;
+  scheduledStartAt: string;
   maxParticipants: number;
-  scheduledAt: string;
+  status: AdminPTRoomStatus;
   createdAt: string;
 }
 
 /**
  * ===========================================
- * 통계 관련
+ * 대시보드 관련
  * ===========================================
  */
 
 /** 대시보드 통계 */
 export interface DashboardStats {
-  totalUsers: number;
-  activeUsers: number;
-  stopUsers: number;
-  sleepUsers: number;
-  totalPosts: number;
-  visiblePosts: number;
-  hiddenPosts: number;
-  pendingTrainers: number;
-  approvedTrainers: number;
-  totalPTRooms: number;
-  livePTRooms: number;
-  scheduledPTRooms: number;
-}
-
-/** 오늘의 활동 */
-export interface TodayActivity {
-  newUsers: number;
-  newTrainerApplications: number;
-  newPosts: number;
+  /* 회원 현황 */
+  totalUser: number;
+  activeUser: number;
+  inactiveUser: number;
+  /* 게시글 현황 */
+  totalPost: number;
+  publicPost: number;
+  hiddenPost: number;
+  /* 트레이너 신청 */
+  waitTrainer: number;
+  /* 화상PT 현황 */
+  totalPt: number;
+  livePt: number;
+  reservedPt: number;
+  /* 오늘의 활동 */
+  todayJoin: number;
+  todayTrainerApp: number;
+  todayPost: number;
 }
 
 /**
  * ===========================================
- * 시스템 헬스체크 관련
+ * 시스템 관련 (Version, Health)
  * ===========================================
  */
 
-/** 서비스 상태 */
-export type ServiceStatus = 'HEALTHY' | 'UNHEALTHY' | 'UNKNOWN';
-
-/** 헬스체크 항목 */
-export interface HealthCheckItem {
-  name: string;
-  status: ServiceStatus;
-  responseTime?: number;
-  lastChecked: string;
-  message?: string;
+/** API 버전 정보 */
+export interface VersionInfo {
+  version: string;
+  buildTime?: string;
+  name?: string;
 }
 
-/** 에러 로그 */
-export interface ErrorLog {
-  logId: number;
-  level: 'ERROR' | 'WARNING' | 'INFO';
-  message: string;
-  endpoint?: string;
-  createdAt: string;
+/** 헬스 체크 응답 */
+export interface HealthInfo {
+  status: 'UP' | 'DOWN';
 }
 
 /**
@@ -251,6 +257,4 @@ export type AdminMenuType =
   | 'reports'
   | 'exercises'
   | 'diets'
-  | 'pt'
-  | 'stats'
-  | 'system';
+  | 'pt';

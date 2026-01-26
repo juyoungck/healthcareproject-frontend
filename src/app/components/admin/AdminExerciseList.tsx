@@ -1,36 +1,41 @@
 /**
  * AdminExerciseList.tsx
- * 운동 관리 컴포넌트 (목록 + 등록/수정 모달 통합)
+ * 운동 관리 컴포넌트
  * 
- * TODO: 백엔드 완성 후 API 연동
- * - POST /api/admin/exercise (운동 등록)
- * - PUT /api/admin/exercise/{id} (운동 수정)
- * - DELETE /api/admin/exercise/{id} (운동 삭제)
+ * API:
+ * - GET /api/exercises (운동 목록 - 일반 API)
+ * - POST /api/admin/exercise (운동 등록 - 관리자 API)
+ * 
+ * 수정/삭제는 백엔드 미구현으로 등록만 가능
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Trash2, Video, X } from 'lucide-react';
-import type { AdminExercise, ExercisePart, ExerciseLevel } from '../../../types/admin';
-import { adminExercises } from '../../../data/admin';
+import { Search, Plus, X, Trash2 } from 'lucide-react';
+import apiClient from '../../../api/client';
+import type {
+  ExerciseListItem,
+  ExerciseListParams,
+  ExerciseListResponse,
+  BodyPart,
+  Difficulty,
+  BODY_PART_LABELS,
+  DIFFICULTY_LABELS,
+} from '../../../api/types/exercise';
 
 /**
  * ===========================================
  * 필터 옵션
  * ===========================================
  */
-const partFilters: { value: ExercisePart | 'all'; label: string }[] = [
-  { value: 'all', label: '전체' },
-  { value: 'upper', label: '상체' },
-  { value: 'lower', label: '하체' },
-  { value: 'core', label: '코어' },
-  { value: 'full', label: '전신' },
-];
-
-const levelFilters: { value: ExerciseLevel | 'all'; label: string }[] = [
-  { value: 'all', label: '전체' },
-  { value: 'beginner', label: '초급' },
-  { value: 'intermediate', label: '중급' },
-  { value: 'advanced', label: '고급' },
+const bodyPartFilters: { value: BodyPart | 'ALL'; label: string }[] = [
+  { value: 'ALL', label: '전체' },
+  { value: 'CHEST', label: '가슴' },
+  { value: 'BACK', label: '등' },
+  { value: 'SHOULDER', label: '어깨' },
+  { value: 'ARM', label: '팔' },
+  { value: 'LEG', label: '하체' },
+  { value: 'CORE', label: '코어' },
+  { value: 'FULL_BODY', label: '전신' },
 ];
 
 /**
@@ -38,46 +43,26 @@ const levelFilters: { value: ExerciseLevel | 'all'; label: string }[] = [
  * 라벨 변환 함수
  * ===========================================
  */
-const getPartLabel = (part: ExercisePart) => {
-  switch (part) {
-    case 'upper':
-      return '상체';
-    case 'lower':
-      return '하체';
-    case 'core':
-      return '코어';
-    case 'full':
-      return '전신';
-    default:
-      return part;
-  }
+const getBodyPartLabel = (part: BodyPart) => {
+  const labels: Record<BodyPart, string> = {
+    CHEST: '가슴',
+    BACK: '등',
+    SHOULDER: '어깨',
+    ARM: '팔',
+    LEG: '하체',
+    CORE: '코어',
+    FULL_BODY: '전신',
+  };
+  return labels[part] ?? part;
 };
 
-const getLevelLabel = (level: ExerciseLevel) => {
-  switch (level) {
-    case 'beginner':
-      return '초급';
-    case 'intermediate':
-      return '중급';
-    case 'advanced':
-      return '고급';
-    default:
-      return level;
-  }
-};
-
-/**
- * ===========================================
- * 날짜 포맷
- * ===========================================
- */
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
+const getDifficultyLabel = (difficulty: Difficulty) => {
+  const labels: Record<Difficulty, string> = {
+    BEGINNER: '초급',
+    INTERMEDIATE: '중급',
+    ADVANCED: '고급',
+  };
+  return labels[difficulty] ?? difficulty;
 };
 
 /**
@@ -86,80 +71,137 @@ const formatDate = (dateString: string) => {
  * ===========================================
  */
 export default function AdminExerciseList() {
-  const [exercises, setExercises] = useState<AdminExercise[]>(adminExercises);
-  const [filterPart, setFilterPart] = useState<ExercisePart | 'all'>('all');
-  const [filterLevel, setFilterLevel] = useState<ExerciseLevel | 'all'>('all');
+  /** 상태 관리 */
+  const [exercises, setExercises] = useState<ExerciseListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filterBodyPart, setFilterBodyPart] = useState<BodyPart | 'ALL'>('ALL');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedExercise, setSelectedExercise] = useState<AdminExercise | null>(null);
 
   /**
-   * 필터링된 목록
+   * 운동 목록 조회 (GET /api/exercises)
    */
-  const filteredExercises = exercises.filter((exercise) => {
-    if (filterPart !== 'all' && exercise.part !== filterPart) {
-      return false;
+  const fetchExercises = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const params: ExerciseListParams = {
+        limit: 100,
+      };
+
+      if (filterBodyPart !== 'ALL') {
+        params.bodyPart = filterBodyPart;
+      }
+      if (searchKeyword) {
+        params.keyword = searchKeyword;
+      }
+
+      const response = await apiClient.get<{ data: ExerciseListResponse }>('/api/exercises', { params });
+      setExercises(response.data.data.items);
+    } catch (err) {
+      console.error('운동 목록 조회 실패:', err);
+      setError('운동 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
     }
-    if (filterLevel !== 'all' && exercise.level !== filterLevel) {
-      return false;
+  };
+
+  /**
+   * 초기 로드 및 필터 변경 시 재조회
+   */
+  useEffect(() => {
+    fetchExercises();
+  }, [filterBodyPart]);
+
+  /**
+   * 검색 실행 (Enter 키)
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      fetchExercises();
     }
-    if (searchKeyword) {
-      const keyword = searchKeyword.toLowerCase();
-      return exercise.name.toLowerCase().includes(keyword);
-    }
-    return true;
-  });
+  };
 
   /**
    * 등록 모달 열기
    */
   const handleOpenCreateModal = () => {
-    setSelectedExercise(null);
     setIsModalOpen(true);
   };
 
   /**
-   * 수정 모달 열기
+   * 등록 핸들러 (POST /api/exercises)
    */
-  const handleOpenEditModal = (exercise: AdminExercise) => {
-    setSelectedExercise(exercise);
-    setIsModalOpen(true);
-  };
-
-  /**
-   * 저장 핸들러 (등록/수정)
-   * TODO: POST /api/admin/exercise 또는 PUT /api/admin/exercise/{id}
-   */
-  const handleSave = (data: Omit<AdminExercise, 'id' | 'createdAt'>) => {
-    if (selectedExercise) {
-      /* 수정 */
-      setExercises((prev) =>
-        prev.map((exercise) =>
-          exercise.id === selectedExercise.id
-            ? { ...exercise, ...data }
-            : exercise
-        )
-      );
-    } else {
-      /* 등록 */
-      const newExercise: AdminExercise = {
+  const handleSave = async (data: {
+    name: string;
+    bodyPart: BodyPart;
+    difficulty: Difficulty;
+    description: string;
+    precautions: string;
+    imageUrl?: string;
+    youtubeUrl?: string;
+  }) => {
+    try {
+      await apiClient.post('/api/exercises', {
         ...data,
-        id: Math.max(...exercises.map((e) => e.id), 0) + 1,
-        createdAt: new Date().toISOString(),
-      };
-      setExercises((prev) => [newExercise, ...prev]);
+        isActive: true,
+      });
+      setIsModalOpen(false);
+      fetchExercises();
+      alert('운동이 등록되었습니다.');
+    } catch (err) {
+      console.error('운동 등록 실패:', err);
+      alert('운동 등록에 실패했습니다.');
     }
-    setIsModalOpen(false);
   };
 
   /**
-   * 삭제 핸들러
-   * TODO: DELETE /api/admin/exercise/{id}
+   * 삭제 핸들러 (DELETE /api/exercises/{id})
+   * TODO: 백엔드 API 구현 필요
    */
-  const handleDelete = (id: number) => {
-    if (!confirm('해당 운동을 삭제하시겠습니까?')) return;
-    setExercises((prev) => prev.filter((exercise) => exercise.id !== id));
+  const handleDelete = async (exerciseId: number) => {
+    if (!confirm('해당 운동을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+
+    try {
+      await apiClient.delete(`/api/exercises/${exerciseId}`);
+      fetchExercises();
+      alert('운동이 삭제되었습니다.');
+    } catch (err) {
+      console.error('운동 삭제 실패:', err);
+      alert('운동 삭제에 실패했습니다.');
+    }
   };
+
+  /**
+   * 로딩 상태
+   */
+  if (isLoading) {
+    return (
+      <div className="admin-exercise-list">
+        <h2 className="admin-section-title">운동 관리</h2>
+        <div className="admin-loading">로딩 중...</div>
+      </div>
+    );
+  }
+
+  /**
+   * 에러 상태
+   */
+  if (error) {
+    return (
+      <div className="admin-exercise-list">
+        <h2 className="admin-section-title">운동 관리</h2>
+        <div className="admin-error">
+          <p>{error}</p>
+          <button onClick={fetchExercises} className="admin-btn primary">
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-exercise-list">
@@ -170,33 +212,22 @@ export default function AdminExerciseList() {
           운동 등록
         </button>
       </div>
+      <p className="admin-section-count">전체 {exercises.length}건</p>
 
       {/* 필터 영역 */}
       <div className="admin-filter-bar">
         <div className="admin-filter-group">
           <div className="admin-filter-tabs">
-            {partFilters.map((filter) => (
+            {bodyPartFilters.map((filter) => (
               <button
                 key={filter.value}
-                className={`admin-filter-tab ${filterPart === filter.value ? 'active' : ''}`}
-                onClick={() => setFilterPart(filter.value)}
+                className={`admin-filter-tab ${filterBodyPart === filter.value ? 'active' : ''}`}
+                onClick={() => setFilterBodyPart(filter.value)}
               >
                 {filter.label}
               </button>
             ))}
           </div>
-
-          <select
-            className="admin-filter-select"
-            value={filterLevel}
-            onChange={(e) => setFilterLevel(e.target.value as ExerciseLevel | 'all')}
-          >
-            {levelFilters.map((filter) => (
-              <option key={filter.value} value={filter.value}>
-                {filter.label}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div className="admin-search-box">
@@ -206,6 +237,7 @@ export default function AdminExerciseList() {
             placeholder="운동명 검색"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
           />
         </div>
       </div>
@@ -216,70 +248,54 @@ export default function AdminExerciseList() {
           <thead>
             <tr>
               <th>번호</th>
+              <th>이미지</th>
               <th>운동명</th>
               <th>부위</th>
               <th>난이도</th>
-              <th>설명</th>
-              <th>영상</th>
-              <th>등록일</th>
-              <th>관리</th>
+              <th>삭제</th>
             </tr>
           </thead>
           <tbody>
-            {filteredExercises.length === 0 ? (
+            {exercises.length === 0 ? (
               <tr>
-                <td colSpan={8} className="admin-table-empty">
+                <td colSpan={6} className="admin-table-empty">
                   등록된 운동이 없습니다.
                 </td>
               </tr>
             ) : (
-              filteredExercises.map((exercise) => (
-                <tr key={exercise.id}>
-                  <td>{exercise.id}</td>
-                  <td className="admin-table-name">{exercise.name}</td>
+              [...exercises].sort((a, b) => b.exerciseId - a.exerciseId).map((exercise) => (
+                <tr key={exercise.exerciseId}>
+                  <td>{exercise.exerciseId}</td>
                   <td>
-                    <span className={`admin-part-badge part-${exercise.part}`}>
-                      {getPartLabel(exercise.part)}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`admin-level-badge level-${exercise.level}`}>
-                      {getLevelLabel(exercise.level)}
-                    </span>
-                  </td>
-                  <td className="admin-table-desc">{exercise.description}</td>
-                  <td>
-                    {exercise.videoUrl ? (
-                      <a
-                        href={exercise.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="admin-video-link"
-                      >
-                        <Video size={16} />
-                      </a>
+                    {exercise.imageUrl ? (
+                      <img
+                        src={exercise.imageUrl}
+                        alt={exercise.name}
+                        className="admin-table-img"
+                      />
                     ) : (
                       '-'
                     )}
                   </td>
-                  <td>{formatDate(exercise.createdAt)}</td>
+                  <td className="admin-table-name">{exercise.name}</td>
                   <td>
-                    <div className="admin-action-buttons">
-                      <button
-                        className="admin-action-btn edit"
-                        onClick={() => handleOpenEditModal(exercise)}
-                        title="수정"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        className="admin-action-btn delete"
-                        onClick={() => handleDelete(exercise.id)}
-                        title="삭제"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                    <span className={`admin-part-badge part-${exercise.bodyPart.toLowerCase()}`}>
+                      {getBodyPartLabel(exercise.bodyPart)}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`admin-level-badge level-${exercise.difficulty.toLowerCase()}`}>
+                      {getDifficultyLabel(exercise.difficulty)}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      className="admin-action-btn delete"
+                      onClick={() => handleDelete(exercise.exerciseId)}
+                      title="삭제"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </td>
                 </tr>
               ))
@@ -288,10 +304,9 @@ export default function AdminExerciseList() {
         </table>
       </div>
 
-      {/* 등록/수정 모달 (통합) */}
+      {/* 등록 모달 */}
       {isModalOpen && (
         <ExerciseModal
-          exercise={selectedExercise}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSave}
         />
@@ -302,46 +317,46 @@ export default function AdminExerciseList() {
 
 /**
  * ===========================================
- * 운동 등록/수정 모달 (내부 컴포넌트로 통합)
+ * 운동 등록 모달
  * ===========================================
  */
-const partOptions: { value: ExercisePart; label: string }[] = [
-  { value: 'upper', label: '상체' },
-  { value: 'lower', label: '하체' },
-  { value: 'core', label: '코어' },
-  { value: 'full', label: '전신' },
+const bodyPartOptions: { value: BodyPart; label: string }[] = [
+  { value: 'CHEST', label: '가슴' },
+  { value: 'BACK', label: '등' },
+  { value: 'SHOULDER', label: '어깨' },
+  { value: 'ARM', label: '팔' },
+  { value: 'LEG', label: '하체' },
+  { value: 'CORE', label: '코어' },
+  { value: 'FULL_BODY', label: '전신' },
 ];
 
-const levelOptions: { value: ExerciseLevel; label: string }[] = [
-  { value: 'beginner', label: '초급' },
-  { value: 'intermediate', label: '중급' },
-  { value: 'advanced', label: '고급' },
+const difficultyOptions: { value: Difficulty; label: string }[] = [
+  { value: 'BEGINNER', label: '초급' },
+  { value: 'INTERMEDIATE', label: '중급' },
+  { value: 'ADVANCED', label: '고급' },
 ];
 
 interface ExerciseModalProps {
-  exercise: AdminExercise | null;
   onClose: () => void;
-  onSave: (data: Omit<AdminExercise, 'id' | 'createdAt'>) => void;
+  onSave: (data: {
+    name: string;
+    bodyPart: BodyPart;
+    difficulty: Difficulty;
+    description: string;
+    precautions: string;
+    imageUrl?: string;
+    youtubeUrl?: string;
+  }) => void;
 }
 
-function ExerciseModal({ exercise, onClose, onSave }: ExerciseModalProps) {
+function ExerciseModal({ onClose, onSave }: ExerciseModalProps) {
   const [name, setName] = useState('');
-  const [part, setPart] = useState<ExercisePart>('upper');
-  const [level, setLevel] = useState<ExerciseLevel>('beginner');
+  const [bodyPart, setBodyPart] = useState<BodyPart>('CHEST');
+  const [difficulty, setDifficulty] = useState<Difficulty>('BEGINNER');
   const [description, setDescription] = useState('');
-  const [videoUrl, setVideoUrl] = useState('');
+  const [precautions, setPrecautions] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-
-  useEffect(() => {
-    if (exercise) {
-      setName(exercise.name);
-      setPart(exercise.part);
-      setLevel(exercise.level);
-      setDescription(exercise.description);
-      setVideoUrl(exercise.videoUrl || '');
-      setImageUrl(exercise.imageUrl || '');
-    }
-  }, [exercise]);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -355,11 +370,12 @@ function ExerciseModal({ exercise, onClose, onSave }: ExerciseModalProps) {
 
     onSave({
       name: name.trim(),
-      part,
-      level,
+      bodyPart,
+      difficulty,
       description: description.trim(),
-      videoUrl: videoUrl.trim() || undefined,
+      precautions: precautions.trim(),
       imageUrl: imageUrl.trim() || undefined,
+      youtubeUrl: youtubeUrl.trim() || undefined,
     });
   };
 
@@ -374,9 +390,7 @@ function ExerciseModal({ exercise, onClose, onSave }: ExerciseModalProps) {
       <div className="admin-modal-container">
         {/* 헤더 */}
         <div className="admin-modal-header">
-          <h3 className="admin-modal-title">
-            {exercise ? '운동 수정' : '운동 등록'}
-          </h3>
+          <h3 className="admin-modal-title">운동 등록</h3>
           <button className="admin-modal-close" onClick={onClose}>
             <X size={24} />
           </button>
@@ -399,10 +413,10 @@ function ExerciseModal({ exercise, onClose, onSave }: ExerciseModalProps) {
             <label className="admin-form-label">부위 *</label>
             <select
               className="admin-form-select"
-              value={part}
-              onChange={(e) => setPart(e.target.value as ExercisePart)}
+              value={bodyPart}
+              onChange={(e) => setBodyPart(e.target.value as BodyPart)}
             >
-              {partOptions.map((option) => (
+              {bodyPartOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -414,10 +428,10 @@ function ExerciseModal({ exercise, onClose, onSave }: ExerciseModalProps) {
             <label className="admin-form-label">난이도 *</label>
             <select
               className="admin-form-select"
-              value={level}
-              onChange={(e) => setLevel(e.target.value as ExerciseLevel)}
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value as Difficulty)}
             >
-              {levelOptions.map((option) => (
+              {difficultyOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -429,21 +443,21 @@ function ExerciseModal({ exercise, onClose, onSave }: ExerciseModalProps) {
             <label className="admin-form-label">설명 *</label>
             <textarea
               className="admin-form-textarea"
-              placeholder="운동 방법 및 주의사항을 입력하세요."
+              placeholder="운동 설명을 입력하세요."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={4}
+              rows={3}
             />
           </div>
 
           <div className="admin-form-group">
-            <label className="admin-form-label">영상 URL</label>
-            <input
-              type="text"
-              className="admin-form-input"
-              placeholder="https://youtube.com/watch?v=..."
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
+            <label className="admin-form-label">주의사항</label>
+            <textarea
+              className="admin-form-textarea"
+              placeholder="운동 시 주의사항을 입력하세요."
+              value={precautions}
+              onChange={(e) => setPrecautions(e.target.value)}
+              rows={2}
             />
           </div>
 
@@ -457,6 +471,17 @@ function ExerciseModal({ exercise, onClose, onSave }: ExerciseModalProps) {
               onChange={(e) => setImageUrl(e.target.value)}
             />
           </div>
+
+          <div className="admin-form-group">
+            <label className="admin-form-label">유튜브 URL</label>
+            <input
+              type="text"
+              className="admin-form-input"
+              placeholder="https://youtube.com/watch?v=..."
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* 푸터 */}
@@ -465,7 +490,7 @@ function ExerciseModal({ exercise, onClose, onSave }: ExerciseModalProps) {
             취소
           </button>
           <button className="admin-btn primary" onClick={handleSave}>
-            {exercise ? '수정' : '등록'}
+            등록
           </button>
         </div>
       </div>

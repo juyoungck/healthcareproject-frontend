@@ -2,58 +2,16 @@
  * AdminTrainerList.tsx
  * 트레이너 승인 관리 컴포넌트 (목록 + 상세 모달 통합)
  * 
- * TODO: 백엔드 완성 후 API 연동
+ * API:
+ * - GET /api/admin/trainer/pending (승인 대기자 목록)
  * - PATCH /api/admin/trainer/{handle}/approve (승인)
  * - PATCH /api/admin/trainer/{handle}/reject (거절)
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Eye, Check, X, FileText, Image, Download } from 'lucide-react';
-import type { TrainerApplication, TrainerApplicationStatus } from '../../../types/admin';
-import { trainerApplications } from '../../../data/admin';
-
-/**
- * ===========================================
- * 상태 필터 옵션
- * ===========================================
- */
-const statusFilters: { value: TrainerApplicationStatus | 'all'; label: string }[] = [
-  { value: 'all', label: '전체' },
-  { value: 'PENDING', label: '대기중' },
-  { value: 'APPROVED', label: '승인' },
-  { value: 'REJECTED', label: '거절' },
-];
-
-/**
- * ===========================================
- * 상태 라벨 변환
- * ===========================================
- */
-const getStatusLabel = (status: TrainerApplicationStatus) => {
-  switch (status) {
-    case 'PENDING':
-      return '대기중';
-    case 'APPROVED':
-      return '승인';
-    case 'REJECTED':
-      return '거절';
-    default:
-      return status;
-  }
-};
-
-const getStatusClass = (status: TrainerApplicationStatus) => {
-  switch (status) {
-    case 'PENDING':
-      return 'status-pending';
-    case 'APPROVED':
-      return 'status-approved';
-    case 'REJECTED':
-      return 'status-rejected';
-    default:
-      return '';
-  }
-};
+import type { TrainerApplicant } from '../../../api/types/admin';
+import { getTrainerPending, approveTrainer, rejectTrainer } from '../../../api/admin';
 
 /**
  * ===========================================
@@ -77,24 +35,50 @@ const formatDate = (dateString: string) => {
  * ===========================================
  */
 export default function AdminTrainerList() {
-  const [applications, setApplications] = useState<TrainerApplication[]>(trainerApplications);
-  const [filterStatus, setFilterStatus] = useState<TrainerApplicationStatus | 'all'>('all');
+  /** 상태 관리 */
+  const [applicants, setApplicants] = useState<TrainerApplicant[]>([]);
+  const [totalElements, setTotalElements] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [selectedApplication, setSelectedApplication] = useState<TrainerApplication | null>(null);
+  const [selectedApplicant, setSelectedApplicant] = useState<TrainerApplicant | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   /**
-   * 필터링된 목록
+   * 대기자 목록 조회
    */
-  const filteredApplications = applications.filter((app) => {
-    if (filterStatus !== 'all' && app.status !== filterStatus) {
-      return false;
+  const fetchApplicants = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await getTrainerPending();
+      setApplicants(response.applicant);
+      setTotalElements(response.totalElements);
+    } catch (err) {
+      console.error('트레이너 대기자 목록 조회 실패:', err);
+      setError('트레이너 대기자 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  /**
+   * 초기 로드
+   */
+  useEffect(() => {
+    fetchApplicants();
+  }, []);
+
+  /**
+   * 필터링된 목록 (검색)
+   */
+  const filteredApplicants = applicants.filter((app) => {
     if (searchKeyword) {
       const keyword = searchKeyword.toLowerCase();
       return (
-        app.userName.toLowerCase().includes(keyword) ||
-        app.userEmail.toLowerCase().includes(keyword)
+        app.nickname.toLowerCase().includes(keyword) ||
+        app.handle.toLowerCase().includes(keyword)
       );
     }
     return true;
@@ -103,71 +87,88 @@ export default function AdminTrainerList() {
   /**
    * 상세 보기 핸들러
    */
-  const handleViewDetail = (application: TrainerApplication) => {
-    setSelectedApplication(application);
+  const handleViewDetail = (applicant: TrainerApplicant) => {
+    setSelectedApplicant(applicant);
     setIsDetailModalOpen(true);
   };
 
   /**
    * 승인 처리 핸들러
-   * TODO: PATCH /api/admin/trainer/{handle}/approve
    */
-  const handleApprove = (id: number) => {
+  const handleApprove = async (handle: string) => {
     if (!confirm('해당 트레이너 신청을 승인하시겠습니까?')) return;
 
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === id
-          ? { ...app, status: 'APPROVED' as TrainerApplicationStatus, reviewedAt: new Date().toISOString() }
-          : app
-      )
-    );
-    setIsDetailModalOpen(false);
+    try {
+      await approveTrainer(handle);
+      // 목록에서 제거 (승인되면 PENDING 목록에서 사라짐)
+      setApplicants((prev) => prev.filter((app) => app.handle !== handle));
+      setTotalElements((prev) => prev - 1);
+      setIsDetailModalOpen(false);
+      alert('트레이너가 승인되었습니다!');
+    } catch (err) {
+      console.error('트레이너 승인 실패:', err);
+      alert('트레이너 승인에 실패했습니다.');
+    }
   };
 
   /**
    * 거절 처리 핸들러
-   * TODO: PATCH /api/admin/trainer/{handle}/reject
    */
-  const handleReject = (id: number, reason: string) => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === id
-          ? {
-              ...app,
-              status: 'REJECTED' as TrainerApplicationStatus,
-              rejectReason: reason,
-              reviewedAt: new Date().toISOString(),
-            }
-          : app
-      )
-    );
-    setIsDetailModalOpen(false);
+  const handleReject = async (handle: string, reason: string) => {
+    try {
+      await rejectTrainer(handle, reason);
+      // 목록에서 제거 (거절되면 PENDING 목록에서 사라짐)
+      setApplicants((prev) => prev.filter((app) => app.handle !== handle));
+      setTotalElements((prev) => prev - 1);
+      setIsDetailModalOpen(false);
+      alert('트레이너 신청이 거절되었습니다.');
+    } catch (err) {
+      console.error('트레이너 거절 실패:', err);
+      alert('트레이너 거절에 실패했습니다.');
+    }
   };
+
+  /**
+   * 로딩 상태
+   */
+  if (isLoading) {
+    return (
+      <div className="admin-trainer-page">
+        <h2 className="admin-section-title">트레이너 승인 관리</h2>
+        <div className="admin-loading">로딩 중...</div>
+      </div>
+    );
+  }
+
+  /**
+   * 에러 상태
+   */
+  if (error) {
+    return (
+      <div className="admin-trainer-page">
+        <h2 className="admin-section-title">트레이너 승인 관리</h2>
+        <div className="admin-error">
+          <p>{error}</p>
+          <button onClick={fetchApplicants} className="admin-btn primary">
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-trainer-page">
       <h2 className="admin-section-title">트레이너 승인 관리</h2>
+      <p className="admin-section-count">승인 대기 {totalElements}명</p>
 
       {/* 필터 영역 */}
       <div className="admin-filter-bar">
-        <div className="admin-filter-tabs">
-          {statusFilters.map((filter) => (
-            <button
-              key={filter.value}
-              className={`admin-filter-tab ${filterStatus === filter.value ? 'active' : ''}`}
-              onClick={() => setFilterStatus(filter.value)}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </div>
-
         <div className="admin-search-box">
           <Search size={18} />
           <input
             type="text"
-            placeholder="이름 또는 이메일 검색"
+            placeholder="닉네임 또는 핸들 검색"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
           />
@@ -179,63 +180,56 @@ export default function AdminTrainerList() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>번호</th>
-              <th>이름</th>
-              <th>이메일</th>
+              <th>핸들</th>
+              <th>닉네임</th>
+              <th>소개</th>
               <th>신청일</th>
-              <th>상태</th>
+              <th>증빙자료</th>
               <th>관리</th>
             </tr>
           </thead>
           <tbody>
-            {filteredApplications.length === 0 ? (
+            {filteredApplicants.length === 0 ? (
               <tr>
                 <td colSpan={6} className="admin-table-empty">
-                  신청 내역이 없습니다.
+                  승인 대기중인 신청이 없습니다.
                 </td>
               </tr>
             ) : (
-              filteredApplications.map((app) => (
-                <tr key={app.id}>
-                  <td>{app.id}</td>
-                  <td>{app.userName}</td>
-                  <td>{app.userEmail}</td>
+              filteredApplicants.map((app) => (
+                <tr key={app.handle}>
+                  <td className="admin-handle">@{app.handle}</td>
+                  <td>{app.nickname}</td>
+                  <td className="admin-bio-cell">{app.bio}</td>
                   <td>{formatDate(app.createdAt)}</td>
                   <td>
-                    <span className={`admin-status-badge ${getStatusClass(app.status)}`}>
-                      {getStatusLabel(app.status)}
-                    </span>
+                    <button
+                      className="admin-license-btn"
+                      onClick={() => handleViewDetail(app)}
+                      title="증빙자료 보기"
+                    >
+                      <Eye size={16} /> {app.licenceUrl.length}개
+                    </button>
                   </td>
                   <td>
                     <div className="admin-action-buttons">
                       <button
-                        className="admin-action-btn view"
-                        onClick={() => handleViewDetail(app)}
-                        title="상세보기"
+                        className="admin-action-btn approve"
+                        onClick={() => handleApprove(app.handle)}
+                        title="승인"
                       >
-                        <Eye size={16} />
+                        <Check size={16} />
                       </button>
-                      {app.status === 'PENDING' && (
-                        <>
-                          <button
-                            className="admin-action-btn approve"
-                            onClick={() => handleApprove(app.id)}
-                            title="승인"
-                          >
-                            <Check size={16} />
-                          </button>
-                          <button
-                            className="admin-action-btn reject"
-                            onClick={() => {
-                              const reason = prompt('거절 사유를 입력해주세요:');
-                              if (reason) handleReject(app.id, reason);
-                            }}
-                            title="거절"
-                          >
-                            <X size={16} />
-                          </button>
-                        </>
-                      )}
+                      <button
+                        className="admin-action-btn reject"
+                        onClick={() => {
+                          const reason = prompt('거절 사유를 입력해주세요:');
+                          if (reason) handleReject(app.handle, reason);
+                        }}
+                        title="거절"
+                      >
+                        <X size={16} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -245,10 +239,10 @@ export default function AdminTrainerList() {
         </table>
       </div>
 
-      {/* 상세 모달 (통합) */}
-      {isDetailModalOpen && selectedApplication && (
+      {/* 상세 모달 */}
+      {isDetailModalOpen && selectedApplicant && (
         <TrainerDetailModal
-          application={selectedApplication}
+          applicant={selectedApplicant}
           onClose={() => setIsDetailModalOpen(false)}
           onApprove={handleApprove}
           onReject={handleReject}
@@ -260,48 +254,20 @@ export default function AdminTrainerList() {
 
 /**
  * ===========================================
- * 트레이너 상세 모달 (내부 컴포넌트로 통합)
+ * 트레이너 상세 모달 (내부 컴포넌트)
  * ===========================================
  */
 interface TrainerDetailModalProps {
-  application: TrainerApplication;
+  applicant: TrainerApplicant;
   onClose: () => void;
-  onApprove: (id: number) => void;
-  onReject: (id: number, reason: string) => void;
+  onApprove: (handle: string) => void;
+  onReject: (handle: string, reason: string) => void;
 }
 
 function TrainerDetailModal({
-  application,
+  applicant,
   onClose,
-  onApprove,
-  onReject,
 }: TrainerDetailModalProps) {
-  const [rejectReason, setRejectReason] = useState('');
-  const [showRejectInput, setShowRejectInput] = useState(false);
-
-  const getFileIcon = (filename: string) => {
-    const ext = filename.split('.').pop()?.toLowerCase();
-    if (ext === 'pdf') return <FileText size={18} />;
-    if (['jpg', 'jpeg', 'png', 'gif'].includes(ext || '')) return <Image size={18} />;
-    return <FileText size={18} />;
-  };
-
-  const handleApprove = () => {
-    if (confirm('해당 트레이너 신청을 승인하시겠습니까?')) {
-      onApprove(application.id);
-    }
-  };
-
-  const handleReject = () => {
-    if (!rejectReason.trim()) {
-      alert('거절 사유를 입력해주세요.');
-      return;
-    }
-    if (confirm('해당 트레이너 신청을 거절하시겠습니까?')) {
-      onReject(application.id, rejectReason.trim());
-    }
-  };
-
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -313,116 +279,59 @@ function TrainerDetailModal({
       <div className="admin-modal-container">
         {/* 헤더 */}
         <div className="admin-modal-header">
-          <h3 className="admin-modal-title">트레이너 신청 상세</h3>
+          <h3 className="admin-modal-title">증빙자료</h3>
           <button className="admin-modal-close" onClick={onClose}>
             <X size={24} />
           </button>
         </div>
 
-        {/* 콘텐츠 */}
+        {/* 콘텐츠 - 증빙자료 이미지 */}
         <div className="admin-modal-content">
-          {/* 기본 정보 */}
-          <div className="admin-detail-section">
-            <h4 className="admin-detail-label">신청자 정보</h4>
-            <div className="admin-detail-grid">
-              <div className="admin-detail-item">
-                <span className="admin-detail-key">이름</span>
-                <span className="admin-detail-value">{application.userName}</span>
-              </div>
-              <div className="admin-detail-item">
-                <span className="admin-detail-key">이메일</span>
-                <span className="admin-detail-value">{application.userEmail}</span>
-              </div>
-              <div className="admin-detail-item">
-                <span className="admin-detail-key">신청일</span>
-                <span className="admin-detail-value">{formatDate(application.createdAt)}</span>
-              </div>
-              <div className="admin-detail-item">
-                <span className="admin-detail-key">상태</span>
-                <span className={`admin-detail-value status-${application.status.toLowerCase()}`}>
-                  {getStatusLabel(application.status)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* 소개 */}
-          <div className="admin-detail-section">
-            <h4 className="admin-detail-label">소개</h4>
-            <p className="admin-detail-text">{application.introduction}</p>
-          </div>
-
-          {/* 첨부파일 */}
-          <div className="admin-detail-section">
-            <h4 className="admin-detail-label">증빙자료 ({application.documents.length}개)</h4>
-            <ul className="admin-file-list">
-              {application.documents.map((doc, index) => (
-                <li key={index} className="admin-file-item">
-                  {getFileIcon(doc)}
-                  <span className="admin-file-name">{doc}</span>
-                  <button className="admin-file-download" title="다운로드">
-                    <Download size={16} />
+          {applicant.licenceUrl.length === 0 ? (
+            <p className="admin-empty-text">등록된 증빙자료가 없습니다.</p>
+          ) : (
+            <div className="admin-license-images">
+              {applicant.licenceUrl.map((url, index) => (
+                <div key={index} className="admin-license-image-item">
+                  <img
+                    src={url}
+                    alt={`증빙자료 ${index + 1}`}
+                    className="admin-license-image"
+                    onClick={() => window.open(url, '_blank')}
+                  />
+                  <button
+                    className="admin-download-btn"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(url);
+                        const blob = await response.blob();
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = downloadUrl;
+                        link.download = `증빙자료_${index + 1}.${url.split('.').pop()?.split('?')[0] || 'jpg'}`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(downloadUrl);
+                      } catch (err) {
+                        console.error('다운로드 실패:', err);
+                        alert('파일 다운로드에 실패했습니다.');
+                      }
+                    }}
+                  >
+                    <Download size={16} /> 다운로드
                   </button>
-                </li>
+                </div>
               ))}
-            </ul>
-          </div>
-
-          {/* 거절 사유 (이미 거절된 경우) */}
-          {application.status === 'REJECTED' && application.rejectReason && (
-            <div className="admin-detail-section">
-              <h4 className="admin-detail-label">거절 사유</h4>
-              <p className="admin-detail-text reject-reason">{application.rejectReason}</p>
-            </div>
-          )}
-
-          {/* 거절 사유 입력 (대기중인 경우) */}
-          {application.status === 'PENDING' && showRejectInput && (
-            <div className="admin-detail-section">
-              <h4 className="admin-detail-label">거절 사유 입력</h4>
-              <textarea
-                className="admin-reject-textarea"
-                placeholder="거절 사유를 입력해주세요."
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                rows={3}
-              />
             </div>
           )}
         </div>
 
         {/* 푸터 */}
         <div className="admin-modal-footer">
-          {application.status === 'PENDING' ? (
-            <>
-              {showRejectInput ? (
-                <>
-                  <button className="admin-btn secondary" onClick={() => setShowRejectInput(false)}>
-                    취소
-                  </button>
-                  <button className="admin-btn danger" onClick={handleReject}>
-                    거절 확인
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button className="admin-btn secondary" onClick={onClose}>
-                    닫기
-                  </button>
-                  <button className="admin-btn danger" onClick={() => setShowRejectInput(true)}>
-                    거절
-                  </button>
-                  <button className="admin-btn primary" onClick={handleApprove}>
-                    승인
-                  </button>
-                </>
-              )}
-            </>
-          ) : (
-            <button className="admin-btn secondary" onClick={onClose}>
-              닫기
-            </button>
-          )}
+          <button className="admin-btn secondary" onClick={onClose}>
+            닫기
+          </button>
         </div>
       </div>
     </div>

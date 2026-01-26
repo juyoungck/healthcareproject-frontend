@@ -131,12 +131,27 @@ export default function SignupModal({
         setIsEmailAvailable(false);
         setError('이미 사용 중인 이메일입니다.');
       }
-    } catch (err: unknown) {
-      const axiosError = err as { response?: { data?: { error?: { code?: string } } } };
-      if (axiosError.response?.data?.error?.code === 'AUTH-006') {
+} catch (err: unknown) {
+      const axiosError = err as { 
+        response?: { 
+          data?: { 
+            error?: { code?: string; message?: string };
+            code?: string;
+            message?: string;
+          } 
+        } 
+      };
+      
+      /* 에러 코드 추출 (백엔드 응답 구조에 따라 유연하게 처리) */
+      const errorCode = axiosError.response?.data?.error?.code 
+        || axiosError.response?.data?.code;
+      
+      if (errorCode === 'AUTH-006') {
         setIsEmailChecked(true);
         setIsEmailAvailable(false);
+        setError('이미 사용 중인 이메일입니다.');
       } else {
+        console.error('이메일 중복 체크 에러:', axiosError.response?.data);
         setError('이메일 확인에 실패했습니다.');
       }
     } finally {

@@ -2,109 +2,18 @@
  * AdminBoardList.tsx
  * 게시글 관리 컴포넌트
  * 
- * API: GET /api/admin/board
- * Query: page, size, category, status, keyword
- * 
- * TODO: 백엔드 완성 후 API 연동
- * - DELETE /api/admin/board/post/{postId} (신고 처리/삭제)
- * - POST /api/admin/board/notice (공지사항 등록)
+ * API:
+ * - GET /api/admin/board (게시글 목록)
+ * - GET /api/board/posts/{postId} (게시글 상세)
+ * - POST /api/admin/board/notice (공지 등록)
+ * - DELETE /api/admin/board/post/{postId} (삭제)
  */
 
-import { useState } from 'react';
-import { Search, Eye, EyeOff, Trash2, Pin } from 'lucide-react';
-
-/**
- * ===========================================
- * API 응답 타입 (백엔드 명세 기준)
- * ===========================================
- */
-type PostCategory = 'FREE' | 'QUESTION' | 'INFO' | 'NOTICE';
-type PostStatus = 'POSTED' | 'DELETED';
-
-interface AdminBoardPost {
-  postId: number;
-  author: {
-    nickname: string;
-    handle: string;
-  };
-  category: PostCategory;
-  title: string;
-  viewCount: number;
-  isNotice: boolean;
-  status: PostStatus;
-  createdAt: string;
-  /* 프론트 추가 필드 (백엔드 미정) */
-  reportCount?: number;
-  isPinned?: boolean;
-}
-
-/**
- * ===========================================
- * 더미 데이터 (API 응답 형식)
- * ===========================================
- */
-const DUMMY_POSTS: AdminBoardPost[] = [
-  {
-    postId: 1,
-    author: { nickname: '관리자', handle: 'admin' },
-    category: 'NOTICE',
-    title: '[공지] 서비스 이용 규칙 안내',
-    viewCount: 1520,
-    isNotice: true,
-    status: 'POSTED',
-    createdAt: '2025-01-20T10:00:00Z',
-    reportCount: 0,
-    isPinned: true,
-  },
-  {
-    postId: 2,
-    author: { nickname: '운동러버', handle: 'user1921' },
-    category: 'FREE',
-    title: '오늘 운동 인증합니다! 헬스장 다녀왔어요',
-    viewCount: 150,
-    isNotice: false,
-    status: 'POSTED',
-    createdAt: '2025-01-21T15:30:00Z',
-    reportCount: 0,
-    isPinned: false,
-  },
-  {
-    postId: 3,
-    author: { nickname: '헬린이', handle: 'newbie123' },
-    category: 'QUESTION',
-    title: '초보자 추천 운동 루틴이 있을까요?',
-    viewCount: 28,
-    isNotice: false,
-    status: 'POSTED',
-    createdAt: '2025-01-21T14:22:00Z',
-    reportCount: 0,
-    isPinned: false,
-  },
-  {
-    postId: 4,
-    author: { nickname: '악성유저', handle: 'baduser99' },
-    category: 'FREE',
-    title: '부적절한 게시글입니다 (신고됨)',
-    viewCount: 156,
-    isNotice: false,
-    status: 'DELETED',
-    createdAt: '2025-01-20T12:00:00Z',
-    reportCount: 5,
-    isPinned: false,
-  },
-  {
-    postId: 5,
-    author: { nickname: '영양사김', handle: 'dietkim' },
-    category: 'INFO',
-    title: '단백질 섭취 타이밍에 대한 정보 공유',
-    viewCount: 156,
-    isNotice: false,
-    status: 'POSTED',
-    createdAt: '2025-01-19T18:45:00Z',
-    reportCount: 0,
-    isPinned: false,
-  },
-];
+import { useState, useEffect } from 'react';
+import { Search, Plus, X } from 'lucide-react';
+import type { AdminPost, PostCategory, PostStatus } from '../../../api/types/admin';
+import { getAdminPosts, createNotice } from '../../../api/admin';
+import { getPostDetail } from '../../../api/board';
 
 /**
  * ===========================================
@@ -119,18 +28,12 @@ const categoryFilters: { value: PostCategory | 'ALL'; label: string }[] = [
   { value: 'INFO', label: '정보' },
 ];
 
-const statusFilters: { value: PostStatus | 'ALL'; label: string }[] = [
-  { value: 'ALL', label: '전체' },
-  { value: 'POSTED', label: '공개' },
-  { value: 'DELETED', label: '삭제' },
-];
-
 /**
  * ===========================================
  * 라벨 변환 함수
  * ===========================================
  */
-const getCategoryLabel = (category: PostCategory): string => {
+const getCategoryLabel = (category: string): string => {
   switch (category) {
     case 'NOTICE':
       return '공지';
@@ -150,7 +53,7 @@ const getStatusLabel = (status: PostStatus): string => {
     case 'POSTED':
       return '공개';
     case 'DELETED':
-      return '삭제';
+      return '비공개';
     default:
       return status;
   }
@@ -178,116 +81,178 @@ const formatDate = (dateString: string) => {
  * ===========================================
  */
 export default function AdminBoardList() {
-  const [posts, setPosts] = useState<AdminBoardPost[]>(DUMMY_POSTS);
-  const [total] = useState(DUMMY_POSTS.length);
+  /** 상태 관리 */
+  const [posts, setPosts] = useState<AdminPost[]>([]);
+  const [total, setTotal] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<PostCategory | 'ALL'>('ALL');
-  const [filterStatus, setFilterStatus] = useState<PostStatus | 'ALL'>('ALL');
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [isNoticeModalOpen, setIsNoticeModalOpen] = useState(false);
 
   /**
-   * 필터링된 목록
-   * TODO: 백엔드 완성 후 서버 필터링으로 변경
+   * 게시글 목록 조회
    */
-  const filteredPosts = posts.filter((post) => {
-    if (filterCategory !== 'ALL' && post.category !== filterCategory) {
-      return false;
+  const fetchPosts = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const params: {
+        category?: PostCategory;
+        keyword?: string;
+      } = {};
+
+      if (filterCategory !== 'ALL') {
+        params.category = filterCategory;
+      }
+      if (searchKeyword) {
+        params.keyword = searchKeyword;
+      }
+
+      const response = await getAdminPosts(params);
+      setPosts(response.list);
+      setTotal(response.total);
+    } catch (err) {
+      console.error('게시글 목록 조회 실패:', err);
+      setError('게시글 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
     }
-    if (filterStatus !== 'ALL' && post.status !== filterStatus) {
-      return false;
-    }
-    if (searchKeyword) {
-      const keyword = searchKeyword.toLowerCase();
-      return (
-        post.title.toLowerCase().includes(keyword) ||
-        post.author.nickname.toLowerCase().includes(keyword) ||
-        post.author.handle.toLowerCase().includes(keyword)
-      );
-    }
-    return true;
-  });
+  };
 
   /**
-   * 정렬 (공지사항/고정 게시글 우선)
+   * 초기 로드 및 필터 변경 시 재조회
    */
-  const sortedPosts = [...filteredPosts].sort((a, b) => {
+  useEffect(() => {
+    fetchPosts();
+  }, [filterCategory]);
+
+  /**
+   * 검색 실행 (Enter 키 또는 버튼 클릭)
+   */
+  const handleSearch = () => {
+    fetchPosts();
+  };
+
+  /**
+   * 검색 키 입력 핸들러
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  /**
+   * 정렬 (공지사항 우선)
+   */
+  const sortedPosts = [...posts].sort((a, b) => {
     if (a.isNotice && !b.isNotice) return -1;
     if (!a.isNotice && b.isNotice) return 1;
-    if (a.isPinned && !b.isPinned) return -1;
-    if (!a.isPinned && b.isPinned) return 1;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   /**
-   * 삭제 처리 핸들러
-   * TODO: DELETE /api/admin/board/post/{postId}
+   * 게시글 상세 보기 state (content 포함)
    */
-  const handleDelete = (postId: number) => {
-    if (!confirm('해당 게시글을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+  const [selectedPost, setSelectedPost] = useState<(AdminPost & { content?: string }) | null>(null);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
 
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.postId === postId ? { ...post, status: 'DELETED' as PostStatus } : post
-      )
-    );
+  /**
+   * 게시글 상세 조회 (content 가져오기)
+   */
+  const handleViewDetail = async (post: AdminPost) => {
+    setSelectedPost({ ...post, content: undefined });
+    setIsDetailLoading(true);
+    
+    try {
+      const detail = await getPostDetail(post.postId);
+      setSelectedPost({ ...post, content: detail.content });
+    } catch (err) {
+      console.error('게시글 상세 조회 실패:', err);
+      setSelectedPost({ ...post, content: '(내용을 불러올 수 없습니다)' });
+    } finally {
+      setIsDetailLoading(false);
+    }
   };
 
   /**
-   * 공개 처리 핸들러 (삭제된 게시글 복구)
-   * TODO: 백엔드 API 확인 필요
+   * 공지사항 등록 핸들러
    */
-  const handleRestore = (postId: number) => {
-    if (!confirm('해당 게시글을 복구하시겠습니까?')) return;
-
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.postId === postId ? { ...post, status: 'POSTED' as PostStatus } : post
-      )
-    );
+  const handleCreateNotice = async (data: { title: string; content: string }) => {
+    try {
+      await createNotice({
+        category: 'NOTICE',
+        title: data.title,
+        content: data.content,
+        isNotice: true,
+      });
+      setIsNoticeModalOpen(false);
+      fetchPosts();
+      alert('공지사항이 등록되었습니다.');
+    } catch (err) {
+      console.error('공지사항 등록 실패:', err);
+      alert('공지사항 등록에 실패했습니다.');
+    }
   };
 
   /**
-   * 고정 토글 핸들러
-   * TODO: 백엔드 API 확인 필요
+   * 로딩 상태
    */
-  const handleTogglePin = (postId: number) => {
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.postId === postId ? { ...post, isPinned: !post.isPinned } : post
-      )
+  if (isLoading) {
+    return (
+      <div className="admin-board-page">
+        <h2 className="admin-section-title">게시글 관리</h2>
+        <div className="admin-loading">로딩 중...</div>
+      </div>
     );
-  };
+  }
+
+  /**
+   * 에러 상태
+   */
+  if (error) {
+    return (
+      <div className="admin-board-page">
+        <h2 className="admin-section-title">게시글 관리</h2>
+        <div className="admin-error">
+          <p>{error}</p>
+          <button onClick={fetchPosts} className="admin-btn primary">
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-board-page">
-      <h2 className="admin-section-title">게시글 관리</h2>
-      <p className="admin-section-count">전체 {total}건</p>
+      <div className="admin-section-header">
+        <div>
+          <h2 className="admin-section-title">게시글 관리</h2>
+          <p className="admin-section-count">전체 {total}건</p>
+        </div>
+        <button
+          className="admin-add-btn"
+          onClick={() => setIsNoticeModalOpen(true)}
+        >
+          <Plus size={18} /> 공지 등록
+        </button>
+      </div>
 
       {/* 필터 영역 */}
       <div className="admin-filter-bar">
-        <div className="admin-filter-group">
-          <div className="admin-filter-tabs">
-            {categoryFilters.map((filter) => (
-              <button
-                key={filter.value}
-                className={`admin-filter-tab ${filterCategory === filter.value ? 'active' : ''}`}
-                onClick={() => setFilterCategory(filter.value)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-
-          <select
-            className="admin-filter-select"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as PostStatus | 'ALL')}
-          >
-            {statusFilters.map((filter) => (
-              <option key={filter.value} value={filter.value}>
-                {filter.label}
-              </option>
-            ))}
-          </select>
+        <div className="admin-filter-tabs">
+          {categoryFilters.map((filter) => (
+            <button
+              key={filter.value}
+              className={`admin-filter-tab ${filterCategory === filter.value ? 'active' : ''}`}
+              onClick={() => setFilterCategory(filter.value)}
+            >
+              {filter.label}
+            </button>
+          ))}
         </div>
 
         <div className="admin-search-box">
@@ -297,6 +262,7 @@ export default function AdminBoardList() {
             placeholder="제목 또는 작성자 검색"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
           />
         </div>
       </div>
@@ -312,36 +278,30 @@ export default function AdminBoardList() {
               <th>작성자</th>
               <th>작성일</th>
               <th>조회</th>
-              <th>신고</th>
               <th>상태</th>
-              <th>관리</th>
             </tr>
           </thead>
           <tbody>
             {sortedPosts.length === 0 ? (
               <tr>
-                <td colSpan={9} className="admin-table-empty">
+                <td colSpan={7} className="admin-table-empty">
                   게시글이 없습니다.
                 </td>
               </tr>
             ) : (
               sortedPosts.map((post) => (
-                <tr key={post.postId} className={post.isPinned || post.isNotice ? 'pinned-row' : ''}>
-                  <td>
-                    {(post.isPinned || post.isNotice) && <Pin size={14} className="pin-icon" />}
-                    {post.postId}
-                  </td>
+                <tr 
+                  key={post.postId} 
+                  className={`${post.isNotice ? 'pinned-row' : ''} admin-clickable-row`}
+                  onClick={() => handleViewDetail(post)}
+                >
+                  <td>{post.postId}</td>
                   <td>
                     <span className={`admin-category-badge category-${post.category.toLowerCase()}`}>
                       {getCategoryLabel(post.category)}
                     </span>
                   </td>
-                  <td className="admin-table-title">
-                    {post.title}
-                    {post.reportCount && post.reportCount > 0 && (
-                      <span className="report-badge">신고 {post.reportCount}</span>
-                    )}
-                  </td>
+                  <td className="admin-table-title">{post.title}</td>
                   <td>
                     <div className="admin-author-info">
                       <span className="admin-nickname">{post.author.nickname}</span>
@@ -351,52 +311,214 @@ export default function AdminBoardList() {
                   <td>{formatDate(post.createdAt)}</td>
                   <td>{post.viewCount}</td>
                   <td>
-                    {post.reportCount && post.reportCount > 0 ? (
-                      <span className="admin-report-count">{post.reportCount}</span>
+                    {post.isNotice ? (
+                      <span className="admin-notice-label">공지</span>
                     ) : (
-                      '-'
+                      <span className={`admin-status-badge status-${post.status.toLowerCase()}`}>
+                        {getStatusLabel(post.status)}
+                      </span>
                     )}
-                  </td>
-                  <td>
-                    <span className={`admin-status-badge status-${post.status.toLowerCase()}`}>
-                      {getStatusLabel(post.status)}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="admin-action-buttons">
-                      {!post.isNotice && (
-                        <button
-                          className={`admin-action-btn pin ${post.isPinned ? 'active' : ''}`}
-                          onClick={() => handleTogglePin(post.postId)}
-                          title={post.isPinned ? '고정 해제' : '상단 고정'}
-                        >
-                          <Pin size={16} />
-                        </button>
-                      )}
-                      {post.status === 'POSTED' ? (
-                        <button
-                          className="admin-action-btn delete"
-                          onClick={() => handleDelete(post.postId)}
-                          title="삭제"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      ) : (
-                        <button
-                          className="admin-action-btn show"
-                          onClick={() => handleRestore(post.postId)}
-                          title="복구"
-                        >
-                          <Eye size={16} />
-                        </button>
-                      )}
-                    </div>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* 공지 등록 모달 */}
+      {isNoticeModalOpen && (
+        <NoticeModal
+          onClose={() => setIsNoticeModalOpen(false)}
+          onSave={handleCreateNotice}
+        />
+      )}
+
+      {/* 게시글 상세 모달 */}
+      {selectedPost && (
+        <PostDetailModal
+          post={selectedPost}
+          isLoading={isDetailLoading}
+          onClose={() => setSelectedPost(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * ===========================================
+ * 공지 등록 모달
+ * ===========================================
+ */
+interface NoticeModalProps {
+  onClose: () => void;
+  onSave: (data: { title: string; content: string }) => void;
+}
+
+function NoticeModal({ onClose, onSave }: NoticeModalProps) {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSave = async () => {
+    if (!title.trim()) {
+      alert('제목을 입력해주세요.');
+      return;
+    }
+    if (!content.trim()) {
+      alert('내용을 입력해주세요.');
+      return;
+    }
+    if (isSubmitting) return; // 중복 클릭 방지
+    
+    setIsSubmitting(true);
+    onSave({
+      title: title.trim(),
+      content: content.trim(),
+    });
+  };
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="admin-modal-overlay" onClick={handleOverlayClick}>
+      <div className="admin-modal-container">
+        {/* 헤더 */}
+        <div className="admin-modal-header">
+          <h3 className="admin-modal-title">공지사항 등록</h3>
+          <button className="admin-modal-close" onClick={onClose}>
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* 콘텐츠 */}
+        <div className="admin-modal-content">
+          <div className="admin-form-group">
+            <label className="admin-form-label">제목 *</label>
+            <input
+              type="text"
+              className="admin-form-input"
+              placeholder="공지사항 제목을 입력하세요"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+
+          <div className="admin-form-group">
+            <label className="admin-form-label">내용 *</label>
+            <textarea
+              className="admin-form-textarea"
+              placeholder="공지사항 내용을 입력하세요"
+              rows={8}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* 푸터 */}
+        <div className="admin-modal-footer">
+          <button className="admin-btn secondary" onClick={onClose} disabled={isSubmitting}>
+            취소
+          </button>
+          <button className="admin-btn primary" onClick={handleSave} disabled={isSubmitting}>
+            {isSubmitting ? '등록 중...' : '등록'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ===========================================
+ * 게시글 상세 모달 컴포넌트
+ * ===========================================
+ */
+interface PostDetailModalProps {
+  post: AdminPost & { content?: string };
+  isLoading: boolean;
+  onClose: () => void;
+}
+
+function PostDetailModal({ post, isLoading, onClose }: PostDetailModalProps) {
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="admin-modal-overlay" onClick={handleOverlayClick}>
+      <div className="admin-modal-container" style={{ maxWidth: '700px' }}>
+        {/* 헤더 */}
+        <div className="admin-modal-header">
+          <h3 className="admin-modal-title">게시글 상세</h3>
+          <button className="admin-modal-close" onClick={onClose}>
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* 콘텐츠 */}
+        <div className="admin-modal-content">
+          {/* 카테고리 & 상태 */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            {post.isNotice ? (
+              <span className="admin-notice-label">공지</span>
+            ) : (
+              <>
+                <span className={`admin-category-badge category-${post.category.toLowerCase()}`}>
+                  {getCategoryLabel(post.category)}
+                </span>
+                <span className={`admin-status-badge status-${post.status.toLowerCase()}`}>
+                  {getStatusLabel(post.status)}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* 제목 */}
+          <h4 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#333' }}>
+            {post.title}
+          </h4>
+
+          {/* 작성자 & 작성일 */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '14px', color: '#666' }}>
+            <div>
+              <span style={{ fontWeight: '500', color: '#333' }}>{post.author.nickname}</span>
+              <span style={{ marginLeft: '8px' }}>@{post.author.handle}</span>
+            </div>
+            <div>
+              <span>{formatDate(post.createdAt)}</span>
+              <span style={{ marginLeft: '16px' }}>조회 {post.viewCount}</span>
+            </div>
+          </div>
+
+          {/* 구분선 */}
+          <hr style={{ border: 'none', borderTop: '1px solid #e0e0e0', marginBottom: '20px' }} />
+
+          {/* 내용 */}
+          <div style={{ 
+            minHeight: '200px', 
+            lineHeight: '1.7', 
+            color: '#333',
+            whiteSpace: 'pre-wrap'
+          }}>
+            {isLoading ? '로딩 중...' : (post.content || '(내용 없음)')}
+          </div>
+        </div>
+
+        {/* 푸터 */}
+        <div className="admin-modal-footer">
+          <button className="admin-btn secondary" onClick={onClose}>
+            닫기
+          </button>
+        </div>
       </div>
     </div>
   );

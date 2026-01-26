@@ -1,27 +1,56 @@
 /**
  * AdminPTList.tsx
- * 화상PT 관리 컴포넌트 (목록 + 상세 모달 통합)
+ * 화상PT 관리 컴포넌트
  * 
- * TODO: 백엔드 완성 후 API 연동
- * - GET /api/admin/pt-rooms/{ptRoomId} (상세 조회)
- * - DELETE /api/admin/pt-rooms/{ptRoomId} (강제 종료/삭제)
+ * API:
+ * - GET /api/admin/pt-rooms (화상PT 방 목록 - 관리자 API)
+ * - GET /api/pt-rooms/{ptRoomId} (화상PT 방 상세 - 일반 API)
+ * - DELETE /api/admin/pt-rooms/{ptRoomId} (강제 종료 - 관리자 API)
  */
 
-import { useState } from 'react';
-import { Search, Eye, XCircle, Trash2, Users, Video, X, User, Calendar, Clock } from 'lucide-react';
-import type { AdminPTRoom, PTRoomStatus } from '../../../types/admin';
-import { adminPTRooms } from '../../../data/admin';
+import { useState, useEffect } from 'react';
+import { Search, Eye, XCircle, Users, Video, X, User, Calendar, Lock, Unlock, Key } from 'lucide-react';
+import apiClient from '../../../api/client';
+import { getPTRoomDetail } from '../../../api/pt';
+import type { GetPTRoomDetailResponse } from '../../../api/types/pt';
+
+/**
+ * ===========================================
+ * 관리자 화상PT 타입 정의
+ * ===========================================
+ */
+type AdminPTRoomStatus = 'LIVE' | 'SCHEDULED' | 'ENDED' | 'RESERVED' | 'CANCELLED' | 'FORCE_CLOSED';
+
+interface AdminPTRoom {
+  ptRoomId: number;
+  trainer: {
+    nickname: string;
+    handle: string;
+  };
+  title: string;
+  roomType: 'PERSONAL' | 'GROUP' | 'LIVE' | 'RESERVED';
+  scheduledStartAt: string;
+  maxParticipants: number;
+  status: AdminPTRoomStatus;
+  createdAt: string;
+  isPrivate?: boolean;
+}
+
+interface AdminPTRoomListResponse {
+  total: number;
+  list: AdminPTRoom[];
+}
 
 /**
  * ===========================================
  * 필터 옵션
  * ===========================================
  */
-const statusFilters: { value: PTRoomStatus | 'all'; label: string }[] = [
-  { value: 'all', label: '전체' },
-  { value: 'live', label: '진행중' },
-  { value: 'scheduled', label: '예약' },
-  { value: 'ended', label: '종료' },
+const statusFilters: { value: AdminPTRoomStatus | 'ALL'; label: string }[] = [
+  { value: 'ALL', label: '전체' },
+  { value: 'LIVE', label: '진행중' },
+  { value: 'SCHEDULED', label: '예약' },
+  { value: 'ENDED', label: '종료' },
 ];
 
 /**
@@ -29,29 +58,52 @@ const statusFilters: { value: PTRoomStatus | 'all'; label: string }[] = [
  * 라벨 변환 함수
  * ===========================================
  */
-const getStatusLabel = (status: PTRoomStatus) => {
+const getStatusLabel = (status: AdminPTRoomStatus) => {
   switch (status) {
-    case 'live':
+    case 'LIVE':
       return '진행중';
-    case 'scheduled':
+    case 'SCHEDULED':
+    case 'RESERVED':
       return '예약';
-    case 'ended':
+    case 'ENDED':
+    case 'CANCELLED':
       return '종료';
+    case 'FORCE_CLOSED':
+      return '강제종료';
     default:
       return status;
   }
 };
 
-const getStatusClass = (status: PTRoomStatus) => {
+const getStatusClass = (status: AdminPTRoomStatus) => {
   switch (status) {
-    case 'live':
+    case 'LIVE':
       return 'status-live';
-    case 'scheduled':
+    case 'SCHEDULED':
+    case 'RESERVED':
       return 'status-scheduled';
-    case 'ended':
+    case 'ENDED':
+    case 'CANCELLED':
       return 'status-ended';
+    case 'FORCE_CLOSED':
+      return 'status-force-closed';
     default:
       return '';
+  }
+};
+
+const getRoomTypeLabel = (roomType: string) => {
+  switch (roomType) {
+    case 'PERSONAL':
+      return '개인';
+    case 'GROUP':
+      return '그룹';
+    case 'LIVE':
+      return '실시간';
+    case 'RESERVED':
+      return '예약';
+    default:
+      return roomType;
   }
 };
 
@@ -60,7 +112,8 @@ const getStatusClass = (status: PTRoomStatus) => {
  * 날짜 포맷
  * ===========================================
  */
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return '-';
   const date = new Date(dateString);
   return date.toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -77,66 +130,155 @@ const formatDate = (dateString: string) => {
  * ===========================================
  */
 export default function AdminPTList() {
-  const [ptRooms, setPTRooms] = useState<AdminPTRoom[]>(adminPTRooms);
-  const [filterStatus, setFilterStatus] = useState<PTRoomStatus | 'all'>('all');
+  /** 상태 관리 */
+  const [ptRooms, setPTRooms] = useState<AdminPTRoom[]>([]);
+  const [total, setTotal] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<AdminPTRoomStatus | 'ALL'>('ALL');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedRoom, setSelectedRoom] = useState<AdminPTRoom | null>(null);
+  const [roomDetail, setRoomDetail] = useState<GetPTRoomDetailResponse | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
+  
+  /** 강제종료 모달 */
+  const [isForceEndModalOpen, setIsForceEndModalOpen] = useState(false);
+  const [forceEndTargetId, setForceEndTargetId] = useState<number | null>(null);
+  const [forceEndReason, setForceEndReason] = useState('');
 
   /**
-   * 필터링된 목록
+   * 화상PT 목록 조회 (GET /api/admin/pt-rooms)
    */
-  const filteredRooms = ptRooms.filter((room) => {
-    if (filterStatus !== 'all' && room.status !== filterStatus) {
-      return false;
+  const fetchPTRooms = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const params: {
+        status?: AdminPTRoomStatus;
+        trainerHandle?: string;
+      } = {};
+
+      if (filterStatus !== 'ALL') {
+        params.status = filterStatus;
+      }
+      if (searchKeyword) {
+        params.trainerHandle = searchKeyword;
+      }
+
+      const response = await apiClient.get<{ data: AdminPTRoomListResponse }>('/api/admin/pt-rooms', { params });
+      setPTRooms(response.data.data.list);
+      setTotal(response.data.data.total);
+    } catch (err) {
+      console.error('화상PT 목록 조회 실패:', err);
+      setError('화상PT 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
     }
-    if (searchKeyword) {
-      const keyword = searchKeyword.toLowerCase();
-      return (
-        room.title.toLowerCase().includes(keyword) ||
-        room.trainerName.toLowerCase().includes(keyword)
-      );
-    }
-    return true;
-  });
+  };
 
   /**
-   * 상세 보기 핸들러
+   * 초기 로드 및 필터 변경 시 재조회
    */
-  const handleViewDetail = (room: AdminPTRoom) => {
+  useEffect(() => {
+    fetchPTRooms();
+  }, [filterStatus]);
+
+  /**
+   * 검색 실행 (Enter 키)
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      fetchPTRooms();
+    }
+  };
+
+  /**
+   * 상세 보기 핸들러 (일반 API로 상세 조회)
+   */
+  const handleViewDetail = async (room: AdminPTRoom) => {
     setSelectedRoom(room);
+    setRoomDetail(null);
     setIsDetailModalOpen(true);
+    setIsDetailLoading(true);
+    
+    try {
+      const detail = await getPTRoomDetail(room.ptRoomId);
+      setRoomDetail(detail);
+    } catch (err) {
+      console.error('화상PT 상세 조회 실패:', err);
+    } finally {
+      setIsDetailLoading(false);
+    }
   };
 
   /**
-   * 강제 종료 핸들러
-   * TODO: DELETE /api/admin/pt-rooms/{ptRoomId}
+   * 강제 종료 모달 열기
    */
-  const handleForceEnd = (id: number) => {
-    if (!confirm('해당 화상PT를 강제 종료하시겠습니까?\n참여자들에게 알림이 전송됩니다.')) return;
+  const openForceEndModal = (ptRoomId: number) => {
+    setForceEndTargetId(ptRoomId);
+    setForceEndReason('');
+    setIsForceEndModalOpen(true);
+  };
 
-    setPTRooms((prev) =>
-      prev.map((room) =>
-        room.id === id ? { ...room, status: 'ended' as PTRoomStatus } : room
-      )
+  /**
+   * 강제 종료 실행 (DELETE /api/admin/pt-rooms/{ptRoomId})
+   */
+  const handleForceEnd = async () => {
+    if (!forceEndTargetId) return;
+    if (!forceEndReason.trim()) {
+      alert('강제 종료 사유를 입력해주세요.');
+      return;
+    }
+
+    try {
+      await apiClient.delete(`/api/admin/pt-rooms/${forceEndTargetId}`, {
+        data: { reason: forceEndReason }
+      });
+      setIsForceEndModalOpen(false);
+      setIsDetailModalOpen(false);
+      fetchPTRooms();
+      alert('화상PT가 강제 종료되었습니다.');
+    } catch (err) {
+      console.error('화상PT 강제 종료 실패:', err);
+      alert('화상PT 강제 종료에 실패했습니다.');
+    }
+  };
+
+  /**
+   * 로딩 상태
+   */
+  if (isLoading) {
+    return (
+      <div className="admin-pt-list">
+        <h2 className="admin-section-title">화상PT 관리</h2>
+        <div className="admin-loading">로딩 중...</div>
+      </div>
     );
-    setIsDetailModalOpen(false);
-  };
+  }
 
   /**
-   * 삭제 핸들러
-   * TODO: DELETE /api/admin/pt-rooms/{ptRoomId}
+   * 에러 상태
    */
-  const handleDelete = (id: number) => {
-    if (!confirm('해당 화상PT 방을 삭제하시겠습니까?\n예약자들에게 취소 알림이 전송됩니다.')) return;
-
-    setPTRooms((prev) => prev.filter((room) => room.id !== id));
-    setIsDetailModalOpen(false);
-  };
+  if (error) {
+    return (
+      <div className="admin-pt-list">
+        <h2 className="admin-section-title">화상PT 관리</h2>
+        <div className="admin-error">
+          <p>{error}</p>
+          <button onClick={fetchPTRooms} className="admin-btn primary">
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-pt-list">
       <h2 className="admin-section-title">화상PT 관리</h2>
+      <p className="admin-section-count">전체 {total}건</p>
 
       {/* 필터 영역 */}
       <div className="admin-filter-bar">
@@ -158,9 +300,10 @@ export default function AdminPTList() {
           <Search size={18} />
           <input
             type="text"
-            placeholder="제목 또는 트레이너 검색"
+            placeholder="트레이너 핸들로 검색"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
           />
         </div>
       </div>
@@ -173,46 +316,63 @@ export default function AdminPTList() {
               <th>번호</th>
               <th>제목</th>
               <th>트레이너</th>
+              <th>타입</th>
               <th>상태</th>
-              <th>참여인원</th>
+              <th>공개</th>
+              <th>정원</th>
               <th>예약일시</th>
-              <th>생성일</th>
               <th>관리</th>
             </tr>
           </thead>
           <tbody>
-            {filteredRooms.length === 0 ? (
+            {ptRooms.length === 0 ? (
               <tr>
-                <td colSpan={8} className="admin-table-empty">
+                <td colSpan={9} className="admin-table-empty">
                   화상PT 방이 없습니다.
                 </td>
               </tr>
             ) : (
-              filteredRooms.map((room) => (
-                <tr key={room.id}>
-                  <td>{room.id}</td>
+              ptRooms.map((room) => (
+                <tr key={room.ptRoomId}>
+                  <td>{room.ptRoomId}</td>
                   <td className="admin-table-name">
-                    {room.status === 'live' && (
+                    {room.status === 'LIVE' && (
                       <span className="admin-live-indicator">
                         <Video size={14} />
                       </span>
                     )}
                     {room.title}
                   </td>
-                  <td>{room.trainerName}</td>
+                  <td>
+                    <div className="admin-author-info">
+                      <span className="admin-nickname">{room.trainer.nickname}</span>
+                      <span className="admin-handle">@{room.trainer.handle}</span>
+                    </div>
+                  </td>
+                  <td>{getRoomTypeLabel(room.roomType)}</td>
                   <td>
                     <span className={`admin-status-badge ${getStatusClass(room.status)}`}>
                       {getStatusLabel(room.status)}
                     </span>
                   </td>
                   <td>
+                    {room.isPrivate ? (
+                      <span className="admin-private-badge">
+                        <Lock size={14} /> 비공개
+                      </span>
+                    ) : (
+                      <span className="admin-public-badge">
+                        <Unlock size={14} /> 공개
+                      </span>
+                    )}
+                  </td>
+                  <td>
                     <div className="admin-participant-count">
                       <Users size={14} />
-                      {room.participantCount} / {room.maxParticipants}
+                      {room.maxParticipants}명
                     </div>
                   </td>
-                  <td>{formatDate(room.scheduledAt)}</td>
-                  <td>{formatDate(room.createdAt)}</td>
+                  <td>{formatDate(room.scheduledStartAt)}</td>
                   <td>
                     <div className="admin-action-buttons">
                       <button
@@ -222,22 +382,13 @@ export default function AdminPTList() {
                       >
                         <Eye size={16} />
                       </button>
-                      {room.status === 'live' && (
+                      {(room.status === 'LIVE' || room.status === 'SCHEDULED' || room.status === 'RESERVED') && (
                         <button
-                          className="admin-action-btn force-end"
-                          onClick={() => handleForceEnd(room.id)}
+                          className="admin-action-btn danger"
+                          onClick={() => openForceEndModal(room.ptRoomId)}
                           title="강제종료"
                         >
                           <XCircle size={16} />
-                        </button>
-                      )}
-                      {room.status !== 'live' && (
-                        <button
-                          className="admin-action-btn delete"
-                          onClick={() => handleDelete(room.id)}
-                          title="삭제"
-                        >
-                          <Trash2 size={16} />
                         </button>
                       )}
                     </div>
@@ -249,13 +400,24 @@ export default function AdminPTList() {
         </table>
       </div>
 
-      {/* 상세 모달 (통합) */}
+      {/* 상세 모달 */}
       {isDetailModalOpen && selectedRoom && (
         <PTDetailModal
           room={selectedRoom}
+          detail={roomDetail}
+          isLoading={isDetailLoading}
           onClose={() => setIsDetailModalOpen(false)}
-          onForceEnd={handleForceEnd}
-          onDelete={handleDelete}
+          onForceEnd={openForceEndModal}
+        />
+      )}
+
+      {/* 강제종료 사유 입력 모달 */}
+      {isForceEndModalOpen && (
+        <ForceEndModal
+          onClose={() => setIsForceEndModalOpen(false)}
+          onConfirm={handleForceEnd}
+          reason={forceEndReason}
+          setReason={setForceEndReason}
         />
       )}
     </div>
@@ -264,35 +426,18 @@ export default function AdminPTList() {
 
 /**
  * ===========================================
- * 화상PT 상세 모달 (내부 컴포넌트로 통합)
+ * 화상PT 상세 모달
  * ===========================================
  */
-const DUMMY_PARTICIPANTS = [
-  { id: 1, nickname: '운동초보', joinedAt: '2025-01-21T10:05:00' },
-  { id: 2, nickname: '헬린이', joinedAt: '2025-01-21T10:03:00' },
-  { id: 3, nickname: '근육맨', joinedAt: '2025-01-21T10:08:00' },
-];
-
 interface PTDetailModalProps {
   room: AdminPTRoom;
+  detail: GetPTRoomDetailResponse | null;
+  isLoading: boolean;
   onClose: () => void;
-  onForceEnd: (id: number) => void;
-  onDelete: (id: number) => void;
+  onForceEnd: (ptRoomId: number) => void;
 }
 
-function PTDetailModal({ room, onClose, onForceEnd, onDelete }: PTDetailModalProps) {
-  const handleForceEnd = () => {
-    if (confirm('해당 화상PT를 강제 종료하시겠습니까?\n참여자들에게 알림이 전송됩니다.')) {
-      onForceEnd(room.id);
-    }
-  };
-
-  const handleDelete = () => {
-    if (confirm('해당 화상PT 방을 삭제하시겠습니까?\n예약자들에게 취소 알림이 전송됩니다.')) {
-      onDelete(room.id);
-    }
-  };
-
+function PTDetailModal({ room, detail, isLoading, onClose, onForceEnd }: PTDetailModalProps) {
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -301,7 +446,7 @@ function PTDetailModal({ room, onClose, onForceEnd, onDelete }: PTDetailModalPro
 
   return (
     <div className="admin-modal-overlay" onClick={handleOverlayClick}>
-      <div className="admin-modal-container">
+      <div className="admin-modal-container" style={{ maxWidth: '600px' }}>
         {/* 헤더 */}
         <div className="admin-modal-header">
           <h3 className="admin-modal-title">화상PT 상세</h3>
@@ -314,69 +459,75 @@ function PTDetailModal({ room, onClose, onForceEnd, onDelete }: PTDetailModalPro
         <div className="admin-modal-content">
           {/* 방 정보 */}
           <div className="admin-detail-section">
-            <h4 className="admin-detail-label">방 정보</h4>
             <div className="admin-pt-info-card">
               <div className="admin-pt-info-header">
                 <h5 className="admin-pt-info-title">{room.title}</h5>
-                <span className={`admin-status-badge status-${room.status}`}>
+                <span className={`admin-status-badge ${getStatusClass(room.status)}`}>
                   {getStatusLabel(room.status)}
                 </span>
               </div>
+              
+              {/* 내용 - 제목 바로 아래 */}
+              <div style={{ 
+                padding: '12px 0',
+                marginBottom: '12px',
+                borderBottom: '1px solid #e5e7eb',
+                color: '#666',
+                fontSize: '14px',
+                lineHeight: '1.6',
+                whiteSpace: 'pre-wrap'
+              }}>
+                {isLoading ? '로딩 중...' : (detail?.description || '(내용 없음)')}
+              </div>
+
               <div className="admin-detail-list">
                 <div className="admin-detail-row">
                   <User size={16} />
                   <span className="admin-detail-key">트레이너</span>
-                  <span className="admin-detail-value">{room.trainerName}</span>
+                  <span className="admin-detail-value">
+                    {room.trainer.nickname} (@{room.trainer.handle})
+                  </span>
+                </div>
+                <div className="admin-detail-row">
+                  <Video size={16} />
+                  <span className="admin-detail-key">타입</span>
+                  <span className="admin-detail-value">{getRoomTypeLabel(room.roomType)}</span>
+                </div>
+                <div className="admin-detail-row">
+                  <Users size={16} />
+                  <span className="admin-detail-key">정원</span>
+                  <span className="admin-detail-value">{room.maxParticipants}명</span>
+                </div>
+                <div className="admin-detail-row">
+                  {detail?.isPrivate ? <Lock size={16} /> : <Unlock size={16} />}
+                  <span className="admin-detail-key">공개여부</span>
+                  <span className="admin-detail-value">
+                    {isLoading ? '로딩...' : (detail?.isPrivate ? '비공개' : '공개')}
+                  </span>
+                </div>
+                <div className="admin-detail-row">
+                  <Key size={16} />
+                  <span className="admin-detail-key">입장코드</span>
+                  <span className="admin-detail-value" style={{ fontFamily: 'monospace' }}>
+                    {isLoading ? '로딩...' : (detail?.entryCode || '-')}
+                  </span>
                 </div>
                 <div className="admin-detail-row">
                   <Calendar size={16} />
                   <span className="admin-detail-key">예약일시</span>
-                  <span className="admin-detail-value">{formatDate(room.scheduledAt)}</span>
+                  <span className="admin-detail-value">{formatDate(room.scheduledStartAt)}</span>
                 </div>
                 <div className="admin-detail-row">
-                  <Clock size={16} />
+                  <Calendar size={16} />
                   <span className="admin-detail-key">생성일</span>
                   <span className="admin-detail-value">{formatDate(room.createdAt)}</span>
-                </div>
-                <div className="admin-detail-row">
-                  <Users size={16} />
-                  <span className="admin-detail-key">참여인원</span>
-                  <span className="admin-detail-value">
-                    {room.participantCount} / {room.maxParticipants}명
-                  </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 참여자 목록 */}
-          <div className="admin-detail-section">
-            <h4 className="admin-detail-label">
-              참여자 목록 ({room.participantCount}명)
-            </h4>
-            {room.participantCount > 0 ? (
-              <ul className="admin-participant-list">
-                {DUMMY_PARTICIPANTS.slice(0, room.participantCount).map((participant) => (
-                  <li key={participant.id} className="admin-participant-item">
-                    <div className="admin-participant-avatar">
-                      <User size={16} />
-                    </div>
-                    <div className="admin-participant-info">
-                      <span className="admin-participant-name">{participant.nickname}</span>
-                      <span className="admin-participant-time">
-                        {formatDate(participant.joinedAt)} 참여
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="admin-empty-text">참여자가 없습니다.</p>
-            )}
-          </div>
-
           {/* 진행중 경고 */}
-          {room.status === 'live' && (
+          {room.status === 'LIVE' && (
             <div className="admin-detail-section">
               <div className="admin-live-warning">
                 <Video size={18} />
@@ -391,15 +542,72 @@ function PTDetailModal({ room, onClose, onForceEnd, onDelete }: PTDetailModalPro
           <button className="admin-btn secondary" onClick={onClose}>
             닫기
           </button>
-          {room.status === 'live' ? (
-            <button className="admin-btn danger" onClick={handleForceEnd}>
+          {(room.status === 'LIVE' || room.status === 'SCHEDULED' || room.status === 'RESERVED') && (
+            <button className="admin-btn danger" onClick={() => onForceEnd(room.ptRoomId)}>
               강제 종료
             </button>
-          ) : room.status === 'scheduled' ? (
-            <button className="admin-btn danger" onClick={handleDelete}>
-              삭제
-            </button>
-          ) : null}
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ===========================================
+ * 강제종료 사유 입력 모달
+ * ===========================================
+ */
+interface ForceEndModalProps {
+  onClose: () => void;
+  onConfirm: () => void;
+  reason: string;
+  setReason: (reason: string) => void;
+}
+
+function ForceEndModal({ onClose, onConfirm, reason, setReason }: ForceEndModalProps) {
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="admin-modal-overlay" onClick={handleOverlayClick}>
+      <div className="admin-modal-container" style={{ maxWidth: '450px' }}>
+        <div className="admin-modal-header">
+          <h3 className="admin-modal-title">강제 종료</h3>
+          <button className="admin-modal-close" onClick={onClose}>
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="admin-modal-content">
+          <p style={{ marginBottom: '16px', color: '#666' }}>
+            화상PT를 강제 종료하시겠습니까?<br />
+            모든 참여자의 연결이 끊어집니다.
+          </p>
+          
+          <div className="admin-form-group">
+            <label className="admin-form-label">종료 사유 *</label>
+            <textarea
+              className="admin-form-textarea"
+              placeholder="강제 종료 사유를 입력해주세요"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              style={{ resize: 'none' }}
+            />
+          </div>
+        </div>
+
+        <div className="admin-modal-footer">
+          <button className="admin-btn secondary" onClick={onClose}>
+            취소
+          </button>
+          <button className="admin-btn danger" onClick={onConfirm}>
+            강제 종료
+          </button>
         </div>
       </div>
     </div>
