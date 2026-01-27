@@ -159,11 +159,12 @@ export default function AdminTrainerList() {
 
   return (
     <div className="admin-trainer-page">
-      <h2 className="admin-section-title">트레이너 승인 관리</h2>
-      <p className="admin-section-count">승인 대기 {totalElements}명</p>
-
-      {/* 필터 영역 */}
-      <div className="admin-filter-bar">
+      {/* 헤더 영역 - 타이틀, 카운트, 검색 */}
+      <div className="admin-section-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 className="admin-section-title" style={{ margin: 0 }}>트레이너 승인 관리</h2>
+          <span className="admin-section-count" style={{ margin: 0 }}>승인 대기 {totalElements}명</span>
+        </div>
         <div className="admin-search-box">
           <Search size={18} />
           <input
@@ -180,10 +181,10 @@ export default function AdminTrainerList() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>핸들</th>
-              <th>닉네임</th>
-              <th>소개</th>
+              <th>번호</th>
+              <th>신청자</th>
               <th>신청일</th>
+              <th>소개</th>
               <th>증빙자료</th>
               <th>관리</th>
             </tr>
@@ -196,12 +197,17 @@ export default function AdminTrainerList() {
                 </td>
               </tr>
             ) : (
-              filteredApplicants.map((app) => (
+              filteredApplicants.map((app, index) => (
                 <tr key={app.handle}>
-                  <td className="admin-handle">@{app.handle}</td>
-                  <td>{app.nickname}</td>
-                  <td className="admin-bio-cell">{app.bio}</td>
+                  <td>{index + 1}</td>
+                  <td>
+                    <div className="admin-author-info">
+                      <span className="admin-nickname">{app.nickname}</span>
+                      <span className="admin-handle">@{app.handle}</span>
+                    </div>
+                  </td>
                   <td>{formatDate(app.createdAt)}</td>
+                  <td className="admin-bio-cell">{app.bio}</td>
                   <td>
                     <button
                       className="admin-license-btn"
@@ -214,13 +220,6 @@ export default function AdminTrainerList() {
                   <td>
                     <div className="admin-action-buttons">
                       <button
-                        className="admin-action-btn approve"
-                        onClick={() => handleApprove(app.handle)}
-                        title="승인"
-                      >
-                        <Check size={16} />
-                      </button>
-                      <button
                         className="admin-action-btn reject"
                         onClick={() => {
                           const reason = prompt('거절 사유를 입력해주세요:');
@@ -229,6 +228,13 @@ export default function AdminTrainerList() {
                         title="거절"
                       >
                         <X size={16} />
+                      </button>
+                      <button
+                        className="admin-action-btn approve"
+                        onClick={() => handleApprove(app.handle)}
+                        title="승인"
+                      >
+                        <Check size={16} />
                       </button>
                     </div>
                   </td>

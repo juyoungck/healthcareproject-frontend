@@ -156,29 +156,31 @@ export default function AdminDietList() {
 
   return (
     <div className="admin-diet-list">
+      {/* 헤더 영역 - 타이틀, 카운트, 검색 */}
       <div className="admin-section-header">
-        <h2 className="admin-section-title">식단 관리</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 className="admin-section-title" style={{ margin: 0 }}>식단 관리</h2>
+          <span className="admin-section-count" style={{ margin: 0 }}>전체 {foods.length}건</span>
+        </div>
+        <div className="admin-search-box">
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="음식명 검색"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+          />
+        </div>
+      </div>
+
+      {/* 필터 영역 */}
+      <div className="admin-filter-bar">
+        <div></div>
         <button className="admin-add-btn" onClick={handleOpenCreateModal}>
           <Plus size={18} />
           음식 등록
         </button>
-      </div>
-      <p className="admin-section-count">전체 {foods.length}건</p>
-
-      {/* 필터 영역 */}
-      <div className="admin-filter-bar">
-        <div className="admin-filter-group">
-          <div className="admin-search-box">
-            <Search size={18} />
-            <input
-              type="text"
-              placeholder="음식명 검색"
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-            />
-          </div>
-        </div>
       </div>
 
       {/* 테이블 */}
@@ -187,16 +189,20 @@ export default function AdminDietList() {
           <thead>
             <tr>
               <th>번호</th>
-              <th>이미지</th>
               <th>음식명</th>
+              <th>칼로리</th>
+              <th>탄수화물</th>
+              <th>단백질</th>
+              <th>지방</th>
               <th>알러지</th>
-              <th>삭제</th>
+              <th>이미지</th>
+              <th>관리</th>
             </tr>
           </thead>
           <tbody>
             {foods.length === 0 ? (
               <tr>
-                <td colSpan={5} className="admin-table-empty">
+                <td colSpan={9} className="admin-table-empty">
                   등록된 음식이 없습니다.
                 </td>
               </tr>
@@ -204,18 +210,11 @@ export default function AdminDietList() {
               [...foods].sort((a, b) => b.foodId - a.foodId).map((food) => (
                 <tr key={food.foodId}>
                   <td>{food.foodId}</td>
-                  <td>
-                    {food.imageUrl ? (
-                      <img
-                        src={food.imageUrl}
-                        alt={food.name}
-                        className="admin-table-img"
-                      />
-                    ) : (
-                      '-'
-                    )}
-                  </td>
                   <td className="admin-table-name">{food.name}</td>
+                  <td>{food.calories ?? '-'}</td>
+                  <td>{food.carbs ?? '-'}</td>
+                  <td>{food.protein ?? '-'}</td>
+                  <td>{food.fat ?? '-'}</td>
                   <td>
                     {food.allergyCodes ? (
                       <div className="admin-allergy-badges">
@@ -227,13 +226,26 @@ export default function AdminDietList() {
                     )}
                   </td>
                   <td>
-                    <button
-                      className="admin-action-btn delete"
-                      onClick={() => handleDelete(food.foodId)}
-                      title="삭제"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {food.imageUrl ? (
+                      <img
+                        src={food.imageUrl}
+                        alt={food.name}
+                        className="admin-table-img"
+                      />
+                    ) : (
+                      '-'
+                    )}
+                  </td>
+                  <td>
+                    <div className="admin-action-buttons">
+                      <button
+                        className="admin-action-btn delete"
+                        onClick={() => handleDelete(food.foodId)}
+                        title="삭제"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

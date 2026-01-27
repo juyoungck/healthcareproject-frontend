@@ -220,47 +220,50 @@ export const togglePinPost = async (postId: number): Promise<void> => {
 export interface GetReportsParams {
   page?: number;
   size?: number;
-  type?: ReportType;
   status?: ReportStatus;
-  keyword?: string;
 }
 
 /**
  * 신고 목록 조회
- * GET /api/admin/report
+ * GET /api/admin/reports
  */
 export const getAdminReports = async (
   params?: GetReportsParams
 ): Promise<PaginatedResponse<Report>> => {
   const response = await apiClient.get<ApiResponse<PaginatedResponse<Report>>>(
-    '/api/admin/report',
+    '/api/admin/reports',
     { params }
   );
   return response.data.data;
 };
 
 /**
- * 신고 대상 삭제 처리
- * POST /api/admin/report/{reportId}/delete-target
+ * 신고 상태 변경
+ * PATCH /api/admin/reports/{reportId}/status
+ * - PROCESSED: 제재 (신고 대상 삭제)
+ * - REJECTED: 반려 (콘텐츠 유지)
  */
-export const deleteReportTarget = async (reportId: number): Promise<void> => {
-  await apiClient.post(`/api/admin/report/${reportId}/delete-target`);
+export const updateReportStatus = async (
+  reportId: number, 
+  status: 'PROCESSED' | 'REJECTED'
+): Promise<void> => {
+  await apiClient.patch(`/api/admin/reports/${reportId}/status`, { status });
 };
 
 /**
- * 신고 대상 경고 처리
- * POST /api/admin/report/{reportId}/warn
+ * 신고 제재 처리 (PROCESSED)
+ * 신고 대상 콘텐츠 삭제
  */
-export const warnReportTarget = async (reportId: number): Promise<void> => {
-  await apiClient.post(`/api/admin/report/${reportId}/warn`);
+export const processReport = async (reportId: number): Promise<void> => {
+  await updateReportStatus(reportId, 'PROCESSED');
 };
 
 /**
- * 신고 무시 처리
- * POST /api/admin/report/{reportId}/ignore
+ * 신고 반려 처리 (REJECTED)
+ * 콘텐츠 유지
  */
-export const ignoreReport = async (reportId: number): Promise<void> => {
-  await apiClient.post(`/api/admin/report/${reportId}/ignore`);
+export const rejectReport = async (reportId: number): Promise<void> => {
+  await updateReportStatus(reportId, 'REJECTED');
 };
 
 /**

@@ -168,7 +168,7 @@
  */
 .pt-room-trainer {
   display: flex;
-  width: var(--element-size-8xl);
+  width: var(--element-size-12xl);
   align-items: center;
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);

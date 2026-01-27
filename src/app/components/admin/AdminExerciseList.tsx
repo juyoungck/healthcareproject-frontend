@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, X, Trash2 } from 'lucide-react';
+import { Search, Plus, X, Trash2, Video } from 'lucide-react';
 import apiClient from '../../../api/client';
 import type {
   ExerciseListItem,
@@ -36,6 +36,13 @@ const bodyPartFilters: { value: BodyPart | 'ALL'; label: string }[] = [
   { value: 'LEG', label: '하체' },
   { value: 'CORE', label: '코어' },
   { value: 'FULL_BODY', label: '전신' },
+];
+
+const difficultyFilters: { value: Difficulty | 'ALL'; label: string }[] = [
+  { value: 'ALL', label: '전체' },
+  { value: 'BEGINNER', label: '초급' },
+  { value: 'INTERMEDIATE', label: '중급' },
+  { value: 'ADVANCED', label: '고급' },
 ];
 
 /**
@@ -75,9 +82,55 @@ export default function AdminExerciseList() {
   const [exercises, setExercises] = useState<ExerciseListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterBodyPart, setFilterBodyPart] = useState<BodyPart | 'ALL'>('ALL');
+  const [filterBodyParts, setFilterBodyParts] = useState<BodyPart[]>([]);
+  const [filterDifficulties, setFilterDifficulties] = useState<Difficulty[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [videoModal, setVideoModal] = useState<{ isOpen: boolean; url: string; title: string }>({
+    isOpen: false,
+    url: '',
+    title: '',
+  });
+
+  /**
+   * YouTube URL을 임베드 URL로 변환
+   */
+  const getYoutubeEmbedUrl = (url: string): string => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    const videoId = match && match[2].length === 11 ? match[2] : null;
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  };
+
+  /**
+   * 부위 필터 토글 (다중 선택)
+   */
+  const toggleBodyPartFilter = (value: BodyPart | 'ALL') => {
+    if (value === 'ALL') {
+      setFilterBodyParts([]);
+    } else {
+      setFilterBodyParts((prev) =>
+        prev.includes(value)
+          ? prev.filter((v) => v !== value)
+          : [...prev, value]
+      );
+    }
+  };
+
+  /**
+   * 난이도 필터 토글 (다중 선택)
+   */
+  const toggleDifficultyFilter = (value: Difficulty | 'ALL') => {
+    if (value === 'ALL') {
+      setFilterDifficulties([]);
+    } else {
+      setFilterDifficulties((prev) =>
+        prev.includes(value)
+          ? prev.filter((v) => v !== value)
+          : [...prev, value]
+      );
+    }
+  };
 
   /**
    * 운동 목록 조회 (GET /api/exercises)
@@ -91,9 +144,6 @@ export default function AdminExerciseList() {
         limit: 100,
       };
 
-      if (filterBodyPart !== 'ALL') {
-        params.bodyPart = filterBodyPart;
-      }
       if (searchKeyword) {
         params.keyword = searchKeyword;
       }
@@ -109,11 +159,20 @@ export default function AdminExerciseList() {
   };
 
   /**
-   * 초기 로드 및 필터 변경 시 재조회
+   * 필터링된 운동 목록
+   */
+  const filteredExercises = exercises.filter((exercise) => {
+    const bodyPartMatch = filterBodyParts.length === 0 || filterBodyParts.includes(exercise.bodyPart);
+    const difficultyMatch = filterDifficulties.length === 0 || filterDifficulties.includes(exercise.difficulty);
+    return bodyPartMatch && difficultyMatch;
+  });
+
+  /**
+   * 초기 로드
    */
   useEffect(() => {
     fetchExercises();
-  }, [filterBodyPart]);
+  }, []);
 
   /**
    * 검색 실행 (Enter 키)
@@ -205,31 +264,12 @@ export default function AdminExerciseList() {
 
   return (
     <div className="admin-exercise-list">
+      {/* 헤더 영역 - 타이틀, 카운트, 검색 */}
       <div className="admin-section-header">
-        <h2 className="admin-section-title">운동 관리</h2>
-        <button className="admin-add-btn" onClick={handleOpenCreateModal}>
-          <Plus size={18} />
-          운동 등록
-        </button>
-      </div>
-      <p className="admin-section-count">전체 {exercises.length}건</p>
-
-      {/* 필터 영역 */}
-      <div className="admin-filter-bar">
-        <div className="admin-filter-group">
-          <div className="admin-filter-tabs">
-            {bodyPartFilters.map((filter) => (
-              <button
-                key={filter.value}
-                className={`admin-filter-tab ${filterBodyPart === filter.value ? 'active' : ''}`}
-                onClick={() => setFilterBodyPart(filter.value)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 className="admin-section-title" style={{ margin: 0 }}>운동 관리</h2>
+          <span className="admin-section-count" style={{ margin: 0 }}>전체 {filteredExercises.length}건</span>
         </div>
-
         <div className="admin-search-box">
           <Search size={18} />
           <input
@@ -242,41 +282,80 @@ export default function AdminExerciseList() {
         </div>
       </div>
 
+      {/* 필터 영역 - 부위 (다중선택) */}
+      <div className="admin-filter-bar">
+        <div className="admin-filter-tabs">
+          <button
+            className={`admin-filter-tab-fixed ${filterBodyParts.length === 0 ? 'active' : ''}`}
+            onClick={() => toggleBodyPartFilter('ALL')}
+          >
+            전체
+          </button>
+          {bodyPartFilters.filter(f => f.value !== 'ALL').map((filter) => (
+            <button
+              key={filter.value}
+              className={`admin-filter-tab-fixed ${filterBodyParts.includes(filter.value as BodyPart) ? 'active' : ''}`}
+              onClick={() => toggleBodyPartFilter(filter.value)}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+
+        <button className="admin-add-btn" onClick={handleOpenCreateModal}>
+          <Plus size={18} />
+          운동 등록
+        </button>
+      </div>
+
+      {/* 필터 영역 - 난이도 (다중선택) */}
+      <div className="admin-filter-bar" style={{ marginTop: '-8px' }}>
+        <div className="admin-filter-tabs">
+          <button
+            className={`admin-filter-tab-fixed ${filterDifficulties.length === 0 ? 'active' : ''}`}
+            onClick={() => toggleDifficultyFilter('ALL')}
+          >
+            전체
+          </button>
+          {difficultyFilters.filter(f => f.value !== 'ALL').map((filter) => (
+            <button
+              key={filter.value}
+              className={`admin-filter-tab-fixed ${filterDifficulties.includes(filter.value as Difficulty) ? 'active' : ''}`}
+              onClick={() => toggleDifficultyFilter(filter.value)}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* 테이블 */}
       <div className="admin-table-container">
         <table className="admin-table">
           <thead>
             <tr>
               <th>번호</th>
-              <th>이미지</th>
               <th>운동명</th>
               <th>부위</th>
               <th>난이도</th>
-              <th>삭제</th>
+              <th>이미지</th>
+              <th>영상</th>
+              <th>관리</th>
             </tr>
           </thead>
           <tbody>
-            {exercises.length === 0 ? (
+            {filteredExercises.length === 0 ? (
               <tr>
-                <td colSpan={6} className="admin-table-empty">
+                <td colSpan={7} className="admin-table-empty">
                   등록된 운동이 없습니다.
                 </td>
               </tr>
             ) : (
-              [...exercises].sort((a, b) => b.exerciseId - a.exerciseId).map((exercise) => (
+              [...filteredExercises]
+                .sort((a, b) => b.exerciseId - a.exerciseId)
+                .map((exercise) => (
                 <tr key={exercise.exerciseId}>
                   <td>{exercise.exerciseId}</td>
-                  <td>
-                    {exercise.imageUrl ? (
-                      <img
-                        src={exercise.imageUrl}
-                        alt={exercise.name}
-                        className="admin-table-img"
-                      />
-                    ) : (
-                      '-'
-                    )}
-                  </td>
                   <td className="admin-table-name">{exercise.name}</td>
                   <td>
                     <span className={`admin-part-badge part-${exercise.bodyPart.toLowerCase()}`}>
@@ -289,13 +368,43 @@ export default function AdminExerciseList() {
                     </span>
                   </td>
                   <td>
-                    <button
-                      className="admin-action-btn delete"
-                      onClick={() => handleDelete(exercise.exerciseId)}
-                      title="삭제"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {exercise.imageUrl ? (
+                      <img
+                        src={exercise.imageUrl}
+                        alt={exercise.name}
+                        className="admin-table-img"
+                      />
+                    ) : (
+                      '-'
+                    )}
+                  </td>
+                  <td>
+                    {exercise.youtubeUrl ? (
+                      <button
+                        className="admin-video-btn"
+                        onClick={() => setVideoModal({
+                          isOpen: true,
+                          url: exercise.youtubeUrl!,
+                          title: exercise.name,
+                        })}
+                        title="영상 보기"
+                      >
+                        <Video size={16} />
+                      </button>
+                    ) : (
+                      '-'
+                    )}
+                  </td>
+                  <td>
+                    <div className="admin-action-buttons">
+                      <button
+                        className="admin-action-btn delete"
+                        onClick={() => handleDelete(exercise.exerciseId)}
+                        title="삭제"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -310,6 +419,32 @@ export default function AdminExerciseList() {
           onClose={() => setIsModalOpen(false)}
           onSave={handleSave}
         />
+      )}
+
+      {/* 영상 임베드 모달 */}
+      {videoModal.isOpen && (
+        <div className="admin-modal-overlay" onClick={() => setVideoModal({ isOpen: false, url: '', title: '' })}>
+          <div className="admin-modal admin-video-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3>{videoModal.title}</h3>
+              <button
+                className="admin-modal-close"
+                onClick={() => setVideoModal({ isOpen: false, url: '', title: '' })}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="admin-video-container">
+              <iframe
+                src={getYoutubeEmbedUrl(videoModal.url)}
+                title={videoModal.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
