@@ -596,16 +596,16 @@
   color: #16a34a;
 }
 
-/* 비활성/정지/거절/삭제 - 회색 또는 빨강 */
+/* 비활성/정지/삭제 - 회색 */
 .admin-status-badge.status-inactive,
 .admin-status-badge.status-stop,
-.admin-status-badge.status-suspended {
+.admin-status-badge.status-suspended,
+.admin-status-badge.status-deleted {
   background-color: #f3f4f6;
   color: #6b7280;
 }
 
-.admin-status-badge.status-rejected,
-.admin-status-badge.status-deleted {
+.admin-status-badge.status-rejected {
   background-color: #fee2e2;
   color: #dc2626;
 }

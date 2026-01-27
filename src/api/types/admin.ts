@@ -89,7 +89,8 @@ export interface PostAuthor {
 /** 게시글 데이터 (관리자용) */
 export interface AdminPost {
   postId: number;
-  author: PostAuthor;
+  authorNickname: string;
+  authorHandle: string;
   category: string;
   title: string;
   viewCount: number;
@@ -114,6 +115,7 @@ export type ReportType = 'POST' | 'COMMENT';
 export interface Report {
   reportId: number;
   reporterHandle: string;
+  targetAuthorHandle: string;
   type: ReportType;
   targetId: number;
   reason: string;

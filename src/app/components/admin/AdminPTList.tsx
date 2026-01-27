@@ -314,13 +314,13 @@ export default function AdminPTList() {
           <thead>
             <tr>
               <th>번호</th>
-              <th>제목</th>
               <th>트레이너</th>
-              <th>타입</th>
-              <th>상태</th>
-              <th>공개</th>
+              <th>제목</th>
               <th>정원</th>
               <th>예약일시</th>
+              <th>공개</th>
+              <th>타입</th>
+              <th>상태</th>
               <th>관리</th>
             </tr>
           </thead>
@@ -335,36 +335,14 @@ export default function AdminPTList() {
               ptRooms.map((room) => (
                 <tr key={room.ptRoomId}>
                   <td>{room.ptRoomId}</td>
-                  <td className="admin-table-name">
-                    {room.status === 'LIVE' && (
-                      <span className="admin-live-indicator">
-                        <Video size={14} />
-                      </span>
-                    )}
-                    {room.title}
-                  </td>
                   <td>
                     <div className="admin-author-info">
                       <span className="admin-nickname">{room.trainer.nickname}</span>
                       <span className="admin-handle">@{room.trainer.handle}</span>
                     </div>
                   </td>
-                  <td>{getRoomTypeLabel(room.roomType)}</td>
-                  <td>
-                    <span className={`admin-status-badge ${getStatusClass(room.status)}`}>
-                      {getStatusLabel(room.status)}
-                    </span>
-                  </td>
-                  <td>
-                    {room.isPrivate ? (
-                      <span className="admin-private-badge">
-                        <Lock size={14} /> 비공개
-                      </span>
-                    ) : (
-                      <span className="admin-public-badge">
-                        <Unlock size={14} /> 공개
-                      </span>
-                    )}
+                  <td className="admin-table-name">
+                    {room.title}
                   </td>
                   <td>
                     <div className="admin-participant-count">
@@ -373,6 +351,23 @@ export default function AdminPTList() {
                     </div>
                   </td>
                   <td>{formatDate(room.scheduledStartAt)}</td>
+                  <td>
+                    {room.isPrivate ? (
+                      <span className="admin-status-badge status-inactive">
+                        <Lock size={14} /> 비공개
+                      </span>
+                    ) : (
+                      <span className="admin-public-badge">
+                        <Unlock size={14} /> 공개
+                      </span>
+                    )}
+                  </td>
+                  <td>{getRoomTypeLabel(room.roomType)}</td>
+                  <td>
+                    <span className={`admin-status-badge ${getStatusClass(room.status)}`}>
+                      {getStatusLabel(room.status)}
+                    </span>
+                  </td>
                   <td>
                     <div className="admin-action-buttons">
                       <button
