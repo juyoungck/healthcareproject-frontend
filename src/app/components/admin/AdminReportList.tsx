@@ -187,8 +187,13 @@ export default function AdminReportList() {
 
   return (
     <div className="admin-report-list">
-      <h2 className="admin-section-title">신고 관리</h2>
-      <p className="admin-section-subtitle">전체 {total}건</p>
+      {/* 헤더 영역 */}
+      <div className="admin-section-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 className="admin-section-title" style={{ margin: 0 }}>신고 관리</h2>
+          <span className="admin-section-count" style={{ margin: 0 }}>전체 {total}건</span>
+        </div>
+      </div>
 
       {/* 필터 영역 */}
       <div className="admin-filter-bar">
@@ -213,12 +218,12 @@ export default function AdminReportList() {
           <thead>
             <tr>
               <th>번호</th>
-              <th>유형</th>
-              <th>대상ID</th>
               <th>신고자</th>
-              <th>사유</th>
-              <th>상태</th>
+              <th>피신고자</th>
               <th>신고일시</th>
+              <th>사유</th>
+              <th>구분</th>
+              <th>상태</th>
               <th>관리</th>
             </tr>
           </thead>
@@ -233,20 +238,20 @@ export default function AdminReportList() {
               reportList.map((report) => (
                 <tr key={report.reportId}>
                   <td>{report.reportId}</td>
+                  <td>@{report.reporterHandle}</td>
+                  <td>@{report.targetAuthorHandle}</td>
+                  <td>{formatDate(report.createdAt)}</td>
+                  <td className="admin-table-reason">{report.reason}</td>
                   <td>
                     <span className={`admin-type-badge type-${report.type.toLowerCase()}`}>
                       {getTypeLabel(report.type)}
                     </span>
                   </td>
-                  <td>{report.targetId}</td>
-                  <td>@{report.reporterHandle}</td>
-                  <td className="admin-table-reason">{report.reason}</td>
                   <td>
                     <span className={`admin-status-badge ${getStatusClass(report.status)}`}>
                       {getStatusLabel(report.status)}
                     </span>
                   </td>
-                  <td>{formatDate(report.createdAt)}</td>
                   <td>
                     {report.status === 'PENDING' && (
                       <div className="admin-action-buttons">

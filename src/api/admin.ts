@@ -196,10 +196,10 @@ export const showPost = async (postId: number): Promise<void> => {
 
 /**
  * 게시글 삭제
- * DELETE /api/admin/board/post/{postId}
+ * DELETE /api/board/posts/{postId}
  */
 export const deletePost = async (postId: number): Promise<void> => {
-  await apiClient.delete(`/api/admin/board/post/${postId}`);
+  await apiClient.delete(`/api/board/posts/${postId}`);
 };
 
 /**

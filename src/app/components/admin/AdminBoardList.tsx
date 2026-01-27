@@ -12,8 +12,8 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, X, Trash2 } from 'lucide-react';
 import type { AdminPost, PostCategory, PostStatus } from '../../../api/types/admin';
-import { getAdminPosts, createNotice, deletePost } from '../../../api/admin';
-import { getPostDetail } from '../../../api/board';
+import { createNotice, deletePost } from '../../../api/admin';
+import apiClient from '../../../api/client';
 
 /**
  * ===========================================
@@ -99,9 +99,10 @@ export default function AdminBoardList() {
 
     try {
       const params: {
-        category?: PostCategory;
+        category?: string;
         keyword?: string;
-      } = {};
+        size?: number;
+      } = { size: 100 };
 
       if (filterCategory !== 'ALL') {
         params.category = filterCategory;
@@ -110,9 +111,24 @@ export default function AdminBoardList() {
         params.keyword = searchKeyword;
       }
 
-      const response = await getAdminPosts(params);
-      setPosts(response.list);
-      setTotal(response.total);
+      const response = await apiClient.get('/api/admin/board', { params });
+      const data = response.data.data;
+      
+      // 관리자 API 응답을 AdminPost 형태로 변환
+      const postList: AdminPost[] = data.list.map((post: any) => ({
+        postId: post.postId,
+        category: post.category,
+        title: post.title,
+        authorNickname: post.author.nickname,
+        authorHandle: post.author.handle,
+        createdAt: post.createdAt,
+        viewCount: post.viewCount,
+        isNotice: post.isNotice,
+        status: post.status || 'POSTED',
+      }));
+      
+      setPosts(postList);
+      setTotal(data.total);
     } catch (err) {
       console.error('게시글 목록 조회 실패:', err);
       setError('게시글 목록을 불러오는데 실패했습니다.');
@@ -167,7 +183,8 @@ export default function AdminBoardList() {
     setIsDetailLoading(true);
     
     try {
-      const detail = await getPostDetail(post.postId);
+      const response = await apiClient.get(`/api/board/posts/${post.postId}`);
+      const detail = response.data.data;
       setSelectedPost({ ...post, content: detail.content });
     } catch (err) {
       console.error('게시글 상세 조회 실패:', err);
@@ -317,8 +334,8 @@ export default function AdminBoardList() {
                   <td>{post.postId}</td>
                   <td>
                     <div className="admin-author-info">
-                      <span className="admin-nickname">{post.author.nickname}</span>
-                      <span className="admin-handle">@{post.author.handle}</span>
+                      <span className="admin-nickname">{post.authorNickname}</span>
+                      <span className="admin-handle">@{post.authorHandle}</span>
                     </div>
                   </td>
                   <td className="admin-table-title">{post.title}</td>
@@ -520,8 +537,8 @@ function PostDetailModal({ post, isLoading, onClose }: PostDetailModalProps) {
           {/* 작성자 & 작성일 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '14px', color: '#666' }}>
             <div>
-              <span style={{ fontWeight: '500', color: '#333' }}>{post.author.nickname}</span>
-              <span style={{ marginLeft: '8px' }}>@{post.author.handle}</span>
+              <span style={{ fontWeight: '500', color: '#333' }}>{post.authorNickname}</span>
+              <span style={{ marginLeft: '8px' }}>@{post.authorHandle}</span>
             </div>
             <div>
               <span>{formatDate(post.createdAt)}</span>
