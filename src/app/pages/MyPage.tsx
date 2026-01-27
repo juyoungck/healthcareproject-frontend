@@ -41,6 +41,9 @@ import type { ProfileResponse, InjuryItem } from '../../api/types/me';
 import { uploadImage, uploadTrainerDocument } from '../../api/upload';
 import { applyTrainer } from '../../api/trainer';
 import { getErrorMessage } from '../../constants/errorCodes';
+import { getTrainerInfo } from '../../api/me';
+import type { TrainerInfoResponse } from '../../api/types/me';
+import { updateTrainerBio } from '../../api/trainer';
 
 const ALLERGY_LABEL_MAP: Record<string, string> = {
   WHEAT: '밀',
@@ -120,6 +123,14 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
   const [isLoadingSocial, setIsLoadingSocial] = useState(false);
   const [isSocialActionLoading, setIsSocialActionLoading] = useState(false);
 
+  /* 트레이너 정보 */
+  const [trainerInfo, setTrainerInfo] = useState<TrainerInfoResponse | null>(null);
+  const [isLoadingTrainerInfo, setIsLoadingTrainerInfo] = useState(false);
+
+  /* 트레이너 소개문구 수정 */
+  const [showBioModal, setShowBioModal] = useState(false);
+  const [editBio, setEditBio] = useState('');
+  const [isUpdatingBio, setIsUpdatingBio] = useState(false);
   /**
    * ===========================================
    * 유저 데이터 로드
@@ -135,13 +146,41 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
       setEditPhoneNumber(userInfo.phoneNumber || '');
     }
   }, [userInfo]);
+  /**
+   * 트레이너 정보 로드
+   */
+  const fetchTrainerInfo = async () => {
+    console.log('fetchTrainerInfo 호출, role:', userInfo?.role);
 
+    if (userInfo?.role !== 'TRAINER' && userInfo?.role !== 'USER') return;
+
+    setIsLoadingTrainerInfo(true);
+    try {
+      const info = await getTrainerInfo();
+      console.log('트레이너 정보 로드 성공:', info);
+      setTrainerInfo(info);
+      setEditBio(info.bio || '');
+    } catch (error) {
+      console.log('트레이너 정보 없음 또는 로드 실패:', error);
+      setTrainerInfo(null);
+    } finally {
+      setIsLoadingTrainerInfo(false);
+    }
+  };
   /**
    * 온보딩 데이터만 로드 (userInfo는 Context에서 가져옴)
    */
   useEffect(() => {
     fetchOnboardingData();
   }, []);
+  /**
+   * 트레이너 정보 로드 (role이 USER 또는 TRAINER일 때)
+   */
+  useEffect(() => {
+    if (userInfo?.role === 'TRAINER' || userInfo?.role === 'USER') {
+      fetchTrainerInfo();
+    }
+  }, [userInfo?.role]);
 
   const fetchOnboardingData = async () => {
     setIsLoading(true);
@@ -552,15 +591,40 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
     }
   };
 
-  /* 트레이너 상태 (role 기반) */
-  const getTrainerStatus = () => {
+  /**
+ * 트레이너 소개문구 수정 핸들러
+ */
+  const handleUpdateBio = async () => {
+    setIsUpdatingBio(true);
+    try {
+      await updateTrainerBio({ bio: editBio });
+      setTrainerInfo(prev => prev ? { ...prev, bio: editBio } : null);
+      setShowBioModal(false);
+      alert('소개문구가 수정되었습니다.');
+    } catch (error) {
+      console.error('소개문구 수정 실패:', error);
+      alert('소개문구 수정에 실패했습니다.');
+    } finally {
+      setIsUpdatingBio(false);
+    }
+  };
+
+  /* 트레이너 상태 (trainerInfo 기반) */
+  const getTrainerStatus = (): 'none' | 'pending' | 'approved' | 'rejected' => {
     if (userInfo?.role === 'TRAINER') return 'approved';
-    return 'none';
+    if (!trainerInfo) return 'none';
+
+    switch (trainerInfo.applicationStatus) {
+      case 'PENDING': return 'pending';
+      case 'APPROVED': return 'approved';
+      case 'REJECTED': return 'rejected';
+      default: return 'none';
+    }
   };
 
   /**
-   * 트레이너 버튼 렌더링
-   */
+ * 트레이너 버튼 렌더링
+ */
   const renderTrainerButton = () => {
     const status = getTrainerStatus();
 
@@ -580,7 +644,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
         return (
           <button className="mypage-trainer-btn pending" disabled>
             <Clock size={20} />
-            <span>트레이너 승인 대기중</span>
+            <span>관리자 승인 대기중</span>
           </button>
         );
       case 'approved':
@@ -595,13 +659,20 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
         );
       case 'rejected':
         return (
-          <button
-            className="mypage-trainer-btn release"
-            onClick={handleTrainerRelease}
-          >
-            <GraduationCap size={20} />
-            <span>트레이너 등록 재신청</span>
-          </button>
+          <>
+            <div className="mypage-trainer-rejected-reason">
+              <AlertTriangle size={18} />
+              <span>거절 사유: {trainerInfo?.rejectReason || '사유 없음'}</span>
+            </div>
+            <button
+              className="mypage-trainer-btn apply"
+              onClick={() => setShowTrainerModal(true)}
+            >
+              <GraduationCap size={20} />
+              <span>트레이너 등록 재신청</span>
+              <ChevronRight size={18} />
+            </button>
+          </>
         );
       default:
         return null;
@@ -716,6 +787,24 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
           </span>
         </div>
       </div>
+      {/* 트레이너 소개문구 (트레이너만 표시) */}
+      {userInfo?.role === 'TRAINER' && (
+        <div className="mypage-section">
+          <div className="mypage-section-header">
+            <h3 className="mypage-section-title">트레이너 소개</h3>
+            <button className="mypage-section-edit" onClick={() => {
+              setEditBio(trainerInfo?.bio || '');
+              setShowBioModal(true);
+            }}>
+              수정
+              <ChevronRight size={16} />
+            </button>
+          </div>
+          <p className="mypage-trainer-bio">
+            {trainerInfo?.bio || '소개문구를 입력해주세요.'}
+          </p>
+        </div>
+      )}
 
       {/* 기본 정보 */}
       <div className="mypage-section">
@@ -915,6 +1004,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
         )}
       </div>
 
+
       {/* 트레이너 등록/상태 섹션 */}
       <div className="mypage-section mypage-trainer-section">
         {renderTrainerButton()}
@@ -1013,6 +1103,43 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
                 disabled={isUpdatingPhoneNumber}
               >
                 {isUpdatingPhoneNumber ? '저장 중...' : (
+                  <>
+                    <Check size={20} />
+                    저장
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 트레이너 소개문구 수정 모달 */}
+      {showBioModal && (
+        <div className="modal-overlay" onClick={() => setShowBioModal(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">소개문구 수정</h2>
+              <button className="modal-close-btn" onClick={() => setShowBioModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="mypage-edit-modal-content">
+              <div className="form-group">
+                <label className="form-label">소개문구</label>
+                <textarea
+                  className="form-textarea"
+                  placeholder="트레이너 소개문구를 입력해주세요."
+                  value={editBio}
+                  onChange={(e) => setEditBio(e.target.value)}
+                  rows={5}
+                />
+              </div>
+              <button
+                className="form-submit-btn"
+                onClick={handleUpdateBio}
+                disabled={isUpdatingBio}
+              >
+                {isUpdatingBio ? '저장 중...' : (
                   <>
                     <Check size={20} />
                     저장
