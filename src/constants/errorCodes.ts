@@ -62,17 +62,19 @@ export const ERROR_CODES = {
   INVALID_INJURY_LEVEL: { code: 'USER-002', message: '부상 레벨이 존재하지 않습니다.' },
   INVALID_ALLERGY_TYPE: { code: 'USER-003', message: '알러지 타입이 존재하지 않습니다.' },
 
-  /**
+/**
    * ===========================================
-   * Community (COMMUNITY-xxx, C-xxx, G-xxx)
+   * Community (COMMUNITY-xxx)
    * ===========================================
    */
   POST_NOT_FOUND: { code: 'COMMUNITY-001', message: '게시글을 찾을 수 없습니다.' },
   NOT_POST_AUTHOR: { code: 'COMMUNITY-002', message: '게시글 수정/삭제 권한이 없습니다.' },
-  COMMENT_NOT_FOUND: { code: 'C001', message: '댓글을 찾을 수 없습니다.' },
-  NOT_COMMENT_AUTHOR: { code: 'C002', message: '댓글 작성자만 수정/삭제할 수 있습니다.' },
-  INVALID_INPUT_VALUE: { code: 'G001', message: '잘못된 입력값입니다.' },
-
+  COMMENT_NOT_FOUND: { code: 'COMMUNITY-003', message: '댓글을 찾을 수 없습니다.' },
+  NOT_COMMENT_AUTHOR: { code: 'COMMUNITY-004', message: '댓글 작성자만 수정/삭제할 수 있습니다.' },
+  INVALID_INPUT_VALUE: { code: 'COMMUNITY-005', message: '잘못된 입력값입니다.' },
+  SELF_REPORT_NOT_ALLOWED: { code: 'COMMUNITY-006', message: '본인의 게시글 또는 댓글은 신고할 수 없습니다.' },
+  NOTICE_REPORT_NOT_ALLOWED: { code: 'COMMUNITY-007', message: '공지사항은 신고할 수 없습니다.' },
+  ALREADY_REPORTED: { code: 'COMMUNITY-008', message: '이미 신고한 게시글 또는 댓글입니다.' },
   /**
    * ===========================================
    * Exercise (EXERCISE-xxx)
