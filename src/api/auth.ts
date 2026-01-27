@@ -177,7 +177,7 @@ export const disconnectSocialAccount = async (data: SocialDisconnectRequest): Pr
  */
 export const getSocialConnections = async (): Promise<SocialConnectionsResponse> => {
   const response = await apiClient.get<ApiResponse<SocialConnectionsResponse>>(
-    '/api/auth/social'
+    '/api/me/social'
   );
   return response.data.data;
 };

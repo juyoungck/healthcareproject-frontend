@@ -291,3 +291,23 @@
 .settings-withdraw-btn.confirm:hover {
   background-color: #B91C1C;
 }
+
+/**
+ * 회원탈퇴 확인 문구
+ */
+.settings-withdraw-confirm {
+  width: 100%;
+  margin-bottom: var(--spacing-lg);
+}
+
+.settings-withdraw-confirm-label {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-sm);
+  text-align: center;
+}
+
+.settings-withdraw-confirm-label strong {
+  color: var(--color-danger);
+  font-weight: 600;
+}

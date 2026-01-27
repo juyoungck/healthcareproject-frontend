@@ -199,23 +199,30 @@ export default function LoginModal({
         </div>
 
         <div className="social-login-buttons">
-          <button
-            className="social-btn social-btn-kakao"
-            onClick={() => handleSocialLogin('KAKAO')}
-          >
-            <span className="social-btn-text">카카오로 시작하기</span>
-          </button>
-          <button
-            className="social-btn social-btn-naver"
-            onClick={() => handleSocialLogin('NAVER')}
-          >
-            <span className="social-btn-text">네이버로 시작하기</span>
-          </button>
-          <button
+          {/* 구글 (활성화) */}
+          <button 
             className="social-btn social-btn-google"
             onClick={() => handleSocialLogin('GOOGLE')}
           >
             <span className="social-btn-text">구글로 시작하기</span>
+          </button>
+          
+          {/* 카카오 (비활성화 - 비즈앱 전환 필요) */}
+          <button 
+            className="social-btn social-btn-kakao"
+            disabled
+            title="준비 중입니다"
+          >
+            <span className="social-btn-text">카카오로 시작하기</span>
+          </button>
+          
+          {/* 네이버 (비활성화 - 테스터 등록 필요) */}
+          <button 
+            className="social-btn social-btn-naver"
+            disabled
+            title="준비 중입니다"
+          >
+            <span className="social-btn-text">네이버로 시작하기</span>
           </button>
         </div>
 

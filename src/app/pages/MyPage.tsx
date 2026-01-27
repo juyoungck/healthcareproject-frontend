@@ -464,7 +464,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
   const handleDisconnectSocial = async (provider: SocialProvider) => {
     /* 마지막 로그인 수단 체크 */
     if (!hasPassword && socialConnections.length <= 1) {
-      alert('마지막 로그인 수단은 해제할 수 없습니다.\n비밀번호를 먼저 설정해주세요.');
+      alert('마지막 로그인 수단은 해제할 수 없습니다.');
       return;
     }
 
@@ -932,52 +932,6 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
           <div className="mypage-social-loading">로딩 중...</div>
         ) : (
           <div className="mypage-social-list">
-            {/* 카카오 */}
-            <div className="mypage-social-item">
-              <div className="mypage-social-icon kakao">K</div>
-              <span className="mypage-social-name">카카오</span>
-              {isConnected('KAKAO') ? (
-                <button
-                  className="mypage-social-btn connected"
-                  onClick={() => handleDisconnectSocial('KAKAO')}
-                  disabled={isSocialActionLoading}
-                >
-                  연동해제
-                </button>
-              ) : (
-                <button
-                  className="mypage-social-btn"
-                  onClick={() => handleConnectSocial('KAKAO')}
-                  disabled={isSocialActionLoading}
-                >
-                  연동하기
-                </button>
-              )}
-            </div>
-
-            {/* 네이버 */}
-            <div className="mypage-social-item">
-              <div className="mypage-social-icon naver">N</div>
-              <span className="mypage-social-name">네이버</span>
-              {isConnected('NAVER') ? (
-                <button
-                  className="mypage-social-btn connected"
-                  onClick={() => handleDisconnectSocial('NAVER')}
-                  disabled={isSocialActionLoading}
-                >
-                  연동해제
-                </button>
-              ) : (
-                <button
-                  className="mypage-social-btn"
-                  onClick={() => handleConnectSocial('NAVER')}
-                  disabled={isSocialActionLoading}
-                >
-                  연동하기
-                </button>
-              )}
-            </div>
-
             {/* 구글 */}
             <div className="mypage-social-item">
               <div className="mypage-social-icon google">G</div>
@@ -999,6 +953,32 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
                   연동하기
                 </button>
               )}
+            </div>
+
+            {/* 카카오 (비활성화) */}
+            <div className="mypage-social-item">
+              <div className="mypage-social-icon kakao">K</div>
+              <span className="mypage-social-name">카카오</span>
+              <button
+                className="mypage-social-btn"
+                disabled
+                title="준비 중입니다"
+              >
+                준비중
+              </button>
+            </div>
+
+            {/* 네이버 (비활성화) */}
+            <div className="mypage-social-item">
+              <div className="mypage-social-icon naver">N</div>
+              <span className="mypage-social-name">네이버</span>
+              <button
+                className="mypage-social-btn"
+                disabled
+                title="준비 중입니다"
+              >
+                준비중
+              </button>
             </div>
           </div>
         )}

@@ -131,7 +131,9 @@ export type SocialProvider = 'GOOGLE' | 'KAKAO' | 'NAVER';
  */
 export interface SocialLoginRequest {
   provider: SocialProvider;
-  accessToken: string;
+  code: string;
+  redirectUri: string;
+  state?: string | null;
 }
 
 /**
@@ -150,7 +152,9 @@ export interface SocialLoginResponse {
  */
 export interface SocialConnectRequest {
   provider: SocialProvider;
-  accessToken: string;
+  code: string;
+  redirectUri: string;
+  state?: string | null;
 }
 
 /**
