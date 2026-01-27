@@ -1,13 +1,11 @@
 /**
  * admin.css
- * 관리자 패널 스타일
+ * 관리자 패널 스타일 (통합 정리)
  */
 
-/**
- * ===========================================
- * 레이아웃
- * ===========================================
- */
+/* ===========================================
+   레이아웃
+   =========================================== */
 
 .admin-layout {
   display: flex;
@@ -15,11 +13,9 @@
   background-color: #f5f5f5;
 }
 
-/**
- * ===========================================
- * 사이드바
- * ===========================================
- */
+/* ===========================================
+   사이드바
+   =========================================== */
 
 .admin-sidebar {
   width: 240px;
@@ -58,11 +54,9 @@
   color: #fff;
 }
 
-/**
- * ===========================================
- * 메인 콘텐츠
- * ===========================================
- */
+/* ===========================================
+   메인 콘텐츠
+   =========================================== */
 
 .admin-main {
   flex: 1;
@@ -107,11 +101,34 @@
   padding: 24px;
 }
 
-/**
- * ===========================================
- * 로딩 / 에러 상태
- * ===========================================
- */
+/* ===========================================
+   섹션 타이틀 & 카운트 (통일)
+   =========================================== */
+
+.admin-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.admin-section-count,
+.admin-section-subtitle {
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 20px 0;
+}
+
+.admin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+/* ===========================================
+   로딩 / 에러 상태
+   =========================================== */
 
 .admin-loading {
   text-align: center;
@@ -130,31 +147,9 @@
   margin-bottom: 16px;
 }
 
-/**
- * ===========================================
- * 대시보드
- * ===========================================
- */
-
-.admin-section-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.admin-section-count {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 16px;
-}
-
-.admin-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
+/* ===========================================
+   대시보드
+   =========================================== */
 
 .admin-stats-grid {
   display: grid;
@@ -200,17 +195,26 @@
   font-size: 13px;
 }
 
-.stat-active, .stat-visible, .stat-live { color: #2563eb; }
-.stat-inactive, .stat-hidden { color: #ef4444; }
-.stat-pending { color: #eab308; }
-.stat-scheduled { color: #9333ea; }
+.stat-active,
+.stat-visible,
+.stat-live {
+  color: #2563eb;
+}
 
-/**
- * ===========================================
- * 오늘의 활동 (2개 그리드)
- * ===========================================
- */
+.stat-inactive,
+.stat-hidden {
+  color: #ef4444;
+}
 
+.stat-pending {
+  color: #eab308;
+}
+
+.stat-scheduled {
+  color: #9333ea;
+}
+
+/* 오늘의 활동 (2개 그리드) */
 .admin-activity-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -245,12 +249,7 @@
   color: #666;
 }
 
-/**
- * ===========================================
- * 시스템 정보 (대시보드 내)
- * ===========================================
- */
-
+/* 시스템 정보 */
 .admin-system-info {
   display: grid;
   grid-template-columns: 1fr;
@@ -323,23 +322,16 @@
   color: #dc2626;
 }
 
-/**
- * ===========================================
- * 플레이스홀더
- * ===========================================
- */
-
+/* 플레이스홀더 */
 .admin-placeholder {
   text-align: center;
   padding: 60px 0;
   color: #999;
 }
 
-/**
- * ===========================================
- * 필터 바
- * ===========================================
- */
+/* ===========================================
+   필터 바 (통합)
+   =========================================== */
 
 .admin-filter-bar {
   display: flex;
@@ -357,13 +349,16 @@
   flex-wrap: wrap;
 }
 
-.admin-filter-tabs {
+/* 필터 탭/버튼 (통합) */
+.admin-filter-tabs,
+.admin-filter-buttons {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.admin-filter-tab {
+.admin-filter-tab,
+.admin-filter-btn {
   padding: 8px 16px;
   border: 1px solid #e0e0e0;
   border-radius: 20px;
@@ -372,14 +367,43 @@
   font-size: 14px;
   color: #666;
   transition: all 0.2s;
+  min-width: 60px;
+  text-align: center;
 }
 
-.admin-filter-tab:hover {
+.admin-filter-tab:hover,
+.admin-filter-btn:hover {
   border-color: #2563eb;
   color: #2563eb;
 }
 
-.admin-filter-tab.active {
+.admin-filter-tab.active,
+.admin-filter-btn.active {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+/* 고정 크기 필터 탭 (다중 선택용) */
+.admin-filter-tab-fixed {
+  padding: 8px 0;
+  width: 72px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.admin-filter-tab-fixed:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.admin-filter-tab-fixed.active {
   background-color: #2563eb;
   border-color: #2563eb;
   color: #fff;
@@ -395,6 +419,7 @@
   cursor: pointer;
 }
 
+/* 검색 박스 */
 .admin-search-box {
   display: flex;
   align-items: center;
@@ -416,11 +441,9 @@
   color: #999;
 }
 
-/**
- * ===========================================
- * 테이블
- * ===========================================
- */
+/* ===========================================
+   테이블 (통합)
+   =========================================== */
 
 .admin-table-container {
   overflow-x: auto;
@@ -433,53 +456,85 @@
 
 .admin-table th,
 .admin-table td {
-  padding: 12px 16px;
-  text-align: left;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 14px 16px;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .admin-table th {
   background-color: #f9fafb;
   font-weight: 600;
-  font-size: 14px;
-  color: #333;
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
 }
 
 .admin-table td {
   font-size: 14px;
-  color: #666;
+  color: #333;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #fafafa;
 }
 
 .admin-table-empty {
   text-align: center;
-  padding: 40px 0;
+  padding: 60px 0 !important;
   color: #999;
 }
 
-/* 테이블 이미지 (운동/식단) */
+/* 테이블 이미지 */
 .admin-table-img {
-  width: 150px;
-  height: 100px;
+  width: 80px;
+  height: 60px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 6px;
+  display: block;
+  margin: 0 auto;
 }
 
+/* 영상 링크 */
+.admin-video-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  margin: 0 auto;
+}
+
+.admin-video-link:hover {
+  background-color: #fecaca;
+}
+
+/* 테이블 텍스트 스타일 */
 .admin-table-name,
 .admin-table-title {
   font-weight: 500;
   color: #333;
 }
 
-.admin-table-desc {
+.admin-table-desc,
+.admin-table-reason,
+.admin-bio-cell {
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: #666;
 }
 
+/* 작성자 정보 (닉네임 + 핸들) */
 .admin-author-info {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 2px;
 }
 
@@ -493,30 +548,60 @@
   color: #999;
 }
 
-/**
- * ===========================================
- * 상태/카테고리 뱃지
- * ===========================================
- */
+/* 클릭 가능한 행 */
+.admin-clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-clickable-row:hover {
+  background-color: #f5f5f5 !important;
+}
+
+/* 고정 행 */
+.pinned-row {
+  background-color: #fefce8;
+}
+
+.pinned-row:hover {
+  background-color: #fef9c3 !important;
+}
+
+/* ===========================================
+   상태 뱃지 (통합)
+   =========================================== */
 
 .admin-status-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
+/* 대기중/예약 - 노랑 */
 .admin-status-badge.status-pending,
 .admin-status-badge.status-scheduled {
   background-color: #fef3c7;
   color: #d97706;
 }
 
+/* 활성/승인/공개 - 초록 */
+.admin-status-badge.status-active,
 .admin-status-badge.status-approved,
 .admin-status-badge.status-posted {
   background-color: #dcfce7;
   color: #16a34a;
+}
+
+/* 비활성/정지/거절/삭제 - 회색 또는 빨강 */
+.admin-status-badge.status-inactive,
+.admin-status-badge.status-stop,
+.admin-status-badge.status-suspended {
+  background-color: #f3f4f6;
+  color: #6b7280;
 }
 
 .admin-status-badge.status-rejected,
@@ -525,38 +610,67 @@
   color: #dc2626;
 }
 
+/* 휴면/종료 - 회색 */
+.admin-status-badge.status-sleep,
+.admin-status-badge.status-ended,
+.admin-status-badge.status-ignored {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+/* 진행중 - 파랑 */
 .admin-status-badge.status-live {
   background-color: #dbeafe;
   color: #2563eb;
 }
 
-.admin-status-badge.status-ended {
-  background-color: #f3f4f6;
-  color: #666;
-}
-
-.admin-status-badge.status-force-closed {
-  background-color: #fef3e2;
-  color: #92400e;
-}
-
-.admin-status-badge.status-cancelled {
-  background-color: #fef3c7;
-  color: #d97706;
-}
-
+/* 처리완료 - 보라 */
 .admin-status-badge.status-processed {
   background-color: #e0e7ff;
   color: #4f46e5;
 }
 
-.admin-status-badge.status-ignored {
-  background-color: #f3f4f6;
-  color: #666;
+/* 강제종료 - 갈색 */
+.admin-status-badge.status-force-closed {
+  background-color: #fef3e2;
+  color: #92400e;
 }
 
+/* ===========================================
+   역할 뱃지
+   =========================================== */
+
+.admin-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-role-badge.role-user {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.admin-role-badge.role-trainer {
+  background-color: #f3e8ff;
+  color: #9333ea;
+}
+
+.admin-role-badge.role-admin {
+  background-color: #fce7f3;
+  color: #be185d;
+}
+
+/* ===========================================
+   카테고리 뱃지
+   =========================================== */
+
 .admin-category-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 4px 10px;
   border-radius: 10px;
   font-size: 12px;
@@ -583,8 +697,25 @@
   color: #16a34a;
 }
 
+/* 공지 라벨 */
+.admin-notice-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* ===========================================
+   타입 뱃지 (신고)
+   =========================================== */
+
 .admin-type-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 4px 10px;
   border-radius: 10px;
   font-size: 12px;
@@ -597,27 +728,28 @@
 }
 
 .admin-type-badge.type-comment {
-  background-color: #dcfce7;
-  color: #16a34a;
-}
-
-.admin-type-badge.type-user {
   background-color: #f3e8ff;
   color: #9333ea;
 }
 
+/* ===========================================
+   부위/난이도 뱃지 (운동)
+   =========================================== */
+
 .admin-part-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 4px 10px;
   border-radius: 10px;
   font-size: 12px;
   font-weight: 500;
   background-color: #f3f4f6;
-  color: #666;
+  color: #6b7280;
 }
 
 .admin-level-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 4px 10px;
   border-radius: 10px;
   font-size: 12px;
@@ -639,15 +771,55 @@
   color: #dc2626;
 }
 
-/**
- * ===========================================
- * 액션 버튼
- * ===========================================
- */
+/* ===========================================
+   공개/비공개 뱃지 (화상PT)
+   =========================================== */
+
+.admin-public-badge,
+.admin-private-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-public-badge {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.admin-private-badge {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+/* ===========================================
+   알러지 뱃지 (식단)
+   =========================================== */
+
+.admin-allergy-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #d97706;
+}
+
+.admin-allergy-icon {
+  color: #d97706;
+}
+
+/* ===========================================
+   액션 버튼
+   =========================================== */
 
 .admin-action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  justify-content: center;
 }
 
 .admin-action-btn {
@@ -660,8 +832,10 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
+  background-color: transparent;
 }
 
+/* 보기 - 보라 */
 .admin-action-btn.view {
   background-color: #e0e7ff;
   color: #4f46e5;
@@ -671,55 +845,75 @@
   background-color: #c7d2fe;
 }
 
-.admin-action-btn.approve,
-.admin-action-btn.show {
+/* 승인 - 초록 */
+.admin-action-btn.approve {
   background-color: #dcfce7;
   color: #16a34a;
 }
 
-.admin-action-btn.approve:hover,
-.admin-action-btn.show:hover {
+.admin-action-btn.approve:hover {
   background-color: #bbf7d0;
 }
 
+/* 거절/삭제/위험 - 빨강 */
 .admin-action-btn.reject,
-.admin-action-btn.delete {
+.admin-action-btn.delete,
+.admin-action-btn.danger {
   background-color: #fee2e2;
   color: #dc2626;
 }
 
 .admin-action-btn.reject:hover,
-.admin-action-btn.delete:hover {
+.admin-action-btn.delete:hover,
+.admin-action-btn.danger:hover {
   background-color: #fecaca;
 }
 
+/* 차단 - 주황 */
+.admin-action-btn.ban {
+  background-color: #ffedd5;
+  color: #ea580c;
+}
+
+.admin-action-btn.ban:hover {
+  background-color: #fed7aa;
+}
+
+/* 차단해제 - 파랑 */
+.admin-action-btn.unban {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.admin-action-btn.unban:hover {
+  background-color: #bfdbfe;
+}
+
+/* 경고/수정 - 노랑 */
+.admin-action-btn.warning,
 .admin-action-btn.edit {
   background-color: #fef3c7;
   color: #d97706;
 }
 
+.admin-action-btn.warning:hover,
 .admin-action-btn.edit:hover {
   background-color: #fde68a;
 }
 
-.admin-action-btn.warn {
-  background-color: #fef3c7;
-  color: #d97706;
-}
-
-.admin-action-btn.warn:hover {
-  background-color: #fde68a;
-}
-
-.admin-action-btn.ignore {
+/* 무시/보조 - 회색 */
+.admin-action-btn.ignore,
+.admin-action-btn.secondary {
   background-color: #f3f4f6;
-  color: #666;
+  color: #6b7280;
 }
 
-.admin-action-btn.ignore:hover {
+.admin-action-btn.ignore:hover,
+.admin-action-btn.secondary:hover {
   background-color: #e5e7eb;
 }
 
+/* 핀 - 보라 */
 .admin-action-btn.pin {
   background-color: #e0e7ff;
   color: #4f46e5;
@@ -730,25 +924,9 @@
   background-color: #c7d2fe;
 }
 
-.admin-action-btn.force-end {
-  background-color: #fee2e2;
-  color: #dc2626;
-}
-
-.admin-action-btn.force-end:hover {
-  background-color: #fecaca;
-}
-
-.admin-processed-text {
-  font-size: 13px;
-  color: #999;
-}
-
-/**
- * ===========================================
- * 추가 버튼
- * ===========================================
- */
+/* ===========================================
+   추가 버튼
+   =========================================== */
 
 .admin-add-btn {
   display: flex;
@@ -769,11 +947,9 @@
   background-color: #1d4ed8;
 }
 
-/**
- * ===========================================
- * 공통 버튼
- * ===========================================
- */
+/* ===========================================
+   공통 버튼
+   =========================================== */
 
 .admin-btn {
   padding: 10px 20px;
@@ -812,11 +988,38 @@
   background-color: #b91c1c;
 }
 
-/**
- * ===========================================
- * 모달
- * ===========================================
- */
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===========================================
+   자격증/증빙자료 버튼
+   =========================================== */
+
+.admin-license-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: #e0e7ff;
+  color: #4f46e5;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.admin-license-btn:hover {
+  background-color: #c7d2fe;
+}
+
+/* ===========================================
+   모달
+   =========================================== */
 
 .admin-modal-overlay {
   position: fixed;
@@ -861,6 +1064,7 @@
   background: none;
   cursor: pointer;
   color: #999;
+  padding: 4px;
 }
 
 .admin-modal-close:hover {
@@ -881,14 +1085,16 @@
   border-top: 1px solid #e0e0e0;
 }
 
-/**
- * ===========================================
- * 폼 요소
- * ===========================================
- */
+/* ===========================================
+   폼 요소
+   =========================================== */
 
 .admin-form-group {
   margin-bottom: 20px;
+}
+
+.admin-form-group:last-child {
+  margin-bottom: 0;
 }
 
 .admin-form-label {
@@ -907,6 +1113,7 @@
   border-radius: 8px;
   font-size: 14px;
   color: #333;
+  box-sizing: border-box;
 }
 
 .admin-form-input:focus,
@@ -924,6 +1131,7 @@
   color: #333;
   resize: vertical;
   min-height: 100px;
+  box-sizing: border-box;
 }
 
 .admin-form-textarea:focus {
@@ -931,11 +1139,9 @@
   border-color: #2563eb;
 }
 
-/**
- * ===========================================
- * 영양정보 그리드
- * ===========================================
- */
+/* ===========================================
+   영양정보 그리드
+   =========================================== */
 
 .admin-nutrition-grid {
   display: grid;
@@ -967,13 +1173,12 @@
 .admin-nutrition-input span {
   font-size: 13px;
   color: #666;
+  min-width: 30px;
 }
 
-/**
- * ===========================================
- * 알러지 옵션
- * ===========================================
- */
+/* ===========================================
+   알러지 옵션
+   =========================================== */
 
 .admin-allergy-options {
   display: flex;
@@ -1003,81 +1208,9 @@
   color: #fff;
 }
 
-.admin-allergy-badges {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  color: #d97706;
-}
-
-.admin-allergy-icon {
-  color: #d97706;
-}
-
-/**
- * ===========================================
- * 비디오 링크
- * ===========================================
- */
-
-.admin-video-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background-color: #fee2e2;
-  color: #dc2626;
-  border-radius: 6px;
-  text-decoration: none;
-}
-
-.admin-video-link:hover {
-  background-color: #fecaca;
-}
-
-/**
- * ===========================================
- * 화상PT 관련
- * ===========================================
- */
-
-.admin-live-indicator {
-  display: inline-flex;
-  align-items: center;
-  margin-right: 8px;
-  color: #dc2626;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.admin-participant-count {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.admin-live-warning {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  background-color: #fee2e2;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #dc2626;
-}
-
-/**
- * ===========================================
- * 상세 모달 섹션
- * ===========================================
- */
+/* ===========================================
+   상세 모달 섹션
+   =========================================== */
 
 .admin-detail-section {
   margin-bottom: 24px;
@@ -1130,106 +1263,97 @@
 
 .admin-detail-row svg {
   color: #999;
+  flex-shrink: 0;
 }
 
 .admin-detail-key {
   min-width: 80px;
+  color: #666;
 }
 
 .admin-detail-value {
   color: #333;
 }
 
-/**
- * ===========================================
- * 트레이너 문서 리스트
- * ===========================================
- */
+/* ===========================================
+   화상PT 관련
+   =========================================== */
 
-.admin-documents-list {
+.admin-participant-count {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
+  color: #666;
 }
 
-.admin-document-item {
+.admin-live-warning {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  background-color: #f9fafb;
-  border-radius: 6px;
-  color: #333;
+  padding: 12px 16px;
+  background-color: #fee2e2;
+  border-radius: 8px;
   font-size: 14px;
-  text-decoration: none;
-  transition: all 0.2s;
+  color: #dc2626;
 }
 
-.admin-document-item:hover {
-  background-color: #f3f4f6;
-}
+/* ===========================================
+   트레이너 상세 모달
+   =========================================== */
 
-.admin-document-item svg {
-  color: #666;
-}
-
-/**
- * ===========================================
- * 트레이너 상세 모달 추가
- * ===========================================
- */
-
-.admin-trainer-profile {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.admin-trainer-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  overflow: hidden;
-  background-color: #f3f4f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.admin-trainer-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.admin-trainer-info {
-  flex: 1;
+.admin-license-images {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 16px;
 }
 
-.admin-trainer-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 4px;
+.admin-license-image-item {
+  width: 100%;
 }
 
-.admin-trainer-handle {
+.admin-license-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.admin-license-image:hover {
+  opacity: 0.9;
+}
+
+.admin-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 16px;
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
   font-size: 14px;
-  color: #666;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
-.admin-reject-input {
-  margin-top: 12px;
+.admin-download-btn:hover {
+  background-color: #1d4ed8;
 }
 
-/**
- * ===========================================
- * 반응형
- * ===========================================
- */
+.admin-empty-text {
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+}
+
+/* ===========================================
+   반응형
+   =========================================== */
 
 @media (max-width: 1200px) {
   .admin-stats-grid {
@@ -1284,7 +1408,7 @@
 
   .admin-filter-bar {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
 
   .admin-search-box {
@@ -1305,155 +1429,47 @@
   }
 }
 
-/* 자격증 버튼 스타일 */
-.admin-license-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background-color: var(--color-primary-light, #e8f4fd);
-  color: var(--color-primary, #2196f3);
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-}
+/* ===========================================
+   영상 버튼 및 모달
+   =========================================== */
 
-.admin-license-btn:hover {
-  background-color: var(--color-primary, #2196f3);
-  color: white;
-}
-
-/* 자격증 이미지 스타일 */
-.admin-license-images {
+.admin-video-btn {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.admin-license-image-item {
-  width: 100%;
-}
-
-.admin-license-image {
-  width: 100%;
-  max-height: 400px;
-  object-fit: contain;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.admin-license-image:hover {
-  opacity: 0.9;
-}
-
-.admin-empty-text {
-  text-align: center;
-  color: var(--color-text-secondary);
-  padding: 40px 0;
-}
-
-/* 클릭 가능한 행 */
-.admin-clickable-row {
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.admin-clickable-row:hover {
-  background-color: #f9fafb;
-}
-
-/* 공지 라벨 */
-.admin-notice-label {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  background-color: #fee2e2;
-  color: #dc2626;
-}
-
-
-/* 다운로드 버튼 */
-.admin-download-btn {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 8px 16px;
-  background-color: #2563eb;
-  color: #fff;
-  border: none;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
+  background-color: #fff;
+  color: #dc2626;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  margin: 0 auto;
 }
 
-.admin-download-btn:hover {
-  background-color: #1d4ed8;
-}
-
-
-/* 공개/비공개 뱃지 */
-.admin-public-badge,
-.admin-private-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.admin-public-badge {
-  background-color: #d1fae5;
-  color: #059669;
-}
-
-.admin-private-badge {
-  background-color: #fef3c7;
-  color: #d97706;
-}
-
-/* 상태 뱃지 - 진행중 */
-.status-live {
+.admin-video-btn:hover {
   background-color: #fee2e2;
-  color: #dc2626;
+  border-color: #dc2626;
 }
 
-/* 상태 뱃지 - 예약 */
-.status-scheduled {
-  background-color: #fef3c7;
-  color: #d97706;
+.admin-video-modal {
+  width: 90%;
+  max-width: 800px;
 }
 
-/* 상태 뱃지 - 종료 */
-.status-ended {
-  background-color: #e5e7eb;
-  color: #6b7280;
+.admin-video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 비율 */
+  background-color: #000;
 }
 
-/* 위험 액션 버튼 */
-.admin-action-btn.danger {
-  color: #dc2626;
-}
-
-.admin-action-btn.danger:hover {
-  background-color: #fee2e2;
-}
-
-
-/* 상태 뱃지 - 강제종료 */
-.status-force-closed {
-  background-color: #fef3e2;
-  color: #92400e;
+.admin-video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }

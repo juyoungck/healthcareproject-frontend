@@ -62,6 +62,18 @@ export const ERROR_CODES = {
   INVALID_INJURY_LEVEL: { code: 'USER-002', message: '부상 레벨이 존재하지 않습니다.' },
   INVALID_ALLERGY_TYPE: { code: 'USER-003', message: '알러지 타입이 존재하지 않습니다.' },
 
+    /**
+   * ===========================================
+   * Admin (ADMIN-xxx)
+   * ===========================================
+   */
+  USER_ALREADY_BANNED: { code: 'ADMIN-001', message: '이미 차단된 회원입니다.' },
+  USER_NOT_BANNED: { code: 'ADMIN-002', message: '차단되지 않은 회원입니다.' },
+  CANNOT_BAN_ADMIN: { code: 'ADMIN-003', message: '관리자는 차단할 수 없습니다.' },
+  TRAINER_APPLICATION_NOT_FOUND: { code: 'ADMIN-004', message: '트레이너 신청 내역이 없습니다.' },
+  TRAINER_REJECT_REASON_REQUIRED: { code: 'ADMIN-005', message: '거절 사유를 입력해주세요.' },
+  REPORT_NOT_FOUND: { code: 'ADMIN-006', message: '신고 내역을 찾을 수 없습니다.' },
+
   /**
    * ===========================================
    * Community (COMMUNITY-xxx, C-xxx, G-xxx)

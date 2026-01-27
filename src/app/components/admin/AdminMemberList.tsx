@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Ban, X, Mail, Calendar, Shield, AtSign } from 'lucide-react';
+import { Search, X, Mail, Calendar, Shield, AtSign } from 'lucide-react';
 import type { AdminUser, UserRole, UserStatus } from '../../../api/types/admin';
 import { getAdminUsers, banUser, unbanUser } from '../../../api/admin';
 
@@ -46,7 +46,8 @@ const getStatusLabel = (status: UserStatus): string => {
     case 'ACTIVE':
       return '활성';
     case 'STOP':
-      return '정지';
+    case 'SUSPENDED':
+      return '비활성';
     case 'SLEEP':
       return '휴면';
     default:
@@ -59,7 +60,8 @@ const getStatusClass = (status: UserStatus): string => {
     case 'ACTIVE':
       return 'status-active';
     case 'STOP':
-      return 'status-stop';
+    case 'SUSPENDED':
+      return 'status-inactive';
     case 'SLEEP':
       return 'status-sleep';
     default:
@@ -78,6 +80,8 @@ const formatDate = (dateString: string): string => {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 };
 
@@ -225,27 +229,12 @@ export default function AdminMemberList() {
 
   return (
     <div className="admin-member-page">
-      <h2 className="admin-section-title">회원 관리</h2>
-      <p className="admin-section-count">전체 {total}명</p>
-
-      {/* 필터 영역 */}
-      <div className="admin-filter-bar">
-        <div className="admin-filter-group">
-          {/* 역할 필터 */}
-          <div className="admin-filter-tabs">
-            {roleFilters.map((filter) => (
-              <button
-                key={filter.value}
-                className={`admin-filter-tab ${filterRole === filter.value ? 'active' : ''}`}
-                onClick={() => setFilterRole(filter.value)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
+      {/* 헤더 영역 - 타이틀, 카운트, 검색 */}
+      <div className="admin-section-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 className="admin-section-title" style={{ margin: 0 }}>회원 관리</h2>
+          <span className="admin-section-count" style={{ margin: 0 }}>전체 {total}명</span>
         </div>
-
-        {/* 검색 */}
         <div className="admin-search-box">
           <Search size={18} />
           <input
@@ -258,25 +247,42 @@ export default function AdminMemberList() {
         </div>
       </div>
 
+      {/* 필터 영역 */}
+      <div className="admin-filter-bar">
+        <div className="admin-filter-group">
+          {/* 역할 필터 */}
+          <div className="admin-filter-tabs">
+            {roleFilters.map((filter) => (
+              <button
+                key={filter.value}
+                className={`admin-filter-tab-fixed ${filterRole === filter.value ? 'active' : ''}`}
+                onClick={() => setFilterRole(filter.value)}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* 테이블 */}
       <div className="admin-table-container">
         <table className="admin-table">
           <thead>
             <tr>
               <th>번호</th>
-              <th>핸들</th>
-              <th>닉네임</th>
+              <th>회원</th>
               <th>이메일</th>
+              <th>가입일</th>
               <th>유형</th>
               <th>상태</th>
-              <th>가입일</th>
               <th>관리</th>
             </tr>
           </thead>
           <tbody>
             {members.length === 0 ? (
               <tr>
-                <td colSpan={8} className="admin-table-empty">
+                <td colSpan={7} className="admin-table-empty">
                   회원이 없습니다.
                 </td>
               </tr>
@@ -284,9 +290,14 @@ export default function AdminMemberList() {
               members.map((member) => (
                 <tr key={member.userId}>
                   <td>{member.userId}</td>
-                  <td className="admin-handle">@{member.handle}</td>
-                  <td>{member.nickname}</td>
+                  <td>
+                    <div className="admin-author-info">
+                      <span className="admin-nickname">{member.nickname}</span>
+                      <span className="admin-handle">@{member.handle}</span>
+                    </div>
+                  </td>
                   <td>{member.email}</td>
+                  <td>{formatDate(member.createdAt)}</td>
                   <td>
                     <span className={`admin-role-badge role-${member.role.toLowerCase()}`}>
                       {getRoleLabel(member.role)}
@@ -297,24 +308,24 @@ export default function AdminMemberList() {
                       {getStatusLabel(member.status)}
                     </span>
                   </td>
-                  <td>{formatDate(member.createdAt)}</td>
                   <td>
                     <div className="admin-action-buttons">
-                      {member.status !== 'STOP' ? (
+                      {(member.status !== 'STOP' && member.status !== 'SUSPENDED') ? (
                         <button
-                          className="admin-action-btn ban"
+                          className="admin-action-btn delete"
                           onClick={() => handleBan(member.userId)}
-                          title="차단"
+                          title="비활성화"
                         >
-                          <Ban size={16} />
+                          <X size={16} />
                         </button>
                       ) : (
                         <button
-                          className="admin-action-btn unban"
+                          className="admin-action-btn delete"
                           onClick={() => handleUnban(member.userId)}
-                          title="차단해제"
+                          title="활성화"
+                          style={{ opacity: 0.5 }}
                         >
-                          <Ban size={16} />
+                          <X size={16} />
                         </button>
                       )}
                     </div>
