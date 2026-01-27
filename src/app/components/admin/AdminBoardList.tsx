@@ -10,9 +10,9 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, X } from 'lucide-react';
+import { Search, Plus, X, Trash2 } from 'lucide-react';
 import type { AdminPost, PostCategory, PostStatus } from '../../../api/types/admin';
-import { getAdminPosts, createNotice } from '../../../api/admin';
+import { getAdminPosts, createNotice, deletePost } from '../../../api/admin';
 import { getPostDetail } from '../../../api/board';
 
 /**
@@ -198,6 +198,23 @@ export default function AdminBoardList() {
   };
 
   /**
+   * 게시글 삭제 핸들러
+   */
+  const handleDelete = async (postId: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // 행 클릭 이벤트 방지
+    if (!confirm('해당 게시글을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+
+    try {
+      await deletePost(postId);
+      fetchPosts();
+      alert('게시글이 삭제되었습니다.');
+    } catch (err) {
+      console.error('게시글 삭제 실패:', err);
+      alert('게시글 삭제에 실패했습니다.');
+    }
+  };
+
+  /**
    * 로딩 상태
    */
   if (isLoading) {
@@ -228,17 +245,22 @@ export default function AdminBoardList() {
 
   return (
     <div className="admin-board-page">
+      {/* 헤더 영역 - 타이틀, 카운트, 검색 */}
       <div className="admin-section-header">
-        <div>
-          <h2 className="admin-section-title">게시글 관리</h2>
-          <p className="admin-section-count">전체 {total}건</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 className="admin-section-title" style={{ margin: 0 }}>게시글 관리</h2>
+          <span className="admin-section-count" style={{ margin: 0 }}>전체 {total}건</span>
         </div>
-        <button
-          className="admin-add-btn"
-          onClick={() => setIsNoticeModalOpen(true)}
-        >
-          <Plus size={18} /> 공지 등록
-        </button>
+        <div className="admin-search-box">
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="제목 또는 작성자 검색"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+          />
+        </div>
       </div>
 
       {/* 필터 영역 */}
@@ -255,16 +277,12 @@ export default function AdminBoardList() {
           ))}
         </div>
 
-        <div className="admin-search-box">
-          <Search size={18} />
-          <input
-            type="text"
-            placeholder="제목 또는 작성자 검색"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-          />
-        </div>
+        <button
+          className="admin-add-btn"
+          onClick={() => setIsNoticeModalOpen(true)}
+        >
+          <Plus size={18} /> 공지 등록
+        </button>
       </div>
 
       {/* 테이블 */}
@@ -273,18 +291,19 @@ export default function AdminBoardList() {
           <thead>
             <tr>
               <th>번호</th>
-              <th>카테고리</th>
-              <th>제목</th>
               <th>작성자</th>
+              <th>제목</th>
               <th>작성일</th>
-              <th>조회</th>
+              <th>조회수</th>
+              <th>카테고리</th>
               <th>상태</th>
+              <th>관리</th>
             </tr>
           </thead>
           <tbody>
             {sortedPosts.length === 0 ? (
               <tr>
-                <td colSpan={7} className="admin-table-empty">
+                <td colSpan={8} className="admin-table-empty">
                   게시글이 없습니다.
                 </td>
               </tr>
@@ -297,19 +316,19 @@ export default function AdminBoardList() {
                 >
                   <td>{post.postId}</td>
                   <td>
-                    <span className={`admin-category-badge category-${post.category.toLowerCase()}`}>
-                      {getCategoryLabel(post.category)}
-                    </span>
-                  </td>
-                  <td className="admin-table-title">{post.title}</td>
-                  <td>
                     <div className="admin-author-info">
                       <span className="admin-nickname">{post.author.nickname}</span>
                       <span className="admin-handle">@{post.author.handle}</span>
                     </div>
                   </td>
+                  <td className="admin-table-title">{post.title}</td>
                   <td>{formatDate(post.createdAt)}</td>
                   <td>{post.viewCount}</td>
+                  <td>
+                    <span className={`admin-category-badge category-${post.category.toLowerCase()}`}>
+                      {getCategoryLabel(post.category)}
+                    </span>
+                  </td>
                   <td>
                     {post.isNotice ? (
                       <span className="admin-notice-label">공지</span>
@@ -318,6 +337,17 @@ export default function AdminBoardList() {
                         {getStatusLabel(post.status)}
                       </span>
                     )}
+                  </td>
+                  <td>
+                    <div className="admin-action-buttons">
+                      <button
+                        className="admin-action-btn delete"
+                        onClick={(e) => handleDelete(post.postId, e)}
+                        title="삭제"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

@@ -105,19 +105,17 @@ export interface AdminPost {
  */
 
 /** 신고 상태 */
-export type ReportStatus = 'PENDING' | 'PROCESSED' | 'IGNORED';
+export type ReportStatus = 'PENDING' | 'PROCESSED' | 'REJECTED';
 
 /** 신고 타입 */
-export type ReportType = 'POST' | 'COMMENT' | 'USER';
+export type ReportType = 'POST' | 'COMMENT';
 
 /** 신고 데이터 */
 export interface Report {
   reportId: number;
+  reporterHandle: string;
   type: ReportType;
   targetId: number;
-  targetTitle: string;
-  reporterName: string;
-  reporterHandle: string;
   reason: string;
   status: ReportStatus;
   createdAt: string;
