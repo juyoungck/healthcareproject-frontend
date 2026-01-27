@@ -153,8 +153,6 @@ export const withdrawUser = async (): Promise<void> => {
   await apiClient.delete('/api/me', {
     data: {},
   });
-export const withdrawUser = async (data: WithdrawRequest): Promise<void> => {
-  await apiClient.delete('/api/me', { data });
 };
 
 /**
