@@ -14,7 +14,7 @@ import { ArrowLeft, Utensils, TrendingUp, TrendingDown, Minus } from 'lucide-rea
  */
 interface PlanDietCreateProps {
   onBack: () => void;
-  onGenerate: (goal: DietGoal, allergies: string[]) => void;
+  onGenerate: (allergies: string[], note: string) => void;
 }
 
 /**
@@ -78,6 +78,15 @@ const ALLERGIES = [
 ];
 
 /**
+ * 목표 라벨 매핑 (note에 포함용)
+ */
+const GOAL_LABELS: { [key in DietGoal]: string } = {
+  bulk: '벌크업 (근육량 증가를 위한 고칼로리 식단)',
+  diet: '다이어트 (체중 감량을 위한 저칼로리 식단)',
+  maintain: '체중 유지 (현재 체중 유지 식단)',
+};
+
+/**
  * PlanDietCreate 컴포넌트
  */
 export default function PlanDietCreate({ 
@@ -93,6 +102,11 @@ export default function PlanDietCreate({
    * 선택된 알러지
    */
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>(['none']);
+
+  /**
+   * 추가 요청사항 상태
+   */
+  const [additionalNote, setAdditionalNote] = useState<string>('');
 
   /**
    * 알러지 토글 핸들러
@@ -117,7 +131,16 @@ export default function PlanDietCreate({
    * 계획 생성 핸들러
    */
   const handleGenerate = () => {
-    onGenerate(selectedGoal, selectedAllergies);
+    /* 알레르기 필터링 (NONE 제외) */
+    const filteredAllergies = selectedAllergies.filter(a => a !== 'NONE');
+    
+    /* goal과 additionalNote를 합쳐서 note 생성 */
+    const goalText = `목표: ${GOAL_LABELS[selectedGoal]}`;
+    const combinedNote = additionalNote 
+      ? `${goalText}\n추가 요청: ${additionalNote}`
+      : goalText;
+    
+    onGenerate(filteredAllergies, combinedNote);
   };
 
   return (
@@ -184,6 +207,19 @@ export default function PlanDietCreate({
               </button>
             ))}
           </div>
+        </section>
+
+        {/* 추가 요청사항 섹션 */}
+        <section className="diet-plan-section">
+          <h2 className="diet-plan-section-title">추가 요청사항 (선택)</h2>
+          <p className="diet-plan-section-desc">AI가 참고할 추가 요청을 입력하세요</p>
+          <textarea
+            className="diet-plan-textarea"
+            placeholder="예: 닭가슴살 대신 다른 단백질로 대체해주세요&#10;예: 아침은 간단하게 해주세요"
+            value={additionalNote}
+            onChange={(e) => setAdditionalNote(e.target.value)}
+            rows={3}
+          />
         </section>
       </main>
 

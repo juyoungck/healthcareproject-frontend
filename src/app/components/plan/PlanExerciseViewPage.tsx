@@ -9,25 +9,42 @@
 
 import { useState, useMemo } from 'react';
 import { Clock, Check, ExternalLink, Dumbbell, RefreshCw, ArrowLeft } from 'lucide-react';
-import { ExercisePlan } from './PlanExerciseResult';
-import PlanExerciseRegenerateModal from './PlanExerciseRegenerateModal';
+import type { WorkoutAiResponse, WorkoutDay } from '../../../api/types/ai';
 
 /**
  * Props 타입 정의
  */
 interface PlanExerciseViewPageProps {
   onBack: () => void;
-  planData: ExercisePlan;
+  planData: WorkoutAiResponse;
   completedExercises: { [key: string]: boolean };
   onToggleExercise: (exerciseKey: string) => void;
   onExerciseClick?: (exerciseId: number) => void;
-  onRegenerate?: (feedback: string) => void;
+  onRegenerate?: () => void;
 }
 
 /**
- * 요일 라벨 (일~토 순서)
+ * 요일 라벨 매핑 (영문 → 한글 단축)
  */
-const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+const DAY_OF_WEEK_SHORT: { [key: string]: string } = {
+  'SUN': '일',
+  'MON': '월',
+  'TUE': '화',
+  'WED': '수',
+  'THU': '목',
+  'FRI': '금',
+  'SAT': '토',
+};
+
+/**
+ * 날짜 포맷 함수 (2026-01-17 → 17(토))
+ */
+const formatDateTab = (logDate: string, dayOfWeek: string): string => {
+  const date = new Date(logDate);
+  const day = date.getDate();
+  const dayLabel = DAY_OF_WEEK_SHORT[dayOfWeek] || dayOfWeek;
+  return `${day}(${dayLabel})`;
+};
 
 /**
  * PlanExerciseViewPage 컴포넌트
@@ -41,101 +58,38 @@ export default function PlanExerciseViewPage({
   onRegenerate
 }: PlanExerciseViewPageProps) {
   /**
-   * 재생성 모달 상태
+   * 오늘 날짜 (YYYY-MM-DD)
    */
-  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+  const today = useMemo(() => {
+    return new Date().toISOString().split('T')[0];
+  }, []);
 
   /**
-   * 계획 생성일 파싱
+   * 선택된 날짜 (workoutDayId)
    */
-  const startDate = useMemo(() => {
-    const dateMatch = planData.createdAt.match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})/);
-    if (dateMatch) {
-      return new Date(
-        parseInt(dateMatch[1]),
-        parseInt(dateMatch[2]) - 1,
-        parseInt(dateMatch[3])
-      );
-    }
-    return new Date();
-  }, [planData.createdAt]);
+  const [selectedDayId, setSelectedDayId] = useState<number>(() => {
+    /* 오늘 날짜에 해당하는 운동일이 있으면 선택, 없으면 첫 번째 */
+    const todayPlan = planData.days.find(d => d.logDate === today);
+    return todayPlan?.workoutDayId || planData.days[0]?.workoutDayId || 0;
+  });
 
   /**
-   * 생성일 기준 7일치 날짜를 일~토 순서로 계산
+   * 선택된 날짜의 운동 계획
    */
-  const weekDates = useMemo(() => {
-    const startDayOfWeek = startDate.getDay();
-    const dates: { [key: string]: number } = {};
-
-    for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
-      let daysToAdd = dayIndex - startDayOfWeek;
-      if (daysToAdd < 0) {
-        daysToAdd += 7;
-      }
-
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + daysToAdd);
-      dates[String(dayIndex)] = date.getDate();
-    }
-
-    return dates;
-  }, [startDate]);
+  const selectedDayPlan = planData.days.find(d => d.workoutDayId === selectedDayId);
 
   /**
-   * 오늘이 어떤 요일 인덱스인지 계산
+   * 해당 날짜의 완료율 계산
    */
-  const todayDayIndex = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-
-    const diffTime = today.getTime() - start.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0 || diffDays >= 7) return -1;
-
-    return today.getDay();
-  }, [startDate]);
-
-  /**
-   * 선택된 요일
-   */
-  const [selectedDay, setSelectedDay] = useState<string>(
-    todayDayIndex >= 0 ? String(todayDayIndex) : String(startDate.getDay())
-  );
-
-  /**
-   * 선택된 요일의 운동 계획
-   */
-  const selectedDayPlan = planData.dailyPlans.find(
-    plan => plan.dayName === selectedDay
-  );
-
-  /**
-   * 요일에 운동이 있는지 확인
-   */
-  const hasExerciseForDay = (dayName: string) => {
-    return planData.dailyPlans.some(plan => plan.dayName === dayName);
-  };
-
-  /**
-   * 해당 요일의 완료율 계산
-   */
-  const getCompletionRate = (dayName: string) => {
-    const dayPlan = planData.dailyPlans.find(plan => plan.dayName === dayName);
-    if (!dayPlan) return 0;
-
-    const total = dayPlan.exercises.length;
-    const completed = dayPlan.exercises.filter(
-      ex => completedExercises[`${dayName}-${ex.id}`]
+  const getCompletionRate = (workoutDay: WorkoutDay) => {
+    const total = workoutDay.items.length;
+    const completed = workoutDay.items.filter(
+      item => completedExercises[`${workoutDay.workoutDayId}-${item.workoutItemId}`]
     ).length;
-
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   };
 
-  return (
+   return (
     <div className="exercise-view-content-wrapper">
       {/* 헤더 */}
       <header className="exercise-view-header">
@@ -145,24 +99,23 @@ export default function PlanExerciseViewPage({
         </button>
       </header>
 
-      {/* 요일 탭 */}
+      {/* 날짜 탭 */}
       <div className="exercise-view-day-tabs">
-        {['0', '1', '2', '3', '4', '5', '6'].map(day => {
-          const hasExercise = hasExerciseForDay(day);
-          const isSelected = selectedDay === day;
-          const isToday = String(todayDayIndex) === day;
-          const completionRate = getCompletionRate(day);
+        {planData.days.map(workoutDay => {
+          const isSelected = selectedDayId === workoutDay.workoutDayId;
+          const isToday = workoutDay.logDate === today;
+          const completionRate = getCompletionRate(workoutDay);
 
           return (
             <button
-              key={day}
-              className={`exercise-view-day-tab ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''} ${hasExercise ? 'has-exercise' : ''} ${completionRate === 100 ? 'completed' : ''}`}
-              onClick={() => setSelectedDay(day)}
+              key={workoutDay.workoutDayId}
+              className={`exercise-view-day-tab ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''} has-exercise ${completionRate === 100 ? 'completed' : ''}`}
+              onClick={() => setSelectedDayId(workoutDay.workoutDayId)}
             >
               <span className="exercise-view-day-tab-label">
-                {weekDates[day]}({DAY_LABELS[parseInt(day)]})
+                {formatDateTab(workoutDay.logDate, workoutDay.dayOfWeek)}
               </span>
-              {hasExercise && completionRate > 0 && completionRate < 100 && (
+              {completionRate > 0 && completionRate < 100 && (
                 <span className="exercise-view-day-tab-progress">{completionRate}%</span>
               )}
               {completionRate === 100 && (
@@ -181,23 +134,23 @@ export default function PlanExerciseViewPage({
             <div className="exercise-view-category">
               <Dumbbell size={20} className="exercise-view-category-icon" />
               <div className="exercise-view-category-info">
-                <h2 className="exercise-view-category-title">{selectedDayPlan.category}</h2>
+                <h2 className="exercise-view-category-title">{selectedDayPlan.title}</h2>
                 <p className="exercise-view-category-meta">
                   <Clock size={14} />
-                  {selectedDayPlan.totalMinutes}분 • {selectedDayPlan.exercises.length}개 운동
+                  {selectedDayPlan.totalMinutes}분 • {selectedDayPlan.items.length}개 운동
                 </p>
               </div>
             </div>
 
             {/* 운동 목록 */}
             <ul className="exercise-view-list">
-              {selectedDayPlan.exercises.map((exercise) => {
-                const exerciseKey = `${selectedDay}-${exercise.id}`;
-                const isCompleted = completedExercises[exerciseKey];
+              {selectedDayPlan.items.map((item) => {
+                const exerciseKey = `${selectedDayPlan.workoutDayId}-${item.workoutItemId}`;
+                const isCompleted = completedExercises[exerciseKey] || item.isChecked;
 
                 return (
                   <li
-                    key={exercise.id}
+                    key={item.workoutItemId}
                     className={`exercise-view-item ${isCompleted ? 'completed' : ''}`}
                     onClick={() => onToggleExercise(exerciseKey)}
                   >
@@ -211,9 +164,12 @@ export default function PlanExerciseViewPage({
                       {isCompleted ? <Check size={14} /> : <div className="exercise-view-item-check-empty" />}
                     </div>
                     <div className="exercise-view-item-center">
-                      <p className="exercise-view-item-name">{exercise.name}</p>
+                      <p className="exercise-view-item-name">{item.exerciseName}</p>
                       <p className="exercise-view-item-detail">
-                        {exercise.sets}세트 × {exercise.reps}회 • 휴식 {exercise.restSeconds}초
+                        {item.sets && item.reps && `${item.sets}세트 × ${item.reps}회`}
+                        {item.restSecond && ` • 휴식 ${item.restSecond}초`}
+                        {item.durationMinutes && `${item.durationMinutes}분`}
+                        {item.distanceKm && ` ${item.distanceKm}km`}
                       </p>
                     </div>
                     <ExternalLink
@@ -221,7 +177,7 @@ export default function PlanExerciseViewPage({
                       className="exercise-view-item-arrow"
                       onClick={(e) => {
                         e.stopPropagation();
-                        onExerciseClick?.(exercise.id);
+                        onExerciseClick?.(item.exerciseId);
                       }}
                     />
                   </li>
@@ -232,8 +188,8 @@ export default function PlanExerciseViewPage({
         ) : (
           <div className="exercise-view-rest">
             <div className="exercise-view-rest-icon">😴</div>
-            <h2 className="exercise-view-rest-title">휴식일</h2>
-            <p className="exercise-view-rest-desc">오늘은 쉬는 날이에요</p>
+            <h2 className="exercise-view-rest-title">운동 계획 없음</h2>
+            <p className="exercise-view-rest-desc">선택된 날짜에 운동 계획이 없습니다</p>
           </div>
         )}
       </main>
@@ -242,23 +198,12 @@ export default function PlanExerciseViewPage({
       <footer className="exercise-view-footer">
         <button
           className="exercise-view-regenerate-btn"
-          onClick={() => setShowRegenerateModal(true)}
+          onClick={onRegenerate}
         >
           <RefreshCw size={18} />
           <span>운동 계획 재생성</span>
         </button>
       </footer>
-
-      {/* 재생성 모달 */}
-      {showRegenerateModal && (
-        <PlanExerciseRegenerateModal
-          onClose={() => setShowRegenerateModal(false)}
-          onRegenerate={(feedback) => {
-            setShowRegenerateModal(false);
-            onRegenerate?.(feedback);
-          }}
-        />
-      )}
     </div>
   );
 }

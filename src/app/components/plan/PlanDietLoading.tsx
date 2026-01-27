@@ -6,7 +6,7 @@
  * - TIP 안내
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Check, Loader } from 'lucide-react';
 
 /**
@@ -20,9 +20,9 @@ interface PlanDietLoadingProps {
  * 로딩 단계 정의
  */
 const LOADING_STEPS = [
-  { id: 1, text: '신체정보 분석 완료' },
+  { id: 1, text: '신체정보 분석 중' },
   { id: 2, text: '칼로리 및 영양소 계산 중' },
-  { id: 3, text: '주간 식단 구성' },
+  { id: 3, text: '주간 식단 구성 중' },
 ];
 
 /**
@@ -30,25 +30,35 @@ const LOADING_STEPS = [
  */
 export default function PlanDietLoading({ onComplete }: PlanDietLoadingProps) {
   /**
-   * 현재 진행 단계 (1~3)
+   * 현재 진행 단계 (1~3, 무한 반복)
    */
   const [currentStep, setCurrentStep] = useState(1);
 
   /**
-   * 단계별 진행 시뮬레이션
-   * TODO: 실제 API 호출 상태와 연동
+   * API 호출 여부 추적 (중복 호출 방지)
+   */
+  const apiCalledRef = useRef(false);
+
+  /**
+   * 마운트 시 API 호출 시작
    */
   useEffect(() => {
-    const timer1 = setTimeout(() => setCurrentStep(2), 1500);
-    const timer2 = setTimeout(() => setCurrentStep(3), 3000);
-    const timer3 = setTimeout(() => onComplete(), 4500);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
+    if (!apiCalledRef.current) {
+      apiCalledRef.current = true;
+      onComplete();
+    }
   }, [onComplete]);
+
+  /**
+   * 단계 애니메이션 (무한 루프)
+   */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentStep(prev => (prev >= 3 ? 1 : prev + 1));
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   /**
    * 단계 상태 반환
@@ -94,7 +104,7 @@ export default function PlanDietLoading({ onComplete }: PlanDietLoadingProps) {
       <div className="diet-loading-tip">
         <span className="diet-loading-tip-icon">💡</span>
         <p className="diet-loading-tip-text">
-          <strong>TIP:</strong> 식단이 마음에 들지 않으면 언제든 재생성할 수 있습니다!
+          <strong>TIP:</strong> AI가 최적의 식단을 생성하고 있습니다. 잠시만 기다려주세요!
         </p>
       </div>
     </div>

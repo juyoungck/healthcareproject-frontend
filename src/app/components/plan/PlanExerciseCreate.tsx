@@ -14,7 +14,7 @@ import { ArrowLeft, Calendar, Dumbbell } from 'lucide-react';
  */
 interface ExercisePlanCreateProps {
   onBack: () => void;
-  onGenerate: (selectedDays: number[]) => void;
+  onGenerate: (dates: string[], additionalRequest: string) => void;
 }
 
 /**
@@ -31,6 +31,31 @@ const WEEK_DAYS = [
 ];
 
 /**
+ * 선택된 요일을 이번 주 날짜 문자열로 변환
+ * @param selectedDays 선택된 요일 배열 (0: 일요일 ~ 6: 토요일)
+ * @returns ISO 날짜 문자열 배열 (예: ["2026-01-17", "2026-01-19"])
+ */
+const convertDaysToDateStrings = (selectedDays: number[]): string[] => {
+  const today = new Date();
+  const currentDayOfWeek = today.getDay(); /* 0: 일요일 ~ 6: 토요일 */
+  
+  return selectedDays.map(dayId => {
+    /* 오늘 기준으로 해당 요일까지의 차이 계산 */
+    let diff = dayId - currentDayOfWeek;
+    /* 이미 지난 요일이면 다음 주로 */
+    if (diff < 0) {
+      diff += 7;
+    }
+    
+    const targetDate = new Date(today);
+    targetDate.setDate(today.getDate() + diff);
+    
+    /* ISO 날짜 문자열 반환 (YYYY-MM-DD) */
+    return targetDate.toISOString().split('T')[0];
+  }).sort();
+};
+
+/**
  * ExercisePlanCreate 컴포넌트
  */
 export default function ExercisePlanCreate({ 
@@ -41,6 +66,11 @@ export default function ExercisePlanCreate({
    * 선택된 요일 상태 (0: 일요일 ~ 6: 토요일)
    */
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 3, 5]); // 기본: 월, 수, 금
+
+  /**
+   * 추가 요청사항 상태
+   */
+  const [additionalRequest, setAdditionalRequest] = useState<string>('');
 
   /**
    * 요일 토글 핸들러
@@ -63,7 +93,9 @@ export default function ExercisePlanCreate({
       alert('운동할 요일을 최소 1일 이상 선택해주세요.');
       return;
     }
-    onGenerate(selectedDays);
+    /* 요일을 날짜 문자열로 변환하여 전달 */
+    const dateStrings = convertDaysToDateStrings(selectedDays);
+    onGenerate(dateStrings, additionalRequest);
   };
 
   return (
@@ -107,6 +139,19 @@ export default function ExercisePlanCreate({
           <p className="exercise-plan-selected-info">
             선택된 요일: {selectedDays.length}일 (주 {selectedDays.length}회 운동)
           </p>
+        </section>
+
+        {/* 추가 요청사항 섹션 */}
+        <section className="exercise-plan-section">
+          <h2 className="exercise-plan-section-title">추가 요청사항 (선택)</h2>
+          <p className="exercise-plan-section-desc">AI가 참고할 추가 요청을 입력하세요</p>
+          <textarea
+            className="exercise-plan-textarea"
+            placeholder="예: 덤벨 운동 위주로 구성해주세요&#10;예: 유산소 운동 비중을 늘려주세요"
+            value={additionalRequest}
+            onChange={(e) => setAdditionalRequest(e.target.value)}
+            rows={3}
+          />
         </section>
 
         {/* 고려사항 안내 */}
