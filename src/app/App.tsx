@@ -57,14 +57,20 @@ function AppContent() {
   });
 
   /**
-   * OAuth 로그인 성공 핸들러
+   * OAuth 로그인 성공 핸들러 (기존 회원)
    */
   const handleOAuthLoginSuccess = async () => {
-    /* URL 정리 */
     window.history.replaceState({}, '', '/');
     setIsOAuthCallback(false);
-    
-    /* 로그인 처리 → 온보딩 표시 (신규 가입자) */
+    await onLoginSuccess();
+  };
+
+  /**
+   * OAuth 회원가입 성공 핸들러 (신규 가입자)
+   */
+  const handleOAuthSignupSuccess = async () => {
+    window.history.replaceState({}, '', '/');
+    setIsOAuthCallback(false);
     await onLoginSuccess();
     setShowOnboarding(true);
   };
@@ -73,7 +79,6 @@ function AppContent() {
    * OAuth 연동 성공 핸들러
    */
   const handleOAuthConnectSuccess = () => {
-    /* URL 정리 후 마이페이지로 이동 */
     window.history.replaceState({}, '', '/');
     setIsOAuthCallback(false);
     setReturnToMyPage(true);
@@ -84,7 +89,6 @@ function AppContent() {
    * OAuth 에러 핸들러
    */
   const handleOAuthError = (message: string) => {
-    /* URL 정리 */
     window.history.replaceState({}, '', '/');
     setIsOAuthCallback(false);
     alert(message);
@@ -281,6 +285,7 @@ function AppContent() {
     return (
       <OAuthCallbackPage
         onLoginSuccess={handleOAuthLoginSuccess}
+        onSignupSuccess={handleOAuthSignupSuccess}
         onConnectSuccess={handleOAuthConnectSuccess}
         onError={handleOAuthError}
       />

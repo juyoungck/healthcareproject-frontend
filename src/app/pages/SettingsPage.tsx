@@ -20,7 +20,8 @@ import {
   Key,
   Eye,
   EyeOff,
-  X
+  X,
+  Type
 } from 'lucide-react';
 import { withdrawUser, changePassword } from '../../api/me';
 import { getErrorMessage } from '../../constants/errorCodes';
@@ -37,7 +38,7 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
   const { onLogout: contextLogout } = useAuth();
 
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawPassword, setWithdrawPassword] = useState('');
+  const [withdrawConfirmText, setWithdrawConfirmText] = useState('');
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [withdrawError, setWithdrawError] = useState('');
 
@@ -50,6 +51,9 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+
+  /* 탈퇴 확인 문구 상수 */
+  const WITHDRAW_CONFIRM_TEXT = '회원탈퇴';
 
   /**
    * 로그아웃 핸들러
@@ -66,7 +70,7 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
    */
   const closeWithdrawModal = () => {
     setShowWithdrawModal(false);
-    setWithdrawPassword('');
+    setWithdrawConfirmText('');
     setWithdrawError('');
   };
 
@@ -74,9 +78,9 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
    * 회원탈퇴 핸들러
    */
   const confirmWithdraw = async () => {
-    /* 비밀번호 검증 */
-    if (!withdrawPassword.trim()) {
-      setWithdrawError('비밀번호를 입력해주세요.');
+    /* 확인 문구 검증 */
+    if (withdrawConfirmText !== WITHDRAW_CONFIRM_TEXT) {
+      setWithdrawError(`"${WITHDRAW_CONFIRM_TEXT}"를 정확히 입력해주세요.`);
       return;
     }
 
@@ -84,7 +88,7 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
     setWithdrawError('');
 
     try {
-      await withdrawUser({ password: withdrawPassword });
+      await withdrawUser();
       alert('회원탈퇴가 완료되었습니다.');
       closeWithdrawModal();
       contextLogout();
@@ -377,16 +381,19 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
               탈퇴 시 모든 데이터가 삭제되며<br />복구할 수 없습니다.
             </p>
 
-            {/* 비밀번호 입력 */}
-            <div className="settings-withdraw-password">
+            {/* 확인 문구 입력 */}
+            <div className="settings-withdraw-confirm">
+              <p className="settings-withdraw-confirm-label">
+                탈퇴를 원하시면 <strong>"{WITHDRAW_CONFIRM_TEXT}"</strong>를 입력해주세요.
+              </p>
               <div className="form-input-wrapper">
-                <Lock className="form-input-icon" size={20} />
+                <Type className="form-input-icon" size={20} />
                 <input
-                  type="password"
+                  type="text"
                   className="form-input"
-                  placeholder="비밀번호를 입력하세요"
-                  value={withdrawPassword}
-                  onChange={(e) => setWithdrawPassword(e.target.value)}
+                  placeholder={WITHDRAW_CONFIRM_TEXT}
+                  value={withdrawConfirmText}
+                  onChange={(e) => setWithdrawConfirmText(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && confirmWithdraw()}
                 />
               </div>
@@ -406,7 +413,7 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
               <button
                 className="settings-withdraw-btn confirm"
                 onClick={confirmWithdraw}
-                disabled={isWithdrawing}
+                disabled={isWithdrawing || withdrawConfirmText !== WITHDRAW_CONFIRM_TEXT}
               >
                 {isWithdrawing ? '처리중...' : '탈퇴하기'}
               </button>

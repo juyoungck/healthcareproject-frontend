@@ -211,6 +211,9 @@ export interface PasswordChangeRequest {
  * 회원탈퇴 요청
  * DELETE /api/me
  */
+
+/* 특정 문구 확인 방식으로 body가 필요 없어짐.
 export interface WithdrawRequest {
   password: string;
 }
+*/

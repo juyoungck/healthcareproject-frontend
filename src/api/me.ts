@@ -15,7 +15,6 @@ import type {
   PhoneUpdateRequest,
   ProfileImageUpdateRequest,
   UserUpdateResponse,
-  WithdrawRequest,
   PasswordChangeRequest,
 } from './types/me';
 import type { ApiResponse } from './types/auth';
@@ -149,6 +148,8 @@ export const changePassword = async (data: PasswordChangeRequest): Promise<void>
  * 회원탈퇴
  * DELETE /api/me
  */
-export const withdrawUser = async (data: WithdrawRequest): Promise<void> => {
-  await apiClient.delete('/api/me', { data });
+export const withdrawUser = async (): Promise<void> => {
+  await apiClient.delete('/api/me', {
+    data: {},
+  });
 };

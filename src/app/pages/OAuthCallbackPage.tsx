@@ -6,7 +6,9 @@
  */
 
 import { useEffect, useState } from 'react';
+import { Check } from 'lucide-react';
 import { socialLogin, saveTokens, connectSocialAccount } from '../../api/auth';
+import { getOnboardingStatus } from '../../api/me';
 import type { SocialProvider } from '../../api/types/auth';
 import { getErrorMessage } from '../../constants/errorCodes';
 
@@ -15,18 +17,27 @@ import { getErrorMessage } from '../../constants/errorCodes';
  */
 interface OAuthCallbackPageProps {
   onLoginSuccess: () => void;
+  onSignupSuccess: () => void;
   onConnectSuccess: () => void;
   onError: (message: string) => void;
 }
+
+/**
+ * 페이지 상태 타입
+ */
+type PageStatus = 'loading' | 'signup-complete' | 'error';
+
 
 /**
  * OAuthCallbackPage 컴포넌트
  */
 export default function OAuthCallbackPage({
   onLoginSuccess,
+  onSignupSuccess,
   onConnectSuccess,
   onError,
 }: OAuthCallbackPageProps) {
+  const [status, setStatus] = useState<PageStatus>('loading');
   const [message, setMessage] = useState('소셜 로그인 처리 중...');
 
   useEffect(() => {
@@ -67,22 +78,39 @@ export default function OAuthCallbackPage({
         
         const tokens = await socialLogin({
           provider,
-          accessToken: code,
+          code,
+          redirectUri: import.meta.env.VITE_OAUTH_REDIRECT_URI,
+          state: provider === 'NAVER' ? state : null,
         });
 
         /* 토큰 저장 */
         saveTokens(tokens);
 
-        /* 로그인 성공 콜백 */
-        onLoginSuccess();
-
+        /* 온보딩 완료 여부 확인 */
+        setMessage('정보 확인 중...');
+        try {
+          const { completed } = await getOnboardingStatus();
+          
+          if (completed) {
+            /* 기존 회원 → 대시보드로 이동 */
+            onLoginSuccess();
+          } else {
+            /* 신규 가입자 → 온보딩 표시 */
+            setStatus('signup-complete');
+          }
+        } catch {
+          /* 온보딩 상태 조회 실패 시 신규 가입자로 처리 */
+          setStatus('signup-complete');
+        }
       } else if (action === 'connect') {
         /* 소셜 계정 연동 처리 */
         setMessage('계정 연동 중...');
 
         await connectSocialAccount({
           provider,
-          accessToken: code,
+          code,
+          redirectUri: import.meta.env.VITE_OAUTH_REDIRECT_URI,
+          state: provider === 'NAVER' ? state : null,
         });
 
         /* 연동 성공 콜백 */
@@ -94,18 +122,72 @@ export default function OAuthCallbackPage({
 
     } catch (error: unknown) {
       console.error('OAuth 처리 실패:', error);
-      
+  
       const axiosError = error as { response?: { data?: { error?: { code?: string } } } };
       const errorCode = axiosError.response?.data?.error?.code;
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : getErrorMessage(errorCode, '소셜 로그인에 실패했습니다.');
+      const errorMessage = errorCode 
+        ? getErrorMessage(errorCode, '소셜 로그인에 실패했습니다.')
+        : (error instanceof Error ? error.message : '소셜 로그인에 실패했습니다.');
       
+      setStatus('error');
       setMessage(errorMessage);
       onError(errorMessage);
     }
   };
 
+  /**
+   * 신규 가입 완료 후 온보딩으로 이동
+   */
+  const handleStartOnboarding = () => {
+    onSignupSuccess();
+  };
+
+  /* 신규 가입 완료 화면 */
+  if (status === 'signup-complete') {
+    return (
+      <div className="oauth-callback-page">
+        <div className="oauth-callback-content">
+          <div className="oauth-complete">
+            <div className="oauth-complete-icon">
+              <Check size={48} />
+            </div>
+            <h3 className="oauth-complete-title">
+              회원가입 완료!
+            </h3>
+            <p className="oauth-complete-desc">
+              맞춤 운동과 식단 추천을 위해<br />
+              간단한 정보를 입력해주세요
+            </p>
+            <button
+              className="form-submit-btn"
+              onClick={handleStartOnboarding}
+            >
+              시작하기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* 에러 화면 */
+  if (status === 'error') {
+    return (
+      <div className="oauth-callback-page">
+        <div className="oauth-callback-content">
+          <p className="oauth-callback-message oauth-callback-error">{message}</p>
+          <button
+            className="form-submit-btn"
+            onClick={() => window.location.href = '/'}
+          >
+            돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* 로딩 화면 */
   return (
     <div className="oauth-callback-page">
       <div className="oauth-callback-content">
