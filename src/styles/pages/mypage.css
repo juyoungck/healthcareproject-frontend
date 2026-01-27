@@ -1046,3 +1046,68 @@
   color: var(--color-gray-500);
   font-size: 0.875rem;
 }
+
+/**
+ * ===========================================
+ * 트레이너 소개문구
+ * ===========================================
+ */
+
+.mypage-trainer-bio {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/**
+ * ===========================================
+ * 트레이너 거절 사유
+ * ===========================================
+ */
+
+.mypage-trainer-rejected-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  background-color: var(--color-error-light);
+  border-radius: var(--border-radius-md);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.mypage-trainer-rejected-reason span {
+  flex: 1;
+  line-height: 1.5;
+}
+
+/**
+ * ===========================================
+ * 소개문구 텍스트영역
+ * ===========================================
+ */
+
+.form-textarea {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  color: var(--color-gray-900);
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  resize: vertical;
+  transition: border-color var(--transition-fast);
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 var(--border-width-lg) var(--color-primary-light);
+}
+
+.form-textarea::placeholder {
+  color: var(--color-gray-400);
+}

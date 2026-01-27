@@ -131,7 +131,7 @@
  */
 
 .modal-success {
-  display: flex;
+  display: flex;  
   flex-direction: column;
   align-items: center;
   padding: var(--spacing-3xl) var(--spacing-xl);

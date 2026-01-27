@@ -214,3 +214,23 @@ export interface PasswordChangeRequest {
 export interface WithdrawRequest {
   password: string;
 }
+/**
+ * ===========================================
+ * 트레이너 정보 조회 관련
+ * ===========================================
+ */
+
+/** 트레이너 신청 상태 */
+export type TrainerApplicationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+/**
+ * 트레이너 정보 응답
+ * GET /api/me/trainer
+ */
+export interface TrainerInfoResponse {
+  applicationStatus: TrainerApplicationStatus;
+  licenseUrlsJson: string[];
+  bio: string | null;
+  rejectReason: string | null;
+  approvedAt: string | null;
+}
