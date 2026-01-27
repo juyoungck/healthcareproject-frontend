@@ -360,7 +360,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
     try {
       /* 1. 파일들을 순차적으로 업로드하여 URL 배열 생성 (TRAINER 타입) */
       const licenseUrls: string[] = [];
-    
+
       for (const file of data.files) {
         const url = await uploadTrainerDocument(file);
         licenseUrls.push(url);
@@ -381,12 +381,12 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
 
     } catch (error: unknown) {
       console.error('트레이너 신청 실패:', error);
-      
+
       /* 에러 메시지 처리 */
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { data?: { code?: string } } };
         const errorCode = axiosError.response?.data?.code;
-        
+
         if (errorCode === 'COMMON-409' || errorCode === 'ALREADY_EXISTS') {
           alert('이미 트레이너 신청을 제출했습니다.');
         } else {
@@ -528,6 +528,28 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('ko-KR');
+  };
+
+  /**
+ * 사용자 역할 라벨 변환
+ */
+  const getUserTypeLabel = (role?: string): string => {
+    switch (role) {
+      case 'ADMIN': return '관리자';
+      case 'TRAINER': return '트레이너';
+      default: return '일반회원';
+    }
+  };
+
+  /**
+   * 사용자 역할 CSS 클래스 변환
+   */
+  const getUserTypeClass = (role?: string): string => {
+    switch (role) {
+      case 'ADMIN': return 'admin';
+      case 'TRAINER': return 'trainer';
+      default: return 'general';
+    }
   };
 
   /* 트레이너 상태 (role 기반) */
@@ -688,8 +710,9 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
               <Edit2 size={14} />
             </button>
           </div>
-          <span className={`mypage-user-type ${userInfo?.role === 'TRAINER' ? 'trainer' : 'general'}`}>
-            {userInfo?.role === 'TRAINER' ? '트레이너' : '일반회원'}
+          <span className="mypage-handle">@{userInfo?.handle}</span>
+          <span className={`mypage-user-type ${getUserTypeClass(userInfo?.role)}`}>
+            {getUserTypeLabel(userInfo?.role)}
           </span>
         </div>
       </div>

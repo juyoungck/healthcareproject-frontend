@@ -157,6 +157,12 @@
   color: var(--color-gray-900);
 }
 
+.mypage-handle {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-xs);
+}
+
 .mypage-edit-btn {
   display: flex;
   align-items: center;
@@ -183,6 +189,28 @@
   border-radius: var(--border-radius-full);
 }
 
+/**
+ * 회원 유형 - 관리자
+ */
+.mypage-user-type.admin {
+  color: var(--color-error);
+  background-color: var(--color-error-light);
+}
+
+/**
+ * 회원 유형 - 트레이너
+ */
+.mypage-user-type.trainer {
+  color: var(--color-pt);
+  background-color: var(--color-pt-light);
+}
+/**
+ * 회원 유형 - 일반회원
+ */
+.mypage-user-type.general {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
 /**
  * ===========================================
  * 섹션 공통

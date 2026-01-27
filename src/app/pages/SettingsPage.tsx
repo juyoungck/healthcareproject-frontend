@@ -22,8 +22,7 @@ import {
   EyeOff,
   X
 } from 'lucide-react';
-import { withdrawUser, getMe } from '../../api/me';
-import { requestPasswordReset, resetPassword } from '../../api/auth';
+import { withdrawUser, changePassword } from '../../api/me';
 import { getErrorMessage } from '../../constants/errorCodes';
 
 interface SettingsPageProps {
@@ -44,14 +43,12 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
 
   /* 비밀번호 변경 모달 */
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
-  const [resetToken, setResetToken] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [isEmailSent, setIsEmailSent] = useState(false);
   const [passwordError, setPasswordError] = useState('');
 
   /**
@@ -108,55 +105,12 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
    */
   const closePasswordModal = () => {
     setShowPasswordModal(false);
-    setUserEmail('');
-    setResetToken('');
+    setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
     setPasswordError('');
+    setShowCurrentPassword(false);
     setShowNewPassword(false);
-    setIsEmailSent(false);
-    setIsSendingEmail(false);
-  };
-
-  /**
-   * 비밀번호 변경 모달 열기 + 이메일 조회
-   */
-  const openPasswordModal = async () => {
-    setShowPasswordModal(true);
-    setPasswordError('');
-
-    try {
-      const meData = await getMe();
-      setUserEmail(meData.email);
-    } catch (err) {
-      console.error('사용자 정보 조회 실패:', err);
-      setPasswordError('사용자 정보를 불러올 수 없습니다.');
-    }
-  };
-
-  /**
-   * 인증 메일 발송 핸들러
-   */
-  const handleSendResetEmail = async () => {
-    if (!userEmail) {
-      setPasswordError('이메일 정보를 불러올 수 없습니다.');
-      return;
-    }
-
-    setIsSendingEmail(true);
-    setPasswordError('');
-
-    try {
-      await requestPasswordReset({ email: userEmail });
-      setIsEmailSent(true);
-    } catch (err: unknown) {
-      console.error('인증 메일 발송 실패:', err);
-      const axiosError = err as { response?: { data?: { error?: { code?: string } } } };
-      const errorCode = axiosError.response?.data?.error?.code;
-      setPasswordError(getErrorMessage(errorCode, '인증 메일 발송에 실패했습니다.'));
-    } finally {
-      setIsSendingEmail(false);
-    }
   };
 
   /**
@@ -164,8 +118,8 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
    */
   const handleChangePassword = async () => {
     /* 입력값 검증 */
-    if (!resetToken.trim()) {
-      setPasswordError('이메일 인증 토큰을 입력해주세요.');
+    if (!currentPassword.trim()) {
+      setPasswordError('현재 비밀번호를 입력해주세요.');
       return;
     }
     if (!newPassword.trim()) {
@@ -180,15 +134,18 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
       setPasswordError('새 비밀번호가 일치하지 않습니다.');
       return;
     }
+    if (currentPassword === newPassword) {
+      setPasswordError('현재 비밀번호와 다른 비밀번호를 입력해주세요.');
+      return;
+    }
 
     setIsChangingPassword(true);
     setPasswordError('');
 
     try {
-      await resetPassword({
-        token: resetToken,
-        email: userEmail,
-        password: newPassword,
+      await changePassword({
+        currentPassword,
+        newPassword
       });
       alert('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
       closePasswordModal();
@@ -198,6 +155,7 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
       console.error('비밀번호 변경 실패:', err);
       const axiosError = err as { response?: { data?: { error?: { code?: string } } } };
       const errorCode = axiosError.response?.data?.error?.code;
+
       setPasswordError(getErrorMessage(errorCode, '비밀번호 변경에 실패했습니다.'));
     } finally {
       setIsChangingPassword(false);
@@ -295,7 +253,7 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
         <section className="settings-section">
           <h3 className="settings-section-title">계정</h3>
           <div className="settings-list">
-            <button className="settings-item" onClick={openPasswordModal}>
+            <button className="settings-item" onClick={() => setShowPasswordModal(true)}>
               <div className="settings-item-left">
                 <Key size={20} className="settings-item-icon" />
                 <span className="settings-item-label">비밀번호 변경</span>
@@ -329,117 +287,79 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
               </button>
             </div>
             <div className="modal-form">
-              {/* 이메일 안내 */}
-              {userEmail && (
-                <div className="form-group">
-                  <p className="form-description">
-                    <strong>{userEmail}</strong>으로 인증 토큰이 발송됩니다.
-                  </p>
+              {/* 현재 비밀번호 */}
+              <div className="form-group">
+                <label className="form-label">현재 비밀번호</label>
+                <div className="form-input-wrapper">
+                  <Lock className="form-input-icon" size={20} />
+                  <input
+                    type={showCurrentPassword ? 'text' : 'password'}
+                    className="form-input"
+                    placeholder="현재 비밀번호를 입력하세요"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="form-input-toggle"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  >
+                    {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
-              )}
+              </div>
 
-              {/* 인증 메일 발송 버튼 */}
-              {!isEmailSent ? (
-                <>
+              {/* 새 비밀번호 */}
+              <div className="form-group">
+                <label className="form-label">새 비밀번호</label>
+                <div className="form-input-wrapper">
+                  <Lock className="form-input-icon" size={20} />
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    className="form-input"
+                    placeholder="새 비밀번호를 입력하세요 (8자 이상)"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
                   <button
                     type="button"
-                    className="form-submit-btn"
-                    onClick={handleSendResetEmail}
-                    disabled={isSendingEmail || !userEmail}
+                    className="form-input-toggle"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
                   >
-                    {isSendingEmail ? '발송 중...' : '인증 메일 발송'}
+                    {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
+                </div>
+              </div>
 
-                  {/* 에러 메시지 (메일 발송 전) */}
-                  {passwordError && (
-                    <p className="form-error">{passwordError}</p>
-                  )}
-                </>
-              ) : (
-                <>
-                  {/* 발송 완료 안내 */}
-                  <div className="form-group">
-                    <p className="form-success">인증 메일이 발송되었습니다. 이메일을 확인해주세요.</p>
-                  </div>
+              {/* 새 비밀번호 확인 */}
+              <div className="form-group">
+                <label className="form-label">새 비밀번호 확인</label>
+                <div className="form-input-wrapper">
+                  <Lock className="form-input-icon" size={20} />
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    className="form-input"
+                    placeholder="새 비밀번호를 다시 입력하세요"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleChangePassword()}
+                  />
+                </div>
+              </div>
 
-                  {/* 이메일 인증 토큰 */}
-                  <div className="form-group">
-                    <label className="form-label">이메일 인증 토큰</label>
-                    <div className="form-input-wrapper">
-                      <Key className="form-input-icon" size={20} />
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="이메일로 받은 토큰을 입력하세요"
-                        value={resetToken}
-                        onChange={(e) => setResetToken(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* 새 비밀번호 */}
-                  <div className="form-group">
-                    <label className="form-label">새 비밀번호</label>
-                    <div className="form-input-wrapper">
-                      <Lock className="form-input-icon" size={20} />
-                      <input
-                        type={showNewPassword ? 'text' : 'password'}
-                        className="form-input"
-                        placeholder="새 비밀번호를 입력하세요 (8자 이상)"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        className="form-input-toggle"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                      >
-                        {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 새 비밀번호 확인 */}
-                  <div className="form-group">
-                    <label className="form-label">새 비밀번호 확인</label>
-                    <div className="form-input-wrapper">
-                      <Lock className="form-input-icon" size={20} />
-                      <input
-                        type={showNewPassword ? 'text' : 'password'}
-                        className="form-input"
-                        placeholder="새 비밀번호를 다시 입력하세요"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleChangePassword()}
-                      />
-                    </div>
-                  </div>
-
-                  {/* 에러 메시지 */}
-                  {passwordError && (
-                    <p className="form-error">{passwordError}</p>
-                  )}
-
-                  {/* 비밀번호 변경 버튼 */}
-                  <button
-                    className="form-submit-btn"
-                    onClick={handleChangePassword}
-                    disabled={isChangingPassword}
-                  >
-                    {isChangingPassword ? '변경 중...' : '비밀번호 변경'}
-                  </button>
-
-                  {/* 인증 메일 재발송 */}
-                  <button
-                    type="button"
-                    className="form-link form-link-center"
-                    onClick={handleSendResetEmail}
-                    disabled={isSendingEmail}
-                  >
-                    인증 메일 재발송
-                  </button>
-                </>
+              {/* 에러 메시지 */}
+              {passwordError && (
+                <p className="form-error">{passwordError}</p>
               )}
+
+              {/* 버튼 */}
+              <button
+                className="form-submit-btn"
+                onClick={handleChangePassword}
+                disabled={isChangingPassword}
+              >
+                {isChangingPassword ? '변경 중...' : '비밀번호 변경'}
+              </button>
             </div>
           </div>
         </div>
