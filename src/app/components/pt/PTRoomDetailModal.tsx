@@ -14,9 +14,12 @@ import {
   Video,
   Calendar,
   Copy,
-  Check
+  Check,
+  Flag,
+  AlertTriangle 
 } from 'lucide-react';
 import type { PTRoomListItem, GetPTRoomDetailResponse } from '../../../api/types/pt';
+import { reportContent } from '../../../api/report';
 
 /**
  * Props 타입 정의
@@ -72,6 +75,9 @@ export default function PTRoomDetailModal({
   const [codeError, setCodeError] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [showCodePopup, setShowCodePopup] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedReportReason, setSelectedReportReason] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
 
   /**
    * 모달 외부 클릭 핸들러
@@ -145,6 +151,49 @@ export default function PTRoomDetailModal({
   };
 
   /**
+   * 신고 사유 목록
+   */
+  const REPORT_REASONS = [
+    '스팸/광고',
+    '욕설/비방',
+    '음란물',
+    '개인정보 노출',
+    '사기/허위정보',
+    '기타'
+  ];
+
+  /**
+   * 신고 제출
+   */
+  const handleReport = async () => {
+    if (!selectedReportReason) return;
+
+    setIsReporting(true);
+    try {
+      await reportContent({
+        type: 'PT_ROOM',
+        id: room.ptRoomId,
+        cause: selectedReportReason,
+      });
+      alert('신고가 접수되었습니다.');
+      setShowReportModal(false);
+      setSelectedReportReason('');
+    } catch (error) {
+      const err = error as Error & { code?: string };
+      if (err.code === 'COMMUNITY-006') {
+        alert('본인의 화상PT는 신고할 수 없습니다.');
+      } else if (err.code === 'COMMUNITY-008') {
+        alert('이미 신고한 화상PT입니다.');
+      } else {
+        alert('신고에 실패했습니다.');
+      }
+      console.error('신고 실패:', error);
+    } finally {
+      setIsReporting(false);
+    }
+  };
+  
+  /**
    * 상태 뱃지 렌더링
    */
   const renderStatusBadge = () => {
@@ -202,9 +251,20 @@ export default function PTRoomDetailModal({
         {/* 모달 헤더 */}
         <div className="modal-header">
           <h2 className="modal-title">화상PT 상세</h2>
-          <button className="modal-close-btn" onClick={onClose}>
-            <X size={24} />
-          </button>
+          <div className="modal-header-actions">
+            {!isMyRoom && (
+              <button 
+                className="modal-report-btn" 
+                onClick={() => setShowReportModal(true)}
+                title="신고하기"
+              >
+                <Flag size={20} />
+              </button>
+            )}
+            <button className="modal-close-btn" onClick={onClose}>
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         {/* 모달 콘텐츠 */}
@@ -388,6 +448,62 @@ export default function PTRoomDetailModal({
             )}
           </div>
         </div>
+
+        {/* 신고 모달 */}
+        {showReportModal && (
+          <div className="modal-overlay" style={{ zIndex: 'var(--z-modal)' }} onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowReportModal(false);
+              setSelectedReportReason('');
+            }
+          }}>
+            <div className="report-popup">
+              <div className="report-popup-header">
+                <AlertTriangle size={24} className="report-popup-icon" />
+                <h3 className="report-popup-title">화상PT 신고</h3>
+              </div>
+
+              <p className="report-popup-desc">
+                신고 대상: <strong>{room.title}</strong>
+              </p>
+
+              <div className="report-popup-reasons">
+                {REPORT_REASONS.map((reason) => (
+                  <label key={reason} className="report-popup-reason">
+                    <input
+                      type="radio"
+                      name="reportReason"
+                      value={reason}
+                      checked={selectedReportReason === reason}
+                      onChange={(e) => setSelectedReportReason(e.target.value)}
+                    />
+                    <span>{reason}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div className="report-popup-actions">
+                <button 
+                  className="report-popup-btn cancel"
+                  onClick={() => {
+                    setShowReportModal(false);
+                    setSelectedReportReason('');
+                  }}
+                >
+                  취소
+                </button>
+                <button 
+                  className="report-popup-btn submit"
+                  onClick={handleReport}
+                  disabled={!selectedReportReason || isReporting}
+                >
+                  {isReporting ? '신고 중...' : '신고하기'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
