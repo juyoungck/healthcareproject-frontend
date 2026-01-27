@@ -8,15 +8,15 @@
 import { useState, useCallback } from 'react';
 import PlanDietCreate, { DietGoal } from '../components/plan/PlanDietCreate';
 import PlanDietLoading from '../components/plan/PlanDietLoading';
-import PlanDietResult, { DietPlan } from '../components/plan/PlanDietResult';
-import { generateDummyDietPlan } from '../../data/plan';
+import PlanDietResult from '../components/plan/PlanDietResult';
+import { generateDietPlan } from '../../api/ai';
+import type { DietAiResponse } from '../../api/types/ai';
 
 /**
  * Props 타입 정의
  */
 interface PlanDietPageProps {
   onBack: () => void;
-  onSavePlan: (plan: DietPlan) => void;
 }
 
 /**
@@ -27,71 +27,74 @@ type ViewType = 'create' | 'loading' | 'result';
 /**
  * PlanDietPage 컴포넌트
  */
-export default function PlanDietPage({ onBack, onSavePlan }: PlanDietPageProps) {
+export default function PlanDietPage({ onBack }: PlanDietPageProps) {
   /**
    * 현재 화면 상태
    */
   const [currentView, setCurrentView] = useState<ViewType>('create');
 
   /**
-   * 선택된 식단 목표
+   * 선택된 알레르기
    */
-  const [selectedGoal, setSelectedGoal] = useState<DietGoal>('diet');
+  const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
 
   /**
-   * 선택된 알러지
+   * 추가 요청사항 (goal 포함)
    */
-  const [selectedAllergies, setSelectedAllergies] = useState<string[]>(['none']);
+  const [note, setNote] = useState<string>('');
 
   /**
    * 생성된 계획 데이터
    */
-  const [planData, setPlanData] = useState<DietPlan | null>(null);
+  const [planData, setPlanData] = useState<DietAiResponse | null>(null);
 
   /**
-   * 추가 요구사항 (재생성 시 사용)
+   * 에러 상태
    */
-  const [additionalRequest, setAdditionalRequest] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   /**
    * 계획 생성 시작 핸들러
    */
-  const handleGenerate = (goal: DietGoal, allergies: string[]) => {
-    setSelectedGoal(goal);
+  const handleGenerate = (allergies: string[], combinedNote: string) => {
     setSelectedAllergies(allergies);
+    setNote(combinedNote);
+    setError(null);
     setCurrentView('loading');
   };
 
   /**
-   * 로딩 완료 핸들러
-   * TODO: 실제 AI API 호출로 대체
+   * API 호출 및 로딩 완료 핸들러
    */
-  const handleLoadingComplete = useCallback(() => {
-    const plan = generateDummyDietPlan(selectedGoal, selectedAllergies);
-    setPlanData(plan);
-    setCurrentView('result');
-  }, [selectedGoal, selectedAllergies]);
+  const handleLoadingComplete = useCallback(async () => {
+    try {
+      const response = await generateDietPlan({
+        allergies: selectedAllergies,
+        note: note || null,
+      });
+      setPlanData(response);
+      setCurrentView('result');
+    } catch (err: any) {
+      console.error('식단 계획 생성 실패:', err);
+      const errorMessage = err.response?.data?.message || '식단 계획 생성에 실패했습니다.';
+      setError(errorMessage);
+      setCurrentView('create');
+      alert(errorMessage);
+    }
+  }, [selectedAllergies, note]);
 
   /**
    * 재생성 핸들러
    */
-  const handleRegenerate = (request: string) => {
-    setAdditionalRequest(request);
+  const handleRegenerate = () => {
     setCurrentView('loading');
-    
-    /**
-     * TODO: 실제 구현 시 additionalRequest를 AI API에 전달
-     */
-    console.log('재생성 요청:', request);
   };
 
   /**
    * 계획 저장 핸들러
+   * - API 응답이 이미 저장된 상태이므로 화면만 이동
    */
   const handleSave = () => {
-    if (planData) {
-      onSavePlan(planData);
-    }
     onBack();
   };
 
@@ -123,4 +126,3 @@ export default function PlanDietPage({ onBack, onSavePlan }: PlanDietPageProps) 
       );
   }
 }
-  

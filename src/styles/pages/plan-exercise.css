@@ -1496,3 +1496,30 @@
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
+
+/* ===========================================
+ * 추가 요청사항 텍스트영역
+ * =========================================== */
+
+.exercise-plan-textarea {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease;
+}
+
+.exercise-plan-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.exercise-plan-textarea::placeholder {
+  color: var(--text-tertiary);
+}

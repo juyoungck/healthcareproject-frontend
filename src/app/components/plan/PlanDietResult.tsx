@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { ArrowLeft, Check, RefreshCw, Flame, ChevronDown, ChevronUp, Utensils } from 'lucide-react';
-import PlanDietRegenerateModal from './PlanDietRegenerateModal';
+import type { DietAiResponse, DietDay, DietMeal } from '../../../api/types/ai';
 
 /**
  * Props 타입 정의
@@ -17,61 +17,28 @@ import PlanDietRegenerateModal from './PlanDietRegenerateModal';
 interface PlanDietResultProps {
   onBack: () => void;
   onSave: () => void;
-  onRegenerate: (additionalRequest: string) => void;
-  planData: DietPlan;
+  onRegenerate: () => void;
+  planData: DietAiResponse;
 }
 
 /**
- * 식단 계획 타입
+ * 날짜 포맷 함수 (2026-01-17 → 1월 17일 (토))
  */
-export interface DietPlan {
-  createdAt: string;
-  dailyCalories: number;
-  macros: {
-    carb: number;      /* 탄수화물 비율 % */
-    protein: number;   /* 단백질 비율 % */
-    fat: number;       /* 지방 비율 % */
-  };
-  considerations: string[];
-  dailyMeals: DailyMeal[];
-}
+const formatDate = (logDate: string): string => {
+  const date = new Date(logDate);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
+  return `${month}월 ${day}일 (${dayOfWeek})`;
+};
 
 /**
- * 일별 식단 타입
+ * 기간 포맷 함수 (2026-01-16 ~ 2026-01-22 → 1.16 ~ 1.22)
  */
-export interface DailyMeal {
-  dayName: string;
-  totalCalories: number;
-  meals: Meal[];
-}
-
-/**
- * 끼니 타입
- */
-export interface Meal {
-  id: number;
-  type: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'snack2';
-  typeLabel: string;
-  menu: string;
-  calories: number;
-  nutrients: {
-    carb: number;
-    protein: number;
-    fat: number;
-  };
-}
-
-/**
- * 요일 라벨 매핑
- */
-const DAY_LABELS: { [key: string]: string } = {
-  '0': '일요일',
-  '1': '월요일',
-  '2': '화요일',
-  '3': '수요일',
-  '4': '목요일',
-  '5': '금요일',
-  '6': '토요일',
+const formatPeriod = (startDate: string, endDate: string): string => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return `${start.getMonth() + 1}.${start.getDate()} ~ ${end.getMonth() + 1}.${end.getDate()}`;
 };
 
 /**
@@ -83,52 +50,32 @@ export default function PlanDietResult({
   onRegenerate,
   planData 
 }: PlanDietResultProps) {
- /**
-   * 재생성 모달 상태
-   */
-  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
-
   /**
-   * 펼쳐진 요일 상태
+   * 펼쳐진 날짜 상태
    */
-  const [expandedDays, setExpandedDays] = useState<string[]>(
-    planData.dailyMeals.map(p => p.dayName)
+  const [expandedDays, setExpandedDays] = useState<number[]>(
+    planData.days.map(d => d.dietDayId)
   );
 
   /**
-   * 요일 펼침/접기 토글
+   * 날짜 펼침/접기 토글
    */
-  const toggleDay = (dayName: string) => {
+  const toggleDay = (dietDayId: number) => {
     setExpandedDays(prev => {
-      if (prev.includes(dayName)) {
-        return prev.filter(d => d !== dayName);
+      if (prev.includes(dietDayId)) {
+        return prev.filter(id => id !== dietDayId);
       } else {
-        return [...prev, dayName];
+        return [...prev, dietDayId];
       }
     });
   };
 
   /**
-   * 끼니별 그룹화 함수
+   * 전체 평균 칼로리 계산
    */
-  const groupMealsByType = (meals: Meal[]) => {
-    const groups: { [key: string]: Meal[] } = {};
-    meals.forEach(meal => {
-      if (!groups[meal.type]) {
-        groups[meal.type] = [];
-      }
-      groups[meal.type].push(meal);
-    });
-    return groups;
-  };
-
-  /**
-   * 재생성 핸들러
-   */
-  const handleRegenerate = (additionalRequest: string) => {
-    setShowRegenerateModal(false);
-    onRegenerate(additionalRequest);
-  };
+  const averageCalories = Math.round(
+    planData.days.reduce((sum, day) => sum + day.summary.totalCalories, 0) / planData.days.length
+  );
 
   return (
     <div className="diet-result-container">
@@ -146,97 +93,52 @@ export default function PlanDietResult({
         {/* 생성 완료 배너 */}
         <div className="diet-result-banner">
           <Check size={20} />
-          <span>{planData.createdAt}</span>
+          <span>{formatPeriod(planData.startDate, planData.endDate)} ({planData.pageInfo.days}일)</span>
         </div>
 
-        {/* 일일 영양 목표 */}
+        {/* 일일 평균 칼로리 */}
         <section className="diet-result-daily-goal">
-          <h2 className="diet-result-section-title">일일 영양 목표</h2>
+          <h2 className="diet-result-section-title">일일 평균 칼로리</h2>
           
-          {/* 칼로리 */}
           <div className="diet-result-calories">
             <Flame size={24} className="diet-result-calories-icon" />
-            <span className="diet-result-calories-value">{planData.dailyCalories}</span>
+            <span className="diet-result-calories-value">{averageCalories}</span>
             <span className="diet-result-calories-unit">kcal</span>
-          </div>
-          <p className="diet-result-calories-label">일일 권장 칼로리</p>
-
-          {/* 영양소 비율 */}
-          <div className="diet-result-macros">
-            {/* 탄수화물 */}
-            <div className="diet-result-macro">
-              <div className="diet-result-macro-header">
-                <span className="diet-result-macro-label">탄수화물</span>
-                <span className="diet-result-macro-value carb">{planData.macros.carb}%</span>
-              </div>
-              <div className="diet-result-macro-bar">
-                <div 
-                  className="diet-result-macro-fill carb" 
-                  style={{ width: `${planData.macros.carb}%` }}
-                />
-              </div>
-            </div>
-
-            {/* 단백질 */}
-            <div className="diet-result-macro">
-              <div className="diet-result-macro-header">
-                <span className="diet-result-macro-label">단백질</span>
-                <span className="diet-result-macro-value protein">{planData.macros.protein}%</span>
-              </div>
-              <div className="diet-result-macro-bar">
-                <div 
-                  className="diet-result-macro-fill protein" 
-                  style={{ width: `${planData.macros.protein}%` }}
-                />
-              </div>
-            </div>
-
-            {/* 지방 */}
-            <div className="diet-result-macro">
-              <div className="diet-result-macro-header">
-                <span className="diet-result-macro-label">지방</span>
-                <span className="diet-result-macro-value fat">{planData.macros.fat}%</span>
-              </div>
-              <div className="diet-result-macro-bar">
-                <div 
-                  className="diet-result-macro-fill fat" 
-                  style={{ width: `${planData.macros.fat}%` }}
-                />
-              </div>
-            </div>
           </div>
         </section>
 
         {/* 고려된 사항 */}
-        <section className="diet-result-considerations">
-          <h3 className="diet-result-considerations-title">
-            📋 고려된 사항
-          </h3>
-          <ul className="diet-result-considerations-list">
-            {planData.considerations.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </section>
+        {planData.considerations && planData.considerations.length > 0 && (
+          <section className="diet-result-considerations">
+            <h3 className="diet-result-considerations-title">
+              📋 고려된 사항
+            </h3>
+            <ul className="diet-result-considerations-list">
+              {planData.considerations.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-        {/* 요일별 식단 */}
+        {/* 날짜별 식단 */}
         <section className="diet-result-daily-meals">
-          {planData.dailyMeals.map(dailyMeal => (
-            <div key={dailyMeal.dayName} className="diet-result-day-card">
-              {/* 요일 헤더 - 클릭 가능 */}
+          {planData.days.map((dietDay: DietDay) => (
+            <div key={dietDay.dietDayId} className="diet-result-day-card">
+              {/* 날짜 헤더 */}
               <button 
                 className="diet-result-day-header"
-                onClick={() => toggleDay(dailyMeal.dayName)}
+                onClick={() => toggleDay(dietDay.dietDayId)}
               >
                 <h4 className="diet-result-day-name">
-                  {DAY_LABELS[dailyMeal.dayName] || dailyMeal.dayName}
+                  {formatDate(dietDay.logDate)}
                 </h4>
                 <div className="diet-result-day-meta">
                   <span className="diet-result-day-calories">
                     <Flame size={14} />
-                    {dailyMeal.totalCalories}kcal
+                    {dietDay.summary.totalCalories}kcal
                   </span>
-                  {expandedDays.includes(dailyMeal.dayName) ? (
+                  {expandedDays.includes(dietDay.dietDayId) ? (
                     <ChevronUp size={20} />
                   ) : (
                     <ChevronDown size={20} />
@@ -244,30 +146,36 @@ export default function PlanDietResult({
                 </div>
               </button>
 
-              {/* 끼니 목록 - 펼쳐진 경우만 표시 */}
-              {expandedDays.includes(dailyMeal.dayName) && (
+              {/* 끼니 목록 */}
+              {expandedDays.includes(dietDay.dietDayId) && (
                 <div className="diet-result-meals">
-                  {Object.entries(groupMealsByType(dailyMeal.meals)).map(([type, meals]) => (
-                    <div key={type} className="diet-result-meal-group">
-                      {/* 끼니 그룹 헤더 */}
+                  {dietDay.meals.map((meal: DietMeal) => (
+                    <div key={meal.dietMealId} className="diet-result-meal-group">
+                      {/* 끼니 헤더 */}
                       <div className="diet-result-meal-group-header">
-                        🍽 {meals[0].typeLabel}
+                        🍽 {meal.title}
+                        <span className="diet-result-meal-group-calories">
+                          {meal.nutrition.calories}kcal
+                        </span>
                       </div>
-                      {/* 해당 끼니의 메뉴들 */}
-                      {meals.map(meal => (
-                        <div key={meal.id} className="diet-result-meal-item">
+                      {/* 음식 항목들 */}
+                      {meal.items.map(item => (
+                        <div key={item.dietMealItemId} className="diet-result-meal-item">
                           <div className="diet-result-meal-icon">
                             <Utensils size={20} />
                           </div>
                           <div className="diet-result-meal-center">
-                            <p className="diet-result-meal-menu">{meal.menu}</p>
+                            <p className="diet-result-meal-menu">{item.name}</p>
                             <span className="diet-result-meal-nutrients">
-                              탄 {meal.nutrients.carb}g 단 {meal.nutrients.protein}g 지 {meal.nutrients.fat}g
+                              {item.grams}g × {item.count}개
                             </span>
                           </div>
-                          <span className="diet-result-meal-calories">{meal.calories}kcal</span>
                         </div>
                       ))}
+                      {/* 끼니 영양소 요약 */}
+                      <div className="diet-result-meal-nutrition-summary">
+                        탄 {meal.nutrition.carbs}g · 단 {meal.nutrition.protein}g · 지 {meal.nutrition.fat}g
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -281,7 +189,7 @@ export default function PlanDietResult({
       <footer className="diet-result-footer">
         <button 
           className="diet-result-regenerate-btn"
-          onClick={() => setShowRegenerateModal(true)}
+          onClick={onRegenerate}
         >
           <RefreshCw size={18} />
           재생성
@@ -291,17 +199,9 @@ export default function PlanDietResult({
           onClick={onSave}
         >
           <Check size={18} />
-          계획 저장
+          저장 완료
         </button>
       </footer>
-
-      {/* 재생성 모달 */}
-      {showRegenerateModal && (
-        <PlanDietRegenerateModal
-          onClose={() => setShowRegenerateModal(false)}
-          onRegenerate={handleRegenerate}
-        />
-      )}
     </div>
   );
 }

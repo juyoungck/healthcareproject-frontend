@@ -8,15 +8,15 @@
 import { useState, useCallback } from 'react';
 import PlanExerciseCreate from '../components/plan/PlanExerciseCreate';
 import PlanExerciseLoading from '../components/plan/PlanExerciseLoading';
-import PlanExerciseResult, { ExercisePlan } from '../components/plan/PlanExerciseResult';
-import { generateDummyExercisePlan } from '../../data/plan';
+import PlanExerciseResult from '../components/plan/PlanExerciseResult';
+import { generateWorkoutPlan } from '../../api/ai';
+import type { WorkoutAiResponse } from '../../api/types/ai';
 
 /**
  * Props 타입 정의
  */
 interface PlanExercisePageProps {
   onBack: () => void;
-  onSavePlan: (plan: ExercisePlan) => void;
 }
 
 /**
@@ -27,66 +27,74 @@ type ViewType = 'create' | 'loading' | 'result';
 /**
  * PlanExercisePage 컴포넌트
  */
-export default function PlanExercisePage({ onBack, onSavePlan }: PlanExercisePageProps) {
+export default function PlanExercisePage({ onBack }: PlanExercisePageProps) {
   /**
    * 현재 화면 상태
    */
   const [currentView, setCurrentView] = useState<ViewType>('create');
 
   /**
-   * 선택된 요일
+   * 선택된 날짜 배열 (ISO 문자열)
    */
-  const [selectedDays, setSelectedDays] = useState<number[]>([]);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
 
   /**
-   * 생성된 계획 데이터
-   */
-  const [planData, setPlanData] = useState<ExercisePlan | null>(null);
-
-  /**
-   * 추가 요구사항 (재생성 시 사용)
+   * 추가 요청사항
    */
   const [additionalRequest, setAdditionalRequest] = useState<string>('');
 
   /**
+   * 생성된 계획 데이터
+   */
+  const [planData, setPlanData] = useState<WorkoutAiResponse | null>(null);
+
+  /**
+   * 에러 상태
+   */
+  const [error, setError] = useState<string | null>(null);
+
+  /**
    * 계획 생성 시작 핸들러
    */
-  const handleGenerate = (days: number[]) => {
-    setSelectedDays(days);
+  const handleGenerate = (dates: string[], request: string) => {
+    setSelectedDates(dates);
+    setAdditionalRequest(request);
+    setError(null);
     setCurrentView('loading');
   };
 
   /**
-   * 로딩 완료 핸들러
-   * TODO: 실제 AI API 호출로 대체
+   * API 호출 및 로딩 완료 핸들러
    */
-  const handleLoadingComplete = useCallback(() => {
-    const plan = generateDummyExercisePlan(selectedDays);
-    setPlanData(plan);
-    setCurrentView('result');
-  }, [selectedDays]);
+  const handleLoadingComplete = useCallback(async () => {
+    try {
+      const response = await generateWorkoutPlan({
+        dates: selectedDates,
+        additionalRequest: additionalRequest || null,
+      });
+      setPlanData(response);
+      setCurrentView('result');
+    } catch (err: any) {
+      console.error('운동 계획 생성 실패:', err);
+      const errorMessage = err.response?.data?.message || '운동 계획 생성에 실패했습니다.';
+      setError(errorMessage);
+      setCurrentView('create');
+      alert(errorMessage);
+    }
+  }, [selectedDates, additionalRequest]);
 
   /**
    * 재생성 핸들러
    */
-  const handleRegenerate = (request: string) => {
-    setAdditionalRequest(request);
+  const handleRegenerate = () => {
     setCurrentView('loading');
-    
-    /**
-     * TODO: 실제 구현 시 additionalRequest를 AI API에 전달
-     * AI가 기존 온보딩 정보 + 추가 요구사항을 함께 고려하여 재생성
-     */
-    console.log('재생성 요청:', request);
   };
 
   /**
    * 계획 저장 핸들러
+   * - API 응답이 이미 저장된 상태이므로 화면만 이동
    */
   const handleSave = () => {
-    if (planData) {
-      onSavePlan(planData);
-    }
     onBack();
   };
 

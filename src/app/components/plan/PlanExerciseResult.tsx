@@ -9,103 +9,77 @@
 
 import { useState } from 'react';
 import { ArrowLeft, Check, RefreshCw, Clock, Dumbbell, ChevronDown, ChevronUp } from 'lucide-react';
-import PlanExerciseRegenerateModal from './PlanExerciseRegenerateModal';
+import type { WorkoutAiResponse, WorkoutDay } from '../../../api/types/ai';
 
 /**
  * Props 타입 정의
  */
-interface ExercisePlanResultProps {
+interface PlanExerciseResultProps {
   onBack: () => void;
   onSave: () => void;
-  onRegenerate: (additionalRequest: string) => void;
-  planData: ExercisePlan;
+  onRegenerate: () => void;
+  planData: WorkoutAiResponse;
 }
 
 /**
- * 운동 계획 타입
+ * 요일 라벨 매핑 (영문 → 한글)
  */
-export interface ExercisePlan {
-  createdAt: string;
-  duration: string;
-  daysPerWeek: number;
-  considerations: string[];
-  dailyPlans: DailyPlan[];
-}
-
-/**
- * 일별 계획 타입
- */
-export interface DailyPlan {
-  dayName: string;
-  category: string;
-  totalMinutes: number;
-  exercises: Exercise[];
-}
-
-/**
- * 운동 타입
- */
-export interface Exercise {
-  id: number;
-  name: string;
-  sets: number;
-  reps: number;
-  restSeconds: number;
-}
-
-/**
- * 요일 라벨 매핑
- */
-const DAY_LABELS: { [key: string]: string } = {
-  '0': '일요일',
-  '1': '월요일',
-  '2': '화요일',
-  '3': '수요일',
-  '4': '목요일',
-  '5': '금요일',
-  '6': '토요일',
+const DAY_OF_WEEK_LABELS: { [key: string]: string } = {
+  'SUN': '일요일',
+  'MON': '월요일',
+  'TUE': '화요일',
+  'WED': '수요일',
+  'THU': '목요일',
+  'FRI': '금요일',
+  'SAT': '토요일',
 };
 
 /**
- * ExercisePlanResult 컴포넌트
+ * 날짜 포맷 함수 (2026-01-17 → 1월 17일 (토))
  */
-export default function ExercisePlanResult({ 
+const formatDateWithDay = (logDate: string, dayOfWeek: string): string => {
+  const date = new Date(logDate);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const dayLabel = DAY_OF_WEEK_LABELS[dayOfWeek] || dayOfWeek;
+  return `${month}월 ${day}일 (${dayLabel.charAt(0)})`;
+};
+
+/**
+ * PlanExerciseResult 컴포넌트
+ */
+export default function PlanExerciseResult({ 
   onBack, 
   onSave, 
   onRegenerate,
   planData 
-}: ExercisePlanResultProps) {
+}: PlanExerciseResultProps) {
   /**
-   * 재생성 모달 상태
+   * 펼쳐진 날짜 상태
    */
-  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
-
-  /**
-   * 펼쳐진 요일 상태
-   */
-  const [expandedDays, setExpandedDays] = useState<string[]>(
-    planData.dailyPlans.map(p => p.dayName)
+  const [expandedDays, setExpandedDays] = useState<number[]>(
+    planData.days.map(d => d.workoutDayId)
   );
 
   /**
-   * 요일 펼침/접기 토글
+   * 날짜 펼침/접기 토글
    */
-  const toggleDay = (dayName: string) => {
+  const toggleDay = (workoutDayId: number) => {
     setExpandedDays(prev => {
-      if (prev.includes(dayName)) {
-        return prev.filter(d => d !== dayName);
+      if (prev.includes(workoutDayId)) {
+        return prev.filter(id => id !== workoutDayId);
       } else {
-        return [...prev, dayName];
+        return [...prev, workoutDayId];
       }
     });
   };
 
   /**
-   * 재생성 핸들러
+   * 생성 시각 포맷
    */
-  const handleRegenerate = (additionalRequest: string) => {
-    setShowRegenerateModal(false);
-    onRegenerate(additionalRequest);
+  const formatGeneratedAt = (generatedAt: string): string => {
+    const date = new Date(generatedAt);
+    return `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}. 생성`;
   };
 
   return (
@@ -124,7 +98,7 @@ export default function ExercisePlanResult({
         {/* 생성 완료 배너 */}
         <div className="exercise-result-banner">
           <Check size={20} />
-          <span>{planData.createdAt} 생성</span>
+          <span>{formatGeneratedAt(planData.generatedAt)}</span>
         </div>
 
         {/* 계획 요약 */}
@@ -132,46 +106,48 @@ export default function ExercisePlanResult({
           <h2 className="exercise-result-summary-title">계획 요약</h2>
           <div className="exercise-result-summary-grid">
             <div className="exercise-result-summary-item">
-              <span className="exercise-result-summary-value">{planData.duration}</span>
+              <span className="exercise-result-summary-value">{planData.planSummary.rangeDays}일</span>
               <span className="exercise-result-summary-label">기간</span>
             </div>
             <div className="exercise-result-summary-item">
-              <span className="exercise-result-summary-value">{planData.daysPerWeek}일</span>
-              <span className="exercise-result-summary-label">주간 운동</span>
+              <span className="exercise-result-summary-value">{planData.planSummary.workoutDayCount}일</span>
+              <span className="exercise-result-summary-label">운동일</span>
             </div>
           </div>
         </section>
 
         {/* 고려된 사항 */}
-        <section className="exercise-result-considerations">
-          <h3 className="exercise-result-considerations-title">
-            📋 고려된 사항
-          </h3>
-          <ul className="exercise-result-considerations-list">
-            {planData.considerations.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </section>
+        {planData.considerations && planData.considerations.length > 0 && (
+          <section className="exercise-result-considerations">
+            <h3 className="exercise-result-considerations-title">
+              📋 고려된 사항
+            </h3>
+            <ul className="exercise-result-considerations-list">
+              {planData.considerations.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-        {/* 요일별 운동 목록 */}
+        {/* 날짜별 운동 목록 */}
         <section className="exercise-result-daily-plans">
-          {planData.dailyPlans.map(dailyPlan => (
-            <div key={dailyPlan.dayName} className="exercise-result-day-card">
-              {/* 요일 헤더 */}
+          {planData.days.map((workoutDay: WorkoutDay) => (
+            <div key={workoutDay.workoutDayId} className="exercise-result-day-card">
+              {/* 날짜 헤더 */}
               <button 
                 className="exercise-result-day-header"
-                onClick={() => toggleDay(dailyPlan.dayName)}
+                onClick={() => toggleDay(workoutDay.workoutDayId)}
               >
                 <h4 className="exercise-result-day-name">
-                  {DAY_LABELS[dailyPlan.dayName] || dailyPlan.dayName}
+                  {formatDateWithDay(workoutDay.logDate, workoutDay.dayOfWeek)}
                 </h4>
                 <div className="exercise-result-day-meta">
                   <span className="exercise-result-day-time">
                     <Clock size={14} />
-                    {dailyPlan.totalMinutes}분
+                    {workoutDay.totalMinutes}분
                   </span>
-                  {expandedDays.includes(dailyPlan.dayName) ? (
+                  {expandedDays.includes(workoutDay.workoutDayId) ? (
                     <ChevronUp size={20} />
                   ) : (
                     <ChevronDown size={20} />
@@ -180,24 +156,27 @@ export default function ExercisePlanResult({
               </button>
 
               {/* 운동 목록 */}
-              {expandedDays.includes(dailyPlan.dayName) && (
+              {expandedDays.includes(workoutDay.workoutDayId) && (
                 <div className="exercise-result-exercises">
                   {/* 카테고리 헤더 */}
                   <div className="exercise-result-category-header">
                     <Dumbbell size={14} />
-                    {dailyPlan.category}
+                    {workoutDay.title}
                   </div>
-                  {dailyPlan.exercises.map(exercise => (
-                    <div key={exercise.id} className="exercise-result-exercise-item">
+                  {workoutDay.items.map(item => (
+                    <div key={item.workoutItemId} className="exercise-result-exercise-item">
                       <div className="exercise-result-exercise-icon">
                         <Dumbbell size={20} />
                       </div>
                       <div className="exercise-result-exercise-info">
                         <span className="exercise-result-exercise-name">
-                          {exercise.name}
+                          {item.exerciseName}
                         </span>
                         <span className="exercise-result-exercise-detail">
-                          {exercise.sets}세트 × {exercise.reps}회 • 휴식 {exercise.restSeconds}초
+                          {item.sets && item.reps && `${item.sets}세트 × ${item.reps}회`}
+                          {item.restSecond && ` • 휴식 ${item.restSecond}초`}
+                          {item.durationMinutes && `${item.durationMinutes}분`}
+                          {item.distanceKm && ` ${item.distanceKm}km`}
                         </span>
                       </div>
                     </div>
@@ -213,7 +192,7 @@ export default function ExercisePlanResult({
       <footer className="exercise-result-footer">
         <button 
           className="exercise-result-regenerate-btn"
-          onClick={() => setShowRegenerateModal(true)}
+          onClick={onRegenerate}
         >
           <RefreshCw size={18} />
           재생성
@@ -223,17 +202,9 @@ export default function ExercisePlanResult({
           onClick={onSave}
         >
           <Check size={18} />
-          계획 저장
+          저장 완료
         </button>
       </footer>
-
-      {/* 재생성 모달 */}
-      {showRegenerateModal && (
-        <PlanExerciseRegenerateModal
-          onClose={() => setShowRegenerateModal(false)}
-          onRegenerate={handleRegenerate}
-        />
-      )}
     </div>
   );
 }
