@@ -16,6 +16,7 @@ import type {
   ProfileImageUpdateRequest,
   UserUpdateResponse,
   PasswordChangeRequest,
+  TrainerInfoResponse,
 } from './types/me';
 import type { ApiResponse } from './types/auth';
 
@@ -152,4 +153,21 @@ export const withdrawUser = async (): Promise<void> => {
   await apiClient.delete('/api/me', {
     data: {},
   });
+export const withdrawUser = async (data: WithdrawRequest): Promise<void> => {
+  await apiClient.delete('/api/me', { data });
+};
+
+/**
+ * ===========================================
+ * 트레이너 정보 조회 API
+ * ===========================================
+ */
+
+/**
+ * 트레이너 정보 조회
+ * GET /api/me/trainer
+ */
+export const getTrainerInfo = async (): Promise<TrainerInfoResponse> => {
+  const response = await apiClient.get<ApiResponse<TrainerInfoResponse>>('/api/me/trainer');
+  return response.data.data;
 };
