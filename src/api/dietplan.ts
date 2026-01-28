@@ -38,13 +38,13 @@ export const updateDietItemCheck = async (
 
 /**
  * 주간 식단 상태 조회
- * GET /api/me/diets/status?startDate={startDate}&endDate={endDate}
+ * GET /api/diets/calendar/summary?startDate={startDate}&endDate={endDate}
  */
 export const getWeeklyDietStatus = async (
   startDate: string,
   endDate: string
 ): Promise<WeeklyStatusResponse> => {
-  const response = await apiClient.get('/api/me/diets/status', {
+  const response = await apiClient.get('/api/diets/calendar/summary', {
     params: { startDate, endDate }
   });
   return response.data.data;

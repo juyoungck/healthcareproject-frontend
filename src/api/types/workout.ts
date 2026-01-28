@@ -17,9 +17,9 @@ export interface WorkoutItem {
   workoutItemId: number;
   exerciseId: number;
   name: string;
-  quantity: number;
-  sets: number;
   restSeconds: number;
+  amount: String;
+  rpe: number;
   isChecked: boolean;
   sortOrder: number;
 }

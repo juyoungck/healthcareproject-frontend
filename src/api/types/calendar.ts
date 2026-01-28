@@ -29,14 +29,29 @@ export type VideoPtStatus = 'NONE' | 'HAS_RESERVATION';
 /**
  * 운동/식단 날짜별 상태
  */
-export type DayStatus = 'DONE' | 'PLANNED' | 'NO_PLAN';
+export type DayStatus = 'DONE' | 'PLANNED' | 'NO_STATUS';
 
 /**
- * 주간 운동/식단 상태 응답
- * key: 날짜 (YYYY-MM-DD)
- * value: 상태
+ * 운동/식단 날짜별 상태 항목
  */
-export type WeeklyStatusResponse = {
+export interface DayStatusItem {
+  date: string;
+  status: DayStatus;
+}
+
+/**
+ * 운동/식단 주간 상태 API 응답
+ */
+export interface WeeklyStatusResponse {
+  startDate: string;
+  endDate: string;
+  days: DayStatusItem[];
+}
+
+/**
+ * 날짜를 key로 변환한 맵 (컴포넌트에서 사용)
+ */
+export type WeeklyStatusMap = {
   [date: string]: DayStatus;
 };
 
