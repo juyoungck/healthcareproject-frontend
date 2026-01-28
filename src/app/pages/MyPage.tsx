@@ -648,15 +648,7 @@ export default function MyPage({ onBack, onLogout, onEditOnboarding, onOpenAdmin
           </button>
         );
       case 'approved':
-        return (
-          <button
-            className="mypage-trainer-btn release"
-            onClick={handleTrainerRelease}
-          >
-            <UserMinus size={20} />
-            <span>트레이너 해제하기</span>
-          </button>
-        );
+        return (null);
       case 'rejected':
         return (
           <>
