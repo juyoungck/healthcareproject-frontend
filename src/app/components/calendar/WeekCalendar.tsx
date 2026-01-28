@@ -135,16 +135,13 @@ export default function WeekCalendar({
    * 날짜 클릭 시 팝업 열기
    */
   const handleDayClick = (index: number) => {
-    console.log('handleDayClick 호출:', index);
-    console.log('현재 selectedDayIndex:', selectedDayIndex);
-    setSelectedDayIndex(index);
-  };
+  setSelectedDayIndex(index);
+};
 
   /**
    * 팝업 닫기
    */
   const handleClosePopup = () => {
-    console.log('handleClosePopup 호출');
     setSelectedDayIndex(null);
   };
 

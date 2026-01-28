@@ -9,8 +9,7 @@
 
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { DailyRecord } from '../../../types/calendar';
-import { formatDateShort, getDateKey, getStatusText } from '../../../utils/calendar';
+import { formatDateShort, getDateKey } from '../../../utils/calendar';
 import { getDailyDetail } from '../../../api/calendar';
 import { getMemo, putMemo } from '../../../api/memo';
 import { DailyDetailResponse } from '../../../api/types/calendar';

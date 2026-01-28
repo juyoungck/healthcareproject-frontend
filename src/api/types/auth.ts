@@ -183,3 +183,33 @@ export interface SocialConnectionsResponse {
   hasPassword: boolean;
   connections: SocialConnection[];
 }
+
+/**
+ * ===========================================
+ * 이메일 인증 관련
+ * ===========================================
+ */
+
+/**
+ * 이메일 인증 코드 발송 요청
+ * POST /api/auth/email/verify/request
+ */
+export interface EmailVerificationRequest {
+  email: string;
+}
+
+/**
+ * 이메일 인증 코드 확인 요청
+ * POST /api/auth/email/verify/confirm
+ */
+export interface EmailVerificationConfirmRequest {
+  email: string;
+  code: string;
+}
+
+/**
+ * 이메일 인증 응답
+ */
+export interface EmailVerificationResponse {
+  success: boolean;
+}
