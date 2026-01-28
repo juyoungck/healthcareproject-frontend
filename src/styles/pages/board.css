@@ -467,16 +467,6 @@
   background-color: rgba(220, 38, 38, 0.1);
 }
 
-.board-action-btn.report {
-  color: var(--color-warning);
-  background-color: transparent;
-  border: var(--border-width-sm) solid var(--color-warning);
-}
-
-.board-action-btn.report:hover {
-  background-color: rgba(245, 158, 11, 0.1);
-}
-
 /**
  * ===========================================
  * 댓글 섹션
@@ -944,59 +934,6 @@
 .board-write-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-/**
- * ===========================================
- * 신고 모달
- * ===========================================
- */
-
-.board-report-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-lg);
-}
-
-.board-report-option {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-  background-color: var(--color-white);
-  border: var(--border-width-sm) solid var(--color-gray-200);
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.board-report-option:hover {
-  border-color: var(--color-primary);
-}
-
-.board-report-option.selected {
-  border-color: var(--color-primary);
-  background-color: var(--color-primary-light);
-}
-
-.board-report-radio {
-  width: var(--icon-size-base);
-  height: var(--icon-size-base);
-  border: var(--border-width-md) solid var(--color-gray-300);
-  border-radius: var(--border-radius-full);
-  transition: all var(--transition-fast);
-}
-
-.board-report-option.selected .board-report-radio {
-  border-color: var(--color-primary);
-  background-color: var(--color-primary);
-  box-shadow: inset 0 0 0 var(--border-width-xl) var(--color-white);
-}
-
-.board-report-label {
-  font-size: var(--font-size-sm);
-  color: var(--color-gray-700);
 }
 
 /**

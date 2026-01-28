@@ -1,0 +1,222 @@
+/**
+ * report.css
+ * 공통 신고 스타일
+ * 게시판, 화상PT 등에서 공통으로 사용
+ */
+
+/**
+ * ===========================================
+ * 신고 버튼
+ * ===========================================
+ */
+
+.report-btn {
+  color: var(--color-warning);
+  background-color: transparent;
+  border: var(--border-width-sm) solid var(--color-warning);
+}
+
+.report-btn:hover {
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+/**
+ * ===========================================
+ * 모달 헤더 신고 버튼
+ * ===========================================
+ */
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.modal-report-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
+  color: var(--color-gray-400);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.modal-report-btn:hover {
+  color: var(--color-error);
+  background-color: var(--color-gray-100);
+}
+
+/**
+ * ===========================================
+ * 신고 팝업/모달
+ * ===========================================
+ */
+
+.report-popup {
+  width: 100%;
+  max-width: var(--container-md);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  animation: slideUp 0.3s ease;
+}
+
+.report-popup-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.report-popup-icon {
+  color: var(--color-warning);
+}
+
+.report-popup-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.report-popup-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-lg);
+}
+
+.report-popup-desc strong {
+  color: var(--color-gray-900);
+}
+
+/**
+ * ===========================================
+ * 신고 사유 옵션
+ * ===========================================
+ */
+
+.report-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+.report-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.report-option:hover {
+  border-color: var(--color-primary);
+}
+
+.report-option.selected {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.report-radio {
+  width: var(--icon-size-base);
+  height: var(--icon-size-base);
+  border: var(--border-width-md) solid var(--color-gray-300);
+  border-radius: var(--border-radius-full);
+  transition: all var(--transition-fast);
+}
+
+.report-option.selected .report-radio {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  box-shadow: inset 0 0 0 var(--border-width-xl) var(--color-white);
+}
+
+.report-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+/* 라디오 버튼 스타일 (화상PT용) */
+.report-popup-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+.report-popup-reason {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.report-popup-reason:hover {
+  background-color: var(--color-gray-100);
+}
+
+.report-popup-reason input[type="radio"] {
+  accent-color: var(--color-primary);
+}
+
+.report-popup-reason span {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+/**
+ * ===========================================
+ * 신고 팝업 액션 버튼
+ * ===========================================
+ */
+
+.report-popup-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.report-popup-btn {
+  flex: 1;
+  height: var(--element-size-lg);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.report-popup-btn.cancel {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border: none;
+}
+
+.report-popup-btn.cancel:hover {
+  background-color: var(--color-gray-200);
+}
+
+.report-popup-btn.submit {
+  background-color: var(--color-error);
+  color: var(--color-white);
+  border: none;
+}
+
+.report-popup-btn.submit:hover {
+  background-color: #b91c1c;
+}
+
+.report-popup-btn.submit:disabled {
+  background-color: var(--color-gray-300);
+  cursor: not-allowed;
+}

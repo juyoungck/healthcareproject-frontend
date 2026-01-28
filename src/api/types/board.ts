@@ -169,30 +169,3 @@ export interface DeleteCommentResponse {
     message: string;
     deletedAt: string;
 }
-
-/**
- * ===========================================
- * 신고
- * ===========================================
- */
-/**
- * ===========================================
- * 신고
- * ===========================================
- */
-
-/** 신고 타입 */
-export type ReportType = 'POST' | 'COMMENT';
-
-/** 신고 요청 */
-export interface ReportRequest {
-    type: ReportType;
-    id: number;
-    cause: string;
-}
-
-/** 신고 응답 */
-export interface ReportResponse {
-    message: string;
-    createdAt: string;
-}

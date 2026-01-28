@@ -26,9 +26,10 @@ import {
   REPORT_REASONS,
   CATEGORY_MAP
 } from '../../../data/boards';
-import { getPostDetail, deletePost, createComment, updateComment, deleteComment, reportContent } from '../../../api/board';
+import { getPostDetail, deletePost, createComment, updateComment, deleteComment } from '../../../api/board';
 import { PostDetailResponse, CommentResponse } from '../../../api/types/board';
 import { getMe } from '../../../api/me';
+import { reportContent } from '../../../api/report';
 
 /**
  * Props 타입 정의
@@ -66,7 +67,8 @@ export default function BoardDetail({
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedReportReason, setSelectedReportReason] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'post' | 'comment' | 'reply'; id: number } | null>(null);
-
+  const [reportTarget, setReportTarget] = useState<{ type: 'POST' | 'COMMENT'; id: number } | null>(null);
+  const [isReporting, setIsReporting] = useState(false);
   /**
    * 본인 글 여부 확인
    */
@@ -181,23 +183,23 @@ export default function BoardDetail({
     setEditContent('');
   };
 
-/**
- * 댓글 수정 저장
- */
-const handleEditSave = async (commentId: number) => {
-  if (!editContent.trim() || !post) return;
+  /**
+   * 댓글 수정 저장
+   */
+  const handleEditSave = async (commentId: number) => {
+    if (!editContent.trim() || !post) return;
 
-  try {
-    await updateComment(postId, { commentId, content: editContent.trim() });
-    const data = await getPostDetail(postId);
-    setPost(data);
-    setEditingCommentId(null);
-    setEditContent('');
-  } catch (error) {
-    console.error('댓글 수정 실패:', error);
-    alert('댓글 수정에 실패했습니다.');
-  }
-};
+    try {
+      await updateComment(postId, { commentId, content: editContent.trim() });
+      const data = await getPostDetail(postId);
+      setPost(data);
+      setEditingCommentId(null);
+      setEditContent('');
+    } catch (error) {
+      console.error('댓글 수정 실패:', error);
+      alert('댓글 수정에 실패했습니다.');
+    }
+  };
 
   /**
    * 삭제 확인 모달 열기
@@ -232,21 +234,44 @@ const handleEditSave = async (commentId: number) => {
   };
 
   /**
+   * 신고 모달 열기
+   */
+  const handleReportClick = (type: 'POST' | 'COMMENT', id: number) => {
+    setReportTarget({ type, id });
+    setShowReportModal(true);
+  };
+
+  /**
    * 신고 제출
    */
   const handleReport = async () => {
-    if (!selectedReportReason) return;
+    if (!selectedReportReason || !reportTarget) return;
 
+    setIsReporting(true);
     try {
       await reportContent({
-        targetType: 'POST',
-        targetId: postId,
-        reason: selectedReportReason,
+        type: reportTarget.type,
+        id: reportTarget.id,
+        cause: selectedReportReason,
       });
+      alert('신고가 접수되었습니다.');
       setShowReportModal(false);
       setSelectedReportReason('');
+      setReportTarget(null);
     } catch (error) {
+      const err = error as Error & { code?: string };
+      if (err.code === 'COMMUNITY-006') {
+        alert('본인의 게시글 또는 댓글은 신고할 수 없습니다.');
+      } else if (err.code === 'COMMUNITY-007') {
+        alert('공지사항은 신고할 수 없습니다.');
+      } else if (err.code === 'COMMUNITY-008') {
+        alert('이미 신고한 게시글 또는 댓글입니다.');
+      } else {
+        alert('신고에 실패했습니다.');
+      }
       console.error('신고 실패:', error);
+    } finally {
+      setIsReporting(false);
     }
   };
 
@@ -354,7 +379,7 @@ const handleEditSave = async (commentId: number) => {
         ) : (
           <button
             className="board-action-btn report"
-            onClick={() => setShowReportModal(true)}
+            onClick={() => handleReportClick('POST', post.postId)}
           >
             <Flag size={14} />
             신고
@@ -400,7 +425,7 @@ const handleEditSave = async (commentId: number) => {
                   </span>
                   <span className="board-comment-date">{formatDate(comment.createdAt)}</span>
                 </div>
-                
+
                 {/* 댓글 내용 또는 수정 폼 */}
                 {editingCommentId === comment.commentId ? (
                   <div className="board-edit-form">
@@ -433,7 +458,7 @@ const handleEditSave = async (commentId: number) => {
                     답글
                   </button>
                   <div className="board-comment-actions-right">
-                    {isCommentAuthor(comment.author.handle) && editingCommentId !== comment.commentId && (
+                    {isCommentAuthor(comment.author.handle) && editingCommentId !== comment.commentId ? (
                       <>
                         <button
                           className="board-comment-action edit"
@@ -448,6 +473,13 @@ const handleEditSave = async (commentId: number) => {
                           삭제
                         </button>
                       </>
+                    ) : !isCommentAuthor(comment.author.handle) && (
+                      <button
+                        className="board-comment-action report"
+                        onClick={() => handleReportClick('COMMENT', comment.commentId)}
+                      >
+                        신고
+                      </button>
                     )}
                   </div>
                 </div>
@@ -519,7 +551,7 @@ const handleEditSave = async (commentId: number) => {
 
                   <div className="board-comment-actions">
                     <div className="board-comment-actions-right">
-                      {isCommentAuthor(reply.author.handle) && editingCommentId !== reply.commentId && (
+                      {isCommentAuthor(reply.author.handle) && editingCommentId !== reply.commentId ? (
                         <>
                           <button
                             className="board-comment-action edit"
@@ -534,6 +566,13 @@ const handleEditSave = async (commentId: number) => {
                             삭제
                           </button>
                         </>
+                      ) : !isCommentAuthor(reply.author.handle) && (
+                        <button
+                          className="board-comment-action report"
+                          onClick={() => handleReportClick('COMMENT', reply.commentId)}
+                        >
+                          신고
+                        </button>
                       )}
                     </div>
                   </div>
@@ -595,24 +634,24 @@ const handleEditSave = async (commentId: number) => {
               <p style={{ marginBottom: 'var(--spacing-md)', color: 'var(--color-gray-600)', fontSize: 'var(--font-size-sm)' }}>
                 신고 사유를 선택해주세요
               </p>
-              <div className="board-report-options">
+              <div className="report-options">
                 {REPORT_REASONS.map((reason) => (
-                  <button
+                  <label
                     key={reason}
-                    className={`board-report-option ${selectedReportReason === reason ? 'selected' : ''}`}
+                    className={`report-option ${selectedReportReason === reason ? 'selected' : ''}`}
                     onClick={() => setSelectedReportReason(reason)}
                   >
-                    <div className="board-report-radio" />
-                    <span className="board-report-label">{reason}</span>
-                  </button>
+                    <div className="report-radio" />
+                    <span className="report-label">{reason}</span>
+                  </label>
                 ))}
               </div>
               <button
                 className="form-submit-btn"
                 onClick={handleReport}
-                disabled={!selectedReportReason}
+                disabled={!selectedReportReason || isReporting}
               >
-                신고하기
+                {isReporting ? '신고 중...' : '신고하기'}
               </button>
             </div>
           </div>

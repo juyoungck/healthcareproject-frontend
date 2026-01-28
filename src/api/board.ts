@@ -2,7 +2,6 @@
  * board.ts
  * 게시판 API 호출 함수
  */
-
 import {
     GetPostsParams,
     GetPostsResponse,
@@ -15,7 +14,6 @@ import {
     UpdateCommentRequest,
     UpdateCommentResponse,
     DeleteCommentResponse,
-    ReportRequest,
 } from './types/board';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -187,10 +185,7 @@ export const deleteComment = async (
 };
 
 /**
- * 신고 (TODO: 백엔드 명세 확정 후 수정)
- * POST /api/board/report
+ * 신고 API는 report.ts로 이동
+ * 기존 import 호환을 위해 re-export
  */
-export const reportContent = async (params: ReportRequest): Promise<void> => {
-    console.log('신고 기능 준비 중:', params);
-    alert('신고 기능은 준비 중입니다.');
-};
+export { reportContent } from './report';
