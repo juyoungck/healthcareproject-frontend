@@ -148,25 +148,31 @@ export default function VideoCallRoom({
     if (connectionStatus !== 'connected') return;
 
     const fetchParticipantProfiles = async () => {
-      try {
-        const response = await getPTRoomParticipants(room.ptRoomId);
-        const profileMap = new Map<string, PTParticipantUser>();
+  try {
+    const response = await getPTRoomParticipants(room.ptRoomId);
+    const profileMap = new Map<string, PTParticipantUser>();
 
-        response.users.forEach(user => {
-          profileMap.set(user.handle, user);
-        });
+    response.users.forEach(user => {
+      profileMap.set(user.handle, user);
+    });
 
-        setParticipantProfiles(profileMap);
-      } catch (err) {
-        console.error('참여자 프로필 조회 실패:', err);
-      }
-    };
+    setParticipantProfiles(profileMap);
+  } catch (err: any) {
+    console.error('참여자 프로필 조회 실패:', err);
+    
+    /* 403 에러 = 강퇴되었거나 방에서 제외됨 */
+    if (err.response?.status === 403) {
+      disconnect();
+      setRoomEndReason('KICKED');
+    }
+  }
+};
 
     /* 초기 조회 */
     fetchParticipantProfiles();
 
     /* 10초마다 갱신 (참여자 변경 감지) */
-    const interval = setInterval(fetchParticipantProfiles, 10000);
+    const interval = setInterval(fetchParticipantProfiles, 5000);
 
     return () => clearInterval(interval);
   }, [connectionStatus, room.ptRoomId]);

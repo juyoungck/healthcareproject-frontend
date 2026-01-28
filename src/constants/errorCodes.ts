@@ -129,7 +129,7 @@ export const ERROR_CODES = {
   CANCEL_NOT_ALLOWED: { code: 'R005', message: '진행 중이거나 종료된 방의 예약은 취소할 수 없습니다.' },
   INVALID_STATUS_TRANSITION: { code: 'INVALID_STATUS_TRANSITION', message: '유효하지 않은 상태 변경 요청입니다.' },
   NOT_JOINED: { code: 'P001', message: '해당 사용자는 현재 방에 참여 중이 아닙니다.' },
-
+  KICKED_USER: { code: 'KICKED', message: '강퇴된 방에는 다시 입장할 수 없습니다.' },
 
   /**
    * ===========================================

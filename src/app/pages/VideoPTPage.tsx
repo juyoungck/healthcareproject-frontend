@@ -78,14 +78,14 @@ export default function VideoPTPage({
   const fetchRooms = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await getPTRoomList({
         tab: filterToTab[activeFilter],
         q: searchQuery || undefined,
       });
       setRooms(response.items);
-    
+
     } catch (err: any) {
       console.error('방 목록 조회 실패:', err);
       setError(err.response?.data?.message || '방 목록을 불러오는데 실패했습니다.');
@@ -109,7 +109,7 @@ export default function VideoPTPage({
     setShowDetailModal(true);
     setIsDetailLoading(true);
     setRoomDetail(null);
-    
+
     try {
       const detail = await getPTRoomDetail(room.ptRoomId);
       setRoomDetail(detail);
@@ -135,12 +135,12 @@ export default function VideoPTPage({
   const handleJoinRoom = async (room: PTRoomListItem, entryCode?: string) => {
     console.log('handleJoinRoom 시작:', room.ptRoomId, entryCode);
     setIsActionLoading(true);
-    
+
     try {
       console.log('joinPTRoom 호출 전');
       await joinPTRoom(room.ptRoomId, { entryCode: entryCode || null });
       console.log('joinPTRoom 성공');
-      
+
       console.log('getPTRoomDetail 호출 전');
       const roomDetail = await getPTRoomDetail(room.ptRoomId);
       console.log('getPTRoomDetail 성공:', roomDetail);
@@ -151,6 +151,13 @@ export default function VideoPTPage({
       closeDetailModal();
     } catch (err: any) {
       console.error('방 입장 실패:', err);
+      const errorCode = err.response?.data?.error?.code;
+      /* 강퇴된 사용자 재입장 시도 */
+      if (errorCode === 'KICKED') {
+        alert('강퇴된 방에는 다시 입장할 수 없습니다.');
+        return;
+      }
+
       /* 비공개 방 입장 코드 오류는 모달에서 처리하도록 에러 전파 */
       if (entryCode) {
         throw err;
@@ -167,7 +174,7 @@ export default function VideoPTPage({
    */
   const handleCreateRoom = async (data: CreateRoomData) => {
     setIsActionLoading(true);
-    
+
     try {
       const createdRoom = await createPTRoom({
         roomType: data.roomType,
@@ -177,9 +184,9 @@ export default function VideoPTPage({
         maxParticipants: data.maxParticipants,
         isPrivate: data.isPrivate,
       });
-      
+
       setShowCreateModal(false);
-      
+
       /* 실시간 방인 경우 바로 화상통화로 이동 */
       if (data.roomType === 'LIVE') {
         /* 생성된 방 상세 정보로 입장 */
@@ -203,11 +210,11 @@ export default function VideoPTPage({
    */
   const handleStartRoom = async (room: PTRoomListItem) => {
     setIsActionLoading(true);
-    
+
     try {
       /* 상태를 LIVE로 변경 */
       await updatePTRoomStatus(room.ptRoomId, { status: 'LIVE' });
-      
+
       /* 변경된 방 상세 정보 조회 후 입장 */
       const roomDetail = await getPTRoomDetail(room.ptRoomId);
       setActiveCallRoom(roomDetail);
@@ -228,9 +235,9 @@ export default function VideoPTPage({
     if (!confirm('정말로 이 예약을 취소하시겠습니까?')) {
       return;
     }
-    
+
     setIsActionLoading(true);
-    
+
     try {
       await updatePTRoomStatus(room.ptRoomId, { status: 'CANCELLED' });
       alert('예약이 취소되었습니다.');
@@ -258,9 +265,9 @@ export default function VideoPTPage({
    */
   if (inVideoCall && activeCallRoom) {
     return (
-      <VideoCallRoom 
-        room={activeCallRoom} 
-        onLeave={handleLeaveCall} 
+      <VideoCallRoom
+        room={activeCallRoom}
+        onLeave={handleLeaveCall}
         isTrainer={isTrainer}
         userName={isTrainer ? `[트레이너] ${user?.nickname}` : user?.nickname || '사용자'}
         userProfileImage={user?.profileImageUrl}
@@ -308,7 +315,7 @@ export default function VideoPTPage({
           </button>
           {/* 트레이너 전용 필터 */}
           {isTrainer && (
-            <button 
+            <button
               className={`filter-btn ${activeFilter === 'myRoom' ? 'active' : ''}`}
               onClick={() => setActiveFilter('myRoom')}
             >
@@ -326,9 +333,9 @@ export default function VideoPTPage({
           <div className="pt-error">{error}</div>
         ) : rooms.length > 0 ? (
           rooms.map(room => (
-            <PTRoomCard 
-              key={room.ptRoomId} 
-              room={room} 
+            <PTRoomCard
+              key={room.ptRoomId}
+              room={room}
               onClick={handleRoomClick}
             />
           ))
@@ -348,7 +355,7 @@ export default function VideoPTPage({
 
       {/* 트레이너인 경우 FAB 버튼 표시 */}
       {isTrainer && (
-        <button 
+        <button
           className="pt-fab"
           onClick={() => setShowCreateModal(true)}
         >

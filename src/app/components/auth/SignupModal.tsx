@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { X, Mail, Lock, Eye, EyeOff, User, Phone, Check } from 'lucide-react';
 import { signup, checkEmail, saveTokens } from '../../../api/auth';
+import { requestEmailVerification, confirmEmailVerification } from '../../../api/emailVerification';
 
 /**
  * 컴포넌트 Props 타입 정의
@@ -131,21 +132,21 @@ export default function SignupModal({
         setIsEmailAvailable(false);
         setError('이미 사용 중인 이메일입니다.');
       }
-} catch (err: unknown) {
-      const axiosError = err as { 
-        response?: { 
-          data?: { 
+    } catch (err: unknown) {
+      const axiosError = err as {
+        response?: {
+          data?: {
             error?: { code?: string; message?: string };
             code?: string;
             message?: string;
-          } 
-        } 
+          }
+        }
       };
-      
+
       /* 에러 코드 추출 (백엔드 응답 구조에 따라 유연하게 처리) */
-      const errorCode = axiosError.response?.data?.error?.code 
+      const errorCode = axiosError.response?.data?.error?.code
         || axiosError.response?.data?.code;
-      
+
       if (errorCode === 'AUTH-006') {
         setIsEmailChecked(true);
         setIsEmailAvailable(false);
@@ -176,11 +177,29 @@ export default function SignupModal({
     setError('');
 
     try {
-      /* TODO: 실제 이메일 인증 API 호출 */
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      /* 이메일 인증 코드 발송 API 호출 */
+      await requestEmailVerification({ email });
       setIsEmailSent(true);
-    } catch {
-      setError('인증 이메일 발송에 실패했습니다.');
+    } catch (err: unknown) {
+      const axiosError = err as {
+        response?: {
+          data?: {
+            error?: { code?: string; message?: string };
+            code?: string;
+            message?: string;
+          };
+          status?: number;
+        };
+      };
+
+      const errorCode = axiosError.response?.data?.error?.code
+        || axiosError.response?.data?.code;
+
+      if (errorCode === 'AUTH-008' || axiosError.response?.status === 429) {
+        setError('요청이 너무 많습니다. 잠시 후 다시 시도해주세요.');
+      } else {
+        setError('인증 이메일 발송에 실패했습니다.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -189,7 +208,7 @@ export default function SignupModal({
   /**
    * 기본정보 제출 핸들러
    */
-  const handleInfoSubmit = (e: React.FormEvent) => {
+  const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -219,22 +238,10 @@ export default function SignupModal({
       return;
     }
 
-    setStep('verify');
-  };
 
-  /**
-   * 인증 코드 확인 핸들러
-   */
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
     setIsLoading(true);
-    setError('');
 
     try {
-      /* TODO: 실제 인증 코드 검증 API 호출 (이메일 인증 서버 구현 필요) */
-      /* 현재는 임시로 통과 처리 */
-      await new Promise(resolve => setTimeout(resolve, 500));
-
       /* 전화번호 포맷팅 */
       const formattedPhone = phone ? formatPhoneNumber(phone) : undefined;
 
@@ -249,22 +256,71 @@ export default function SignupModal({
       /* 토큰 저장 */
       saveTokens(tokens);
 
-      setStep('complete');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        const axiosError = error as { response?: { data?: { message?: string } } };
-        if (axiosError.response?.data?.message) {
-          setError(axiosError.response.data.message);
-        } else {
-          setError('회원가입에 실패했습니다. 다시 시도해주세요.');
-        }
+      /* 이메일 인증 단계로 이동 */
+      setStep('verify');
+    } catch (err: unknown) {
+      const axiosError = err as {
+        response?: {
+          data?: {
+            error?: { code?: string; message?: string };
+            code?: string;
+            message?: string;
+          };
+        };
+      };
+
+      const errorCode = axiosError.response?.data?.error?.code
+        || axiosError.response?.data?.code;
+      const errorMessage = axiosError.response?.data?.error?.message
+        || axiosError.response?.data?.message;
+
+      if (errorCode === 'AUTH-006') {
+        setError('이미 사용 중인 이메일입니다.');
       } else {
-        setError('회원가입에 실패했습니다. 다시 시도해주세요.');
+        setError(errorMessage || '회원가입에 실패했습니다.');
       }
     } finally {
       setIsLoading(false);
     }
   };
+
+  /**
+   * 인증 코드 확인 핸들러
+   */
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      /* 이메일 인증 코드 확인 API 호출 */
+      await confirmEmailVerification({ email, code: verificationCode });
+
+      setStep('complete');
+    } catch (err: unknown) {
+      const axiosError = err as {
+        response?: {
+          data?: {
+            error?: { code?: string; message?: string };
+            code?: string;
+            message?: string;
+          };
+        };
+      };
+
+      const errorCode = axiosError.response?.data?.error?.code
+        || axiosError.response?.data?.code;
+
+      if (errorCode === 'AUTH-009' || errorCode === 'G001') {
+        setError('인증 코드가 올바르지 않습니다.');
+      } else {
+        setError('인증 확인에 실패했습니다. 다시 시도해주세요.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   /**
    * 회원가입 완료 → 자동 로그인 → 온보딩으로 이동
