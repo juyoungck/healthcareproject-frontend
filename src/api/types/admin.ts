@@ -25,7 +25,7 @@ export interface PaginatedResponse<T> {
 export type UserRole = 'USER' | 'TRAINER' | 'ADMIN';
 
 /** 회원 상태 */
-export type UserStatus = 'ACTIVE' | 'STOP' | 'SLEEP';
+export type UserStatus = 'ACTIVE' | 'STOP' | 'SLEEP' | 'SUSPENDED';
 
 /** 회원 데이터 (관리자용) */
 export interface AdminUser {
@@ -109,7 +109,7 @@ export interface AdminPost {
 export type ReportStatus = 'PENDING' | 'PROCESSED' | 'REJECTED';
 
 /** 신고 타입 */
-export type ReportType = 'POST' | 'COMMENT';
+export type ReportType = 'POST' | 'COMMENT' | 'PT_ROOM';
 
 /** 신고 데이터 */
 export interface Report {

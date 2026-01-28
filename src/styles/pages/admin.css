@@ -367,8 +367,9 @@
   font-size: 14px;
   color: #666;
   transition: all 0.2s;
-  min-width: 60px;
+  min-width: 72px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .admin-filter-tab:hover,
@@ -1472,4 +1473,368 @@
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+/* 입장코드 스타일 */
+.admin-entry-code {
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #4f46e5;
+  background: #eef2ff;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* 비활성화 버튼 스타일 */
+.admin-action-btn.disabled,
+.admin-action-btn.delete.disabled,
+.admin-action-btn.danger.disabled {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-action-btn.disabled:hover,
+.admin-action-btn.delete.disabled:hover,
+.admin-action-btn.danger.disabled:hover {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+}
+
+/* 신고관리 반려 버튼 - 진회색 */
+.admin-action-btn.reject-dark {
+  background: #d1d5db;
+  color: #4b5563;
+}
+
+.admin-action-btn.reject-dark:hover {
+  background: #9ca3af;
+  color: #374151;
+}
+
+/* 상세 모달 통일 스타일 */
+.admin-modal-container {
+  max-width: 600px;
+  width: 90%;
+}
+
+.admin-detail-section {
+  background: #fefce8;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.admin-detail-content {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  min-height: 40px;
+}
+
+.admin-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.admin-detail-row svg {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.admin-detail-key {
+  color: #6b7280;
+  min-width: 80px;
+}
+
+.admin-detail-value {
+  color: #333;
+  font-weight: 500;
+}
+
+/* 신고관리 타입 뱃지 */
+.admin-type-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-type-badge.type-post {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.admin-type-badge.type-comment {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.admin-type-badge.type-pt_room {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+/* 신고관리 상태 뱃지 */
+.admin-status-badge.status-pending {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.admin-status-badge.status-processed {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.admin-status-badge.status-rejected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* 관리자 헤더 레이아웃 */
+.admin-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-header-left .admin-section-title {
+  margin: 0;
+}
+
+.admin-header-left .admin-section-count {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* ===========================================
+   신고 상세 모달 스타일 (admin.css 끝에 추가)
+   =========================================== */
+
+.report-detail-modal {
+  max-width: 480px;
+}
+
+/* 헤더 레이아웃 */
+.report-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.report-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.report-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 타입 아이콘 */
+.report-type-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.report-type-icon.post {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.report-type-icon.comment {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.report-type-icon.pt_room {
+  background-color: #f3e8ff;
+  color: #9333ea;
+}
+
+.report-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.report-header-subtitle {
+  font-size: 13px;
+  color: #999;
+}
+
+/* 프로필 영역 */
+.report-author-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.report-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.report-avatar.post {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.report-avatar.comment {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.report-avatar.pt_room {
+  background-color: #f3e8ff;
+  color: #9333ea;
+}
+
+/* 바디 */
+.report-modal-body {
+  padding: 20px 24px !important;
+}
+
+/* 로딩 */
+.report-detail-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  color: #999;
+  gap: 12px;
+}
+
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 삭제된 콘텐츠 */
+.report-deleted-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: #fef2f2;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.deleted-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #fee2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  color: #dc2626;
+}
+
+.deleted-title {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.deleted-desc {
+  margin: 0;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+/* 제목 */
+.report-content-title {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* 정보 Row */
+.report-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+/* 내용 영역 */
+.report-content-area {
+  background-color: #f9fafb;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.report-content-area p {
+  margin: 0;
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 경고 박스 */
+.report-warning-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background-color: #fef3c7;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #92400e;
+}
+
+.report-warning-box svg {
+  flex-shrink: 0;
+  color: #d97706;
 }

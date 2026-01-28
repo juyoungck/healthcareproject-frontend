@@ -11,8 +11,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Eye, XCircle, Users, Video, X, User, Calendar, Lock, Unlock, Key } from 'lucide-react';
 import apiClient from '../../../api/client';
-import { getPTRoomDetail } from '../../../api/pt';
-import type { GetPTRoomDetailResponse } from '../../../api/types/pt';
 
 /**
  * ===========================================
@@ -34,6 +32,8 @@ interface AdminPTRoom {
   status: AdminPTRoomStatus;
   createdAt: string;
   isPrivate?: boolean;
+  entryCode?: string | null;
+  description?: string;
 }
 
 interface AdminPTRoomListResponse {
@@ -138,9 +138,7 @@ export default function AdminPTList() {
   const [filterStatus, setFilterStatus] = useState<AdminPTRoomStatus | 'ALL'>('ALL');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedRoom, setSelectedRoom] = useState<AdminPTRoom | null>(null);
-  const [roomDetail, setRoomDetail] = useState<GetPTRoomDetailResponse | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isDetailLoading, setIsDetailLoading] = useState(false);
   
   /** 강제종료 모달 */
   const [isForceEndModalOpen, setIsForceEndModalOpen] = useState(false);
@@ -195,22 +193,11 @@ export default function AdminPTList() {
   };
 
   /**
-   * 상세 보기 핸들러 (일반 API로 상세 조회)
+   * 상세 보기 핸들러 (목록 API 데이터 사용)
    */
-  const handleViewDetail = async (room: AdminPTRoom) => {
+  const handleViewDetail = (room: AdminPTRoom) => {
     setSelectedRoom(room);
-    setRoomDetail(null);
     setIsDetailModalOpen(true);
-    setIsDetailLoading(true);
-    
-    try {
-      const detail = await getPTRoomDetail(room.ptRoomId);
-      setRoomDetail(detail);
-    } catch (err) {
-      console.error('화상PT 상세 조회 실패:', err);
-    } finally {
-      setIsDetailLoading(false);
-    }
   };
 
   /**
@@ -277,25 +264,12 @@ export default function AdminPTList() {
 
   return (
     <div className="admin-pt-list">
-      <h2 className="admin-section-title">화상PT 관리</h2>
-      <p className="admin-section-count">전체 {total}건</p>
-
-      {/* 필터 영역 */}
-      <div className="admin-filter-bar">
-        <div className="admin-filter-group">
-          <div className="admin-filter-tabs">
-            {statusFilters.map((filter) => (
-              <button
-                key={filter.value}
-                className={`admin-filter-tab ${filterStatus === filter.value ? 'active' : ''}`}
-                onClick={() => setFilterStatus(filter.value)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
+      {/* 헤더 영역 */}
+      <div className="admin-header-row">
+        <div className="admin-header-left">
+          <h2 className="admin-section-title">화상PT 관리</h2>
+          <span className="admin-section-count">전체 {total}건</span>
         </div>
-
         <div className="admin-search-box">
           <Search size={18} />
           <input
@@ -305,6 +279,23 @@ export default function AdminPTList() {
             onChange={(e) => setSearchKeyword(e.target.value)}
             onKeyDown={handleSearchKeyDown}
           />
+        </div>
+      </div>
+
+      {/* 필터 영역 */}
+      <div className="admin-filter-bar">
+        <div className="admin-filter-group">
+          <div className="admin-filter-tabs">
+            {statusFilters.map((filter) => (
+              <button
+                key={filter.value}
+                className={`admin-filter-btn ${filterStatus === filter.value ? 'active' : ''}`}
+                onClick={() => setFilterStatus(filter.value)}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -332,64 +323,68 @@ export default function AdminPTList() {
                 </td>
               </tr>
             ) : (
-              ptRooms.map((room) => (
-                <tr key={room.ptRoomId}>
-                  <td>{room.ptRoomId}</td>
-                  <td>
-                    <div className="admin-author-info">
-                      <span className="admin-nickname">{room.trainer.nickname}</span>
-                      <span className="admin-handle">@{room.trainer.handle}</span>
-                    </div>
-                  </td>
-                  <td className="admin-table-name">
-                    {room.title}
-                  </td>
-                  <td>
-                    <div className="admin-participant-count">
-                      <Users size={14} />
-                      {room.maxParticipants}명
-                    </div>
-                  </td>
-                  <td>{formatDate(room.scheduledStartAt)}</td>
-                  <td>
-                    {room.isPrivate ? (
-                      <span className="admin-status-badge status-inactive">
-                        <Lock size={14} /> 비공개
+              ptRooms.map((room) => {
+                const isEnded = room.status === 'ENDED' || room.status === 'CANCELLED' || room.status === 'FORCE_CLOSED';
+                return (
+                  <tr key={room.ptRoomId}>
+                    <td>{room.ptRoomId}</td>
+                    <td>
+                      <div className="admin-author-info">
+                        <span className="admin-nickname">{room.trainer.nickname}</span>
+                        <span className="admin-handle">@{room.trainer.handle}</span>
+                      </div>
+                    </td>
+                    <td className="admin-table-name">
+                      {room.title}
+                    </td>
+                    <td>
+                      <div className="admin-participant-count">
+                        <Users size={14} />
+                        {room.maxParticipants}명
+                      </div>
+                    </td>
+                    <td>{formatDate(room.scheduledStartAt)}</td>
+                    <td>
+                      {room.isPrivate ? (
+                        <span className="admin-status-badge status-inactive">
+                          <Lock size={14} /> 비공개
+                        </span>
+                      ) : (
+                        <span className="admin-public-badge">
+                          <Unlock size={14} /> 공개
+                        </span>
+                      )}
+                    </td>
+                    <td>{getRoomTypeLabel(room.roomType)}</td>
+                    <td>
+                      <span className={`admin-status-badge ${getStatusClass(room.status)}`}>
+                        {getStatusLabel(room.status)}
                       </span>
-                    ) : (
-                      <span className="admin-public-badge">
-                        <Unlock size={14} /> 공개
-                      </span>
-                    )}
-                  </td>
-                  <td>{getRoomTypeLabel(room.roomType)}</td>
-                  <td>
-                    <span className={`admin-status-badge ${getStatusClass(room.status)}`}>
-                      {getStatusLabel(room.status)}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="admin-action-buttons">
-                      <button
-                        className="admin-action-btn view"
-                        onClick={() => handleViewDetail(room)}
-                        title="상세보기"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      {(room.status === 'LIVE' || room.status === 'SCHEDULED' || room.status === 'RESERVED') && (
+                    </td>
+                    <td>
+                      <div className="admin-action-buttons">
                         <button
-                          className="admin-action-btn danger"
-                          onClick={() => openForceEndModal(room.ptRoomId)}
-                          title="강제종료"
+                          className="admin-action-btn view"
+                          onClick={() => handleViewDetail(room)}
+                          title="상세보기"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          className={`admin-action-btn ${isEnded ? 'delete disabled' : 'delete'}`}
+                          onClick={() => {
+                            if (!isEnded) openForceEndModal(room.ptRoomId);
+                          }}
+                          title={isEnded ? '종료됨' : '강제종료'}
+                          disabled={isEnded}
                         >
                           <XCircle size={16} />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -399,8 +394,6 @@ export default function AdminPTList() {
       {isDetailModalOpen && selectedRoom && (
         <PTDetailModal
           room={selectedRoom}
-          detail={roomDetail}
-          isLoading={isDetailLoading}
           onClose={() => setIsDetailModalOpen(false)}
           onForceEnd={openForceEndModal}
         />
@@ -426,13 +419,11 @@ export default function AdminPTList() {
  */
 interface PTDetailModalProps {
   room: AdminPTRoom;
-  detail: GetPTRoomDetailResponse | null;
-  isLoading: boolean;
   onClose: () => void;
   onForceEnd: (ptRoomId: number) => void;
 }
 
-function PTDetailModal({ room, detail, isLoading, onClose, onForceEnd }: PTDetailModalProps) {
+function PTDetailModal({ room, onClose, onForceEnd }: PTDetailModalProps) {
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -472,7 +463,7 @@ function PTDetailModal({ room, detail, isLoading, onClose, onForceEnd }: PTDetai
                 lineHeight: '1.6',
                 whiteSpace: 'pre-wrap'
               }}>
-                {isLoading ? '로딩 중...' : (detail?.description || '(내용 없음)')}
+                {room.description || '(내용 없음)'}
               </div>
 
               <div className="admin-detail-list">
@@ -494,17 +485,17 @@ function PTDetailModal({ room, detail, isLoading, onClose, onForceEnd }: PTDetai
                   <span className="admin-detail-value">{room.maxParticipants}명</span>
                 </div>
                 <div className="admin-detail-row">
-                  {detail?.isPrivate ? <Lock size={16} /> : <Unlock size={16} />}
+                  {room.isPrivate ? <Lock size={16} /> : <Unlock size={16} />}
                   <span className="admin-detail-key">공개여부</span>
                   <span className="admin-detail-value">
-                    {isLoading ? '로딩...' : (detail?.isPrivate ? '비공개' : '공개')}
+                    {room.isPrivate ? '비공개' : '공개'}
                   </span>
                 </div>
                 <div className="admin-detail-row">
                   <Key size={16} />
                   <span className="admin-detail-key">입장코드</span>
-                  <span className="admin-detail-value" style={{ fontFamily: 'monospace' }}>
-                    {isLoading ? '로딩...' : (detail?.entryCode || '-')}
+                  <span className="admin-detail-value admin-entry-code">
+                    {room.entryCode || '-'}
                   </span>
                 </div>
                 <div className="admin-detail-row">

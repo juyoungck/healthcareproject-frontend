@@ -2,7 +2,8 @@
  * ExercisePage.tsx
  * 운동 탭 콘텐츠 컴포넌트
  * - 운동 검색 기능
- * - 부위별 필터
+ * - 부위별 필터 (다중 선택)
+ * - 난이도별 필터 (다중 선택)
  * - 운동 목록 무한 스크롤
  * - 운동 카드 클릭 시 상세 페이지 표시
  */
@@ -41,10 +42,10 @@ export default function ExercisePage({
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [hasNext, setHasNext] = useState(true);
 
-  /* 필터 */
+  /* 필터 (다중 선택) */
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBodyPart, setSelectedBodyPart] = useState<BodyPart | 'ALL'>('ALL');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'ALL'>('ALL');
+  const [selectedBodyParts, setSelectedBodyParts] = useState<Set<BodyPart>>(new Set());
+  const [selectedDifficulties, setSelectedDifficulties] = useState<Set<Difficulty>>(new Set());
 
   /* 선택된 운동 ID (상세 페이지) */
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(initialExerciseId);
@@ -69,11 +70,22 @@ export default function ExercisePage({
       const response = await getExercises({
         limit: 10,
         keyword: searchQuery || undefined,
-        bodyPart: selectedBodyPart !== 'ALL' ? selectedBodyPart : undefined,
-        difficulty: selectedDifficulty !== 'ALL' ? selectedDifficulty : undefined,
+        bodyPart: selectedBodyParts.size === 1 ? Array.from(selectedBodyParts)[0] : undefined,
+        difficulty: selectedDifficulties.size === 1 ? Array.from(selectedDifficulties)[0] : undefined,
       });
 
-      setExercises(response.items);
+      // 다중 필터링 (프론트에서 처리)
+      let filteredItems = response.items;
+      
+      if (selectedBodyParts.size > 1) {
+        filteredItems = filteredItems.filter(item => selectedBodyParts.has(item.bodyPart));
+      }
+      
+      if (selectedDifficulties.size > 1) {
+        filteredItems = filteredItems.filter(item => selectedDifficulties.has(item.difficulty));
+      }
+
+      setExercises(filteredItems);
       setNextCursor(response.nextCursor);
       setHasNext(response.hasNext);
     } catch (err) {
@@ -82,7 +94,7 @@ export default function ExercisePage({
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery, selectedBodyPart]);
+  }, [searchQuery, selectedBodyParts, selectedDifficulties]);
 
   /**
    * 운동 목록 추가 조회 (무한 스크롤)
@@ -97,11 +109,22 @@ export default function ExercisePage({
         cursor: nextCursor,
         limit: 10,
         keyword: searchQuery || undefined,
-        bodyPart: selectedBodyPart !== 'ALL' ? selectedBodyPart : undefined,
-        difficulty: selectedDifficulty !== 'ALL' ? selectedDifficulty : undefined,
+        bodyPart: selectedBodyParts.size === 1 ? Array.from(selectedBodyParts)[0] : undefined,
+        difficulty: selectedDifficulties.size === 1 ? Array.from(selectedDifficulties)[0] : undefined,
       });
 
-      setExercises(prev => [...prev, ...response.items]);
+      // 다중 필터링 (프론트에서 처리)
+      let filteredItems = response.items;
+      
+      if (selectedBodyParts.size > 1) {
+        filteredItems = filteredItems.filter(item => selectedBodyParts.has(item.bodyPart));
+      }
+      
+      if (selectedDifficulties.size > 1) {
+        filteredItems = filteredItems.filter(item => selectedDifficulties.has(item.difficulty));
+      }
+
+      setExercises(prev => [...prev, ...filteredItems]);
       setNextCursor(response.nextCursor);
       setHasNext(response.hasNext);
     } catch (err) {
@@ -109,14 +132,14 @@ export default function ExercisePage({
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, hasNext, nextCursor, searchQuery, selectedBodyPart]);
+  }, [isLoadingMore, hasNext, nextCursor, searchQuery, selectedBodyParts, selectedDifficulties]);
 
   /**
    * 초기 로드 및 필터 변경 시 재조회
    */
   useEffect(() => {
     fetchExercises(true);
-  }, [selectedBodyPart]);
+  }, [selectedBodyParts, selectedDifficulties]);
 
   /**
    * 검색 실행 (엔터 또는 버튼)
@@ -172,17 +195,41 @@ export default function ExercisePage({
   }, [initialExerciseId]);
 
   /**
-   * 부위 필터 클릭 핸들러
+   * 부위 필터 클릭 핸들러 (다중 선택)
    */
   const handleBodyPartClick = (bodyPart: BodyPart | 'ALL') => {
-    setSelectedBodyPart(bodyPart);
+    if (bodyPart === 'ALL') {
+      setSelectedBodyParts(new Set());
+    } else {
+      setSelectedBodyParts(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(bodyPart)) {
+          newSet.delete(bodyPart);
+        } else {
+          newSet.add(bodyPart);
+        }
+        return newSet;
+      });
+    }
   };
 
   /**
-   * 난이도 필터 클릭 핸들러
+   * 난이도 필터 클릭 핸들러 (다중 선택)
    */
   const handleDifficultyClick = (difficulty: Difficulty | 'ALL') => {
-    setSelectedDifficulty(difficulty);
+    if (difficulty === 'ALL') {
+      setSelectedDifficulties(new Set());
+    } else {
+      setSelectedDifficulties(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(difficulty)) {
+          newSet.delete(difficulty);
+        } else {
+          newSet.add(difficulty);
+        }
+        return newSet;
+      });
+    }
   };
 
   /**
@@ -244,31 +291,38 @@ export default function ExercisePage({
           />
         </div>
 
-        {/* 부위별 필터 */}
+        {/* 부위별 필터 (다중 선택) */}
         <div className="filter-group">
           {BODY_PART_OPTIONS.map((option) => (
             <button
               key={option.value}
-              className={`filter-btn ${selectedBodyPart === option.value ? 'active' : ''}`}
+              className={`filter-btn ${
+                option.value === 'ALL' 
+                  ? selectedBodyParts.size === 0 ? 'active' : ''
+                  : selectedBodyParts.has(option.value as BodyPart) ? 'active' : ''
+              }`}
               onClick={() => handleBodyPartClick(option.value)}
             >
               {option.label}
             </button>
           ))}
-          </div>
-          <div className="filter-group">
-            {/* 난이도별 필터 */}
-            <div className="filter-group">
-              {DIFFICULTY_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  className={`filter-btn ${selectedDifficulty === option.value ? 'active' : ''}`}
-                  onClick={() => handleDifficultyClick(option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+        </div>
+
+        {/* 난이도별 필터 (다중 선택) */}
+        <div className="filter-group">
+          {DIFFICULTY_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              className={`filter-btn ${
+                option.value === 'ALL'
+                  ? selectedDifficulties.size === 0 ? 'active' : ''
+                  : selectedDifficulties.has(option.value as Difficulty) ? 'active' : ''
+              }`}
+              onClick={() => handleDifficultyClick(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
       </div>
 

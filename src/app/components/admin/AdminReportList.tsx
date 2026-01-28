@@ -8,9 +8,10 @@
  */
 
 import { useState, useEffect } from 'react';
-import { AlertTriangle, XCircle } from 'lucide-react';
+import { AlertTriangle, X, Eye, User, FileText, MessageSquare, Video, Users, AlertCircle } from 'lucide-react';
 import type { Report, ReportStatus, ReportType } from '../../../api/types/admin';
 import { getAdminReports, processReport, rejectReport } from '../../../api/admin';
+import apiClient from '../../../api/client';
 
 /**
  * ===========================================
@@ -26,6 +27,17 @@ const statusFilters: { value: ReportStatus | 'ALL'; label: string }[] = [
 
 /**
  * ===========================================
+ * HTML 태그 제거 함수
+ * ===========================================
+ */
+const stripHtml = (html: string): string => {
+  if (!html) return '';
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || '';
+};
+
+/**
+ * ===========================================
  * 라벨 변환 함수
  * ===========================================
  */
@@ -35,8 +47,23 @@ const getTypeLabel = (type: ReportType) => {
       return '게시글';
     case 'COMMENT':
       return '댓글';
+    case 'PT_ROOM':
+      return '화상PT';
     default:
       return type;
+  }
+};
+
+const getTypeClass = (type: ReportType) => {
+  switch (type) {
+    case 'POST':
+      return 'type-post';
+    case 'COMMENT':
+      return 'type-comment';
+    case 'PT_ROOM':
+      return 'type-pt_room';
+    default:
+      return '';
   }
 };
 
@@ -95,6 +122,63 @@ export default function AdminReportList() {
   const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<ReportStatus | 'ALL'>('ALL');
 
+  /** 상세 모달 상태 */
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailData, setDetailData] = useState<any>(null);
+  const [detailType, setDetailType] = useState<ReportType | null>(null);
+
+  /**
+   * 상세 보기 핸들러
+   */
+  const handleViewDetail = async (report: Report) => {
+    setDetailLoading(true);
+    setDetailType(report.type);
+    setIsDetailModalOpen(true);
+    setDetailData(null);
+
+    try {
+      if (report.type === 'POST') {
+        try {
+          const response = await apiClient.get(`/api/board/posts/${report.targetId}`);
+          const post = response.data.data;
+          setDetailData({
+            title: post.title,
+            authorNickname: post.author?.nickname || '',
+            authorHandle: post.author?.handle || '',
+            content: post.content || '',
+          });
+        } catch {
+          setDetailData(null);
+        }
+      } else if (report.type === 'PT_ROOM') {
+        try {
+          const response = await apiClient.get(`/api/pt-rooms/${report.targetId}`);
+          const room = response.data.data;
+          setDetailData({
+            title: room.title,
+            trainer: room.trainer,
+            description: room.description || '',
+            maxParticipants: room.maxParticipants,
+          });
+        } catch {
+          setDetailData(null);
+        }
+      } else if (report.type === 'COMMENT') {
+        setDetailData({
+          handle: report.targetAuthorHandle || '',
+          content: '',
+          isLimited: true,
+        });
+      }
+    } catch (err) {
+      console.error('상세 조회 실패:', err);
+      setDetailData(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
   /**
    * 신고 목록 조회
    */
@@ -122,18 +206,18 @@ export default function AdminReportList() {
     }
   };
 
-  /**
-   * 초기 로드 및 필터 변경 시 재조회
-   */
   useEffect(() => {
     fetchReports();
   }, [filterStatus]);
 
-  /**
-   * 제재 처리 핸들러 (PROCESSED - 콘텐츠 삭제)
-   */
-  const handleProcess = async (reportId: number) => {
+  const handleProcess = async (reportId: number, type: ReportType) => {
     if (!confirm('신고를 승인하고 대상 콘텐츠를 삭제하시겠습니까?\n\n동일 대상의 다른 신고도 모두 처리됩니다.')) return;
+
+    const typeLabels = {
+      'POST': '게시글',
+      'COMMENT': '댓글',
+      'PT_ROOM': '화상PT'
+    };
 
     try {
       await processReport(reportId);
@@ -141,13 +225,10 @@ export default function AdminReportList() {
       alert('제재 처리되었습니다. 콘텐츠가 삭제되었습니다.');
     } catch (err) {
       console.error('제재 처리 실패:', err);
-      alert('제재 처리에 실패했습니다.');
+      alert(`이미 삭제된 ${typeLabels[type]}입니다.`);
     }
   };
 
-  /**
-   * 반려 처리 핸들러 (REJECTED - 콘텐츠 유지)
-   */
   const handleReject = async (reportId: number) => {
     if (!confirm('이 신고를 반려하시겠습니까?\n\n콘텐츠는 삭제되지 않습니다.')) return;
 
@@ -161,9 +242,6 @@ export default function AdminReportList() {
     }
   };
 
-  /**
-   * 로딩 상태
-   */
   if (isLoading) {
     return (
       <div className="admin-report-list">
@@ -173,9 +251,6 @@ export default function AdminReportList() {
     );
   }
 
-  /**
-   * 에러 상태
-   */
   if (error) {
     return (
       <div className="admin-report-list">
@@ -187,7 +262,6 @@ export default function AdminReportList() {
 
   return (
     <div className="admin-report-list">
-      {/* 헤더 영역 */}
       <div className="admin-section-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <h2 className="admin-section-title" style={{ margin: 0 }}>신고 관리</h2>
@@ -195,7 +269,6 @@ export default function AdminReportList() {
         </div>
       </div>
 
-      {/* 필터 영역 */}
       <div className="admin-filter-bar">
         <div className="admin-filter-group">
           <div className="admin-filter-buttons">
@@ -212,7 +285,6 @@ export default function AdminReportList() {
         </div>
       </div>
 
-      {/* 테이블 */}
       <div className="admin-table-container">
         <table className="admin-table">
           <thead>
@@ -243,7 +315,7 @@ export default function AdminReportList() {
                   <td>{formatDate(report.createdAt)}</td>
                   <td className="admin-table-reason">{report.reason}</td>
                   <td>
-                    <span className={`admin-type-badge type-${report.type.toLowerCase()}`}>
+                    <span className={`admin-type-badge ${getTypeClass(report.type)}`}>
                       {getTypeLabel(report.type)}
                     </span>
                   </td>
@@ -253,30 +325,204 @@ export default function AdminReportList() {
                     </span>
                   </td>
                   <td>
-                    {report.status === 'PENDING' && (
-                      <div className="admin-action-buttons">
-                        <button
-                          className="admin-action-btn secondary"
-                          onClick={() => handleReject(report.reportId)}
-                          title="반려 (콘텐츠 유지)"
-                        >
-                          <XCircle size={16} />
-                        </button>
-                        <button
-                          className="admin-action-btn warning"
-                          onClick={() => handleProcess(report.reportId)}
-                          title="제재 (콘텐츠 삭제)"
-                        >
-                          <AlertTriangle size={16} />
-                        </button>
-                      </div>
-                    )}
+                    <div className="admin-action-buttons">
+                      <button
+                        className="admin-action-btn view"
+                        onClick={() => handleViewDetail(report)}
+                        title="상세보기"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      {report.status === 'PENDING' && (
+                        <>
+                          <button
+                            className="admin-action-btn reject-dark"
+                            onClick={() => handleReject(report.reportId)}
+                            title="반려 (콘텐츠 유지)"
+                          >
+                            <X size={16} />
+                          </button>
+                          <button
+                            className="admin-action-btn delete"
+                            onClick={() => handleProcess(report.reportId, report.type)}
+                            title="제재 (콘텐츠 삭제)"
+                          >
+                            <AlertTriangle size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+      </div>
+
+      {isDetailModalOpen && (
+        <ReportDetailModal
+          type={detailType}
+          data={detailData}
+          loading={detailLoading}
+          onClose={() => setIsDetailModalOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * ===========================================
+ * 신고 대상 상세 모달
+ * ===========================================
+ */
+interface ReportDetailModalProps {
+  type: ReportType | null;
+  data: any;
+  loading: boolean;
+  onClose: () => void;
+}
+
+// 기존 346번줄부터 시작하는 ReportDetailModal 함수를 아래로 교체
+
+function ReportDetailModal({ type, data, loading, onClose }: ReportDetailModalProps) {
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const TypeIcon = () => {
+    switch (type) {
+      case 'POST': return <FileText size={20} />;
+      case 'COMMENT': return <MessageSquare size={20} />;
+      case 'PT_ROOM': return <Video size={20} />;
+      default: return <FileText size={20} />;
+    }
+  };
+
+  const getCleanContent = (content: string | undefined): string => {
+    if (!content) return '';
+    return stripHtml(content);
+  };
+
+  /** 프로필 정보 가져오기 */
+  const getAuthorInfo = () => {
+    if (!data) return { nickname: '', handle: '' };
+    if (type === 'POST') {
+      return { nickname: data.authorNickname, handle: data.authorHandle };
+    } else if (type === 'PT_ROOM') {
+      return { nickname: data.trainer?.nickname || '알 수 없음', handle: data.trainer?.handle || '' };
+    } else if (type === 'COMMENT') {
+      return { nickname: data.handle || '알 수 없음', handle: '' };
+    }
+    return { nickname: '', handle: '' };
+  };
+
+  const authorInfo = getAuthorInfo();
+
+  return (
+    <div className="admin-modal-overlay" onClick={handleOverlayClick}>
+      <div className="admin-modal-container report-detail-modal">
+        {/* 헤더: 왼쪽 타입, 오른쪽 프로필 + X버튼 */}
+        <div className="admin-modal-header report-modal-header">
+          <div className="report-header-left">
+            <div className={`report-type-icon ${type?.toLowerCase()}`}>
+              <TypeIcon />
+            </div>
+            <div className="report-header-text">
+              <h3 className="admin-modal-title">신고된 {getTypeLabel(type || 'POST')}</h3>
+              <span className="report-header-subtitle">콘텐츠 상세 정보</span>
+            </div>
+          </div>
+          <div className="report-header-right">
+            {data && (
+              <div className="report-author-profile">
+                <div className={`report-avatar ${type?.toLowerCase()}`}>
+                  <User size={16} />
+                </div>
+                <div className="admin-author-info" style={{ alignItems: 'flex-end' }}>
+                  <span className="admin-nickname">{authorInfo.nickname}</span>
+                  {authorInfo.handle && <span className="admin-handle">@{authorInfo.handle}</span>}
+                </div>
+              </div>
+            )}
+            <button className="admin-modal-close" onClick={onClose}>
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* 바디: 제목 + 내용만 */}
+        <div className="admin-modal-content report-modal-body">
+          {loading ? (
+            <div className="report-detail-loading">
+              <div className="loading-spinner"></div>
+              <span>로딩 중...</span>
+            </div>
+          ) : !data ? (
+            <div className="report-deleted-content">
+              <div className="deleted-icon">
+                <AlertCircle size={28} />
+              </div>
+              <p className="deleted-title">삭제된 콘텐츠</p>
+              <p className="deleted-desc">
+                {type === 'POST' && '이 게시글은 이미 삭제되었습니다.'}
+                {type === 'COMMENT' && '이 댓글은 이미 삭제되었습니다.'}
+                {type === 'PT_ROOM' && '이 화상PT는 이미 종료되었습니다.'}
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* 게시글 */}
+              {type === 'POST' && (
+                <>
+                  <h4 className="report-content-title">{data.title}</h4>
+                  <div className="report-content-area">
+                    <p>{getCleanContent(data.content) || '(내용 없음)'}</p>
+                  </div>
+                </>
+              )}
+
+              {/* 댓글 */}
+              {type === 'COMMENT' && (
+                <>
+                  <h4 className="report-content-title">댓글</h4>
+                  {data.isLimited ? (
+                    <div className="report-warning-box">
+                      <AlertCircle size={18} />
+                      <span>댓글 조회 API가 필요합니다</span>
+                    </div>
+                  ) : (
+                    <div className="report-content-area">
+                      <p>{getCleanContent(data.content) || '(내용 없음)'}</p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* 화상PT */}
+              {type === 'PT_ROOM' && (
+                <>
+                  <h4 className="report-content-title">{data.title}</h4>
+                  <div className="report-info-row">
+                    <Users size={16} />
+                    <span>정원 {data.maxParticipants}명</span>
+                  </div>
+                  <div className="report-content-area">
+                    <p>{data.description || '(설명 없음)'}</p>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* 푸터 */}
+        <div className="admin-modal-footer">
+          <button className="admin-btn secondary" onClick={onClose}>닫기</button>
+        </div>
       </div>
     </div>
   );

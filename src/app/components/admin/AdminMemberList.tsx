@@ -320,10 +320,9 @@ export default function AdminMemberList() {
                         </button>
                       ) : (
                         <button
-                          className="admin-action-btn delete"
+                          className="admin-action-btn delete disabled"
                           onClick={() => handleUnban(member.userId)}
                           title="활성화"
-                          style={{ opacity: 0.5 }}
                         >
                           <X size={16} />
                         </button>

@@ -10,9 +10,9 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, X, Trash2 } from 'lucide-react';
+import { Search, Plus, X, Trash2, Eye } from 'lucide-react';
 import type { AdminPost, PostCategory, PostStatus } from '../../../api/types/admin';
-import { createNotice, deletePost } from '../../../api/admin';
+import { createNotice, deletePost, restorePost } from '../../../api/admin';
 import apiClient from '../../../api/client';
 
 /**
@@ -57,6 +57,17 @@ const getStatusLabel = (status: PostStatus): string => {
     default:
       return status;
   }
+};
+
+/**
+ * ===========================================
+ * HTML 태그 제거 함수
+ * ===========================================
+ */
+const stripHtml = (html: string): string => {
+  if (!html) return '';
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || '';
 };
 
 /**
@@ -217,9 +228,8 @@ export default function AdminBoardList() {
   /**
    * 게시글 삭제 핸들러
    */
-  const handleDelete = async (postId: number, e: React.MouseEvent) => {
-    e.stopPropagation(); // 행 클릭 이벤트 방지
-    if (!confirm('해당 게시글을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+  const handleDelete = async (postId: number) => {
+    if (!confirm('해당 게시글을 삭제하시겠습니까?')) return;
 
     try {
       await deletePost(postId);
@@ -228,6 +238,22 @@ export default function AdminBoardList() {
     } catch (err) {
       console.error('게시글 삭제 실패:', err);
       alert('게시글 삭제에 실패했습니다.');
+    }
+  };
+
+  /**
+   * 게시글 복구 핸들러
+   */
+  const handleRestore = async (postId: number) => {
+    if (!confirm('해당 게시글을 복구하시겠습니까?')) return;
+
+    try {
+      await restorePost(postId);
+      fetchPosts();
+      alert('게시글이 복구되었습니다.');
+    } catch (err) {
+      console.error('게시글 복구 실패:', err);
+      alert('게시글 복구에 실패했습니다.');
     }
   };
 
@@ -250,55 +276,51 @@ export default function AdminBoardList() {
     return (
       <div className="admin-board-page">
         <h2 className="admin-section-title">게시글 관리</h2>
-        <div className="admin-error">
-          <p>{error}</p>
-          <button onClick={fetchPosts} className="admin-btn primary">
-            다시 시도
-          </button>
-        </div>
+        <div className="admin-error">{error}</div>
       </div>
     );
   }
 
   return (
     <div className="admin-board-page">
-      {/* 헤더 영역 - 타이틀, 카운트, 검색 */}
+      {/* 헤더 영역 */}
       <div className="admin-section-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <h2 className="admin-section-title" style={{ margin: 0 }}>게시글 관리</h2>
-          <span className="admin-section-count" style={{ margin: 0 }}>전체 {total}건</span>
-        </div>
-        <div className="admin-search-box">
-          <Search size={18} />
-          <input
-            type="text"
-            placeholder="제목 또는 작성자 검색"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-          />
+        <div className="admin-header-row">
+          <div className="admin-header-left">
+            <h2 className="admin-section-title" style={{ margin: 0 }}>게시글 관리</h2>
+            <span className="admin-section-count" style={{ margin: 0 }}>전체 {total}건</span>
+          </div>
+          <div className="admin-search-box">
+            <Search size={18} />
+            <input
+              type="text"
+              placeholder="제목, 작성자 검색"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+            />
+          </div>
         </div>
       </div>
 
-      {/* 필터 영역 */}
+      {/* 필터 및 공지 등록 버튼 */}
       <div className="admin-filter-bar">
-        <div className="admin-filter-tabs">
-          {categoryFilters.map((filter) => (
-            <button
-              key={filter.value}
-              className={`admin-filter-tab ${filterCategory === filter.value ? 'active' : ''}`}
-              onClick={() => setFilterCategory(filter.value)}
-            >
-              {filter.label}
-            </button>
-          ))}
+        <div className="admin-filter-group">
+          <div className="admin-filter-buttons">
+            {categoryFilters.map((filter) => (
+              <button
+                key={filter.value}
+                className={`admin-filter-btn ${filterCategory === filter.value ? 'active' : ''}`}
+                onClick={() => setFilterCategory(filter.value)}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
         </div>
-
-        <button
-          className="admin-add-btn"
-          onClick={() => setIsNoticeModalOpen(true)}
-        >
-          <Plus size={18} /> 공지 등록
+        <button className="admin-add-btn" onClick={() => setIsNoticeModalOpen(true)}>
+          <Plus size={18} />
+          공지 등록
         </button>
       </div>
 
@@ -311,7 +333,7 @@ export default function AdminBoardList() {
               <th>작성자</th>
               <th>제목</th>
               <th>작성일</th>
-              <th>조회수</th>
+              <th>조회</th>
               <th>카테고리</th>
               <th>상태</th>
               <th>관리</th>
@@ -326,11 +348,7 @@ export default function AdminBoardList() {
               </tr>
             ) : (
               sortedPosts.map((post) => (
-                <tr 
-                  key={post.postId} 
-                  className={`${post.isNotice ? 'pinned-row' : ''} admin-clickable-row`}
-                  onClick={() => handleViewDetail(post)}
-                >
+                <tr key={post.postId} className={post.isNotice ? 'pinned-row' : ''}>
                   <td>{post.postId}</td>
                   <td>
                     <div className="admin-author-info">
@@ -358,12 +376,29 @@ export default function AdminBoardList() {
                   <td>
                     <div className="admin-action-buttons">
                       <button
-                        className="admin-action-btn delete"
-                        onClick={(e) => handleDelete(post.postId, e)}
-                        title="삭제"
+                        className="admin-action-btn view"
+                        onClick={() => handleViewDetail(post)}
+                        title="상세보기"
                       >
-                        <Trash2 size={16} />
+                        <Eye size={16} />
                       </button>
+                      {post.status === 'DELETED' ? (
+                        <button
+                          className="admin-action-btn delete disabled"
+                          onClick={() => handleRestore(post.postId)}
+                          title="복구"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      ) : (
+                        <button
+                          className="admin-action-btn delete"
+                          onClick={() => handleDelete(post.postId)}
+                          title="삭제"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -500,6 +535,12 @@ function PostDetailModal({ post, isLoading, onClose }: PostDetailModalProps) {
     }
   };
 
+  /** 내용에서 HTML 태그 제거 */
+  const getCleanContent = (content: string | undefined): string => {
+    if (!content) return '(내용 없음)';
+    return stripHtml(content) || '(내용 없음)';
+  };
+
   return (
     <div className="admin-modal-overlay" onClick={handleOverlayClick}>
       <div className="admin-modal-container" style={{ maxWidth: '700px' }}>
@@ -556,7 +597,7 @@ function PostDetailModal({ post, isLoading, onClose }: PostDetailModalProps) {
             color: '#333',
             whiteSpace: 'pre-wrap'
           }}>
-            {isLoading ? '로딩 중...' : (post.content || '(내용 없음)')}
+            {isLoading ? '로딩 중...' : getCleanContent(post.content)}
           </div>
         </div>
 
