@@ -55,7 +55,7 @@ export default function PlanDietLoading({ onComplete }: PlanDietLoadingProps) {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentStep(prev => (prev >= 3 ? 1 : prev + 1));
-    }, 2000);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);

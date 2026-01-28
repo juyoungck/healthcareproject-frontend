@@ -173,16 +173,15 @@ export default function PlanExerciseResult({
                           {item.exerciseName}
                         </span>
                         <span className="exercise-result-exercise-detail">
-                          {item.sets && item.reps && `${item.sets}세트 × ${item.reps}회`}
-                          {item.durationMinutes && `${item.durationMinutes}분`}
-                          {item.restSecond && ` • 휴식 ${item.restSecond}초`}
-                          {item.distanceKm && ` ${item.distanceKm}km`}
+                          {item.amount} • 휴식 {item.restSecond}초
                         </span>
-                        {/* 나중에 css 넣어서 수정                         
-                        <span>
-                          {`강도 ${item.rpe}/10`}
-                        </span> */}
                       </div>
+                      {/* 강도 텍스트 */}
+                      {item.rpe != null && (
+                        <span className="exercise-result-exercise-rpe">
+                          강도 {item.rpe}/10
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>

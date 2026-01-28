@@ -55,7 +55,7 @@ export default function PlanExerciseLoading({ onComplete }: PlanExerciseLoadingP
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentStep(prev => (prev >= 3 ? 1 : prev + 1));
-    }, 2000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, []);

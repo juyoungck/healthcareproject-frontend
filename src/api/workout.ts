@@ -38,13 +38,13 @@ export const updateWorkoutItemCheck = async (
 
 /**
  * 주간 운동 상태 조회
- * GET /api/me/workouts/status?startDate={startDate}&endDate={endDate}
+ * GET /api/workouts/calendar/summary?startDate={startDate}&endDate={endDate}
  */
 export const getWeeklyWorkoutStatus = async (
   startDate: string,
   endDate: string
 ): Promise<WeeklyStatusResponse> => {
-  const response = await apiClient.get('/api/me/workouts/status', {
+  const response = await apiClient.get('/api/workouts/calendar/summary', {
     params: { startDate, endDate }
   });
   return response.data.data;

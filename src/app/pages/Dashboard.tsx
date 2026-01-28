@@ -29,10 +29,11 @@ import WeekCalendar from '../components/calendar/WeekCalendar';
 import CalendarPage from './CalendarPage';
 import MyPage from './MyPage';
 
-import { getDailyWorkout, updateWorkoutItemCheck } from '../../api/workout';
-import { getDailyDiet, updateDietItemCheck } from '../../api/dietplan';
+import { getDailyWorkout, getWeeklyWorkoutStatus, updateWorkoutItemCheck } from '../../api/workout';
+import { getDailyDiet, getWeeklyDietStatus, updateDietItemCheck } from '../../api/dietplan';
 import type { DailyWorkoutResponse, WorkoutItem } from '../../api/types/workout';
 import type { DailyDietResponse, DietMeal, DietMealItem } from '../../api/types/dietplan';
+import type { WeeklyStatusMap } from '../../api/types/calendar';
 
 /**
  * Props 타입 정의
@@ -112,6 +113,12 @@ export default function Dashboard({
   const [isLoadingToday, setIsLoadingToday] = useState(true);
 
   /**
+   * 주간 운동/식단 상태 (계획 존재 여부 확인용)
+   */
+  const [weeklyWorkoutStatus, setWeeklyWorkoutStatus] = useState<WeeklyStatusMap>({});
+  const [weeklyDietStatus, setWeeklyDietStatus] = useState<WeeklyStatusMap>({});
+
+  /**
    * 선택된 운동/음식 ID
    */
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
@@ -127,11 +134,17 @@ export default function Dashboard({
    */
   const loadTodayData = useCallback(async () => {
     setIsLoadingToday(true);
-    const today = getTodayDateString();
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    const endDay = new Date(today);
+    endDay.setDate(today.getDate() + 6);
+    const startDate = todayStr;
+    const endDate = endDay.toISOString().split('T')[0];
 
     try {
       /* 오늘 운동 조회 */
-      const workoutData = await getDailyWorkout(today);
+      const workoutData = await getDailyWorkout(todayStr);
       setTodayWorkout(workoutData);
     } catch (error: any) {
       /* 404는 정상 (해당 날짜에 운동 없음) */
@@ -143,7 +156,7 @@ export default function Dashboard({
 
     try {
       /* 오늘 식단 조회 */
-      const dietData = await getDailyDiet(today);
+      const dietData = await getDailyDiet(todayStr);
       setTodayDiet(dietData);
     } catch (error: any) {
       /* 404는 정상 (해당 날짜에 식단 없음) */
@@ -153,6 +166,30 @@ export default function Dashboard({
       setTodayDiet(null);
     }
 
+    /* 주간 운동 상태 조회 */
+    try {
+      const workoutStatusRes = await getWeeklyWorkoutStatus(startDate, endDate);
+      const statusMap: WeeklyStatusMap = {};
+      workoutStatusRes.days.forEach(day => {
+        statusMap[day.date] = day.status;
+      });
+      setWeeklyWorkoutStatus(statusMap);
+    } catch (error) {
+      console.error('주간 운동 상태 조회 실패:', error);
+    }
+
+    /* 주간 식단 상태 조회 */
+    try {
+      const dietStatusRes = await getWeeklyDietStatus(startDate, endDate);
+      const statusMap: WeeklyStatusMap = {};
+      dietStatusRes.days.forEach(day => {
+        statusMap[day.date] = day.status;
+      });
+      setWeeklyDietStatus(statusMap);
+    } catch (error) {
+      console.error('주간 식단 상태 조회 실패:', error);
+    }
+
     setIsLoadingToday(false);
   }, []);
 
@@ -160,6 +197,24 @@ export default function Dashboard({
    * 주간 캘린더 새로고침 키
    */
   const [calendarRefreshKey, setCalendarRefreshKey] = useState<number>(0);
+  
+  /**
+   * 주간 운동 계획 존재 여부 확인
+   */
+  const hasWeeklyWorkoutPlan = (): boolean => {
+    return Object.values(weeklyWorkoutStatus).some(
+      status => status === 'PLANNED' || status === 'DONE'
+    );
+  };
+
+  /**
+   * 주간 식단 계획 존재 여부 확인
+   */
+  const hasWeeklyDietPlan = (): boolean => {
+    return Object.values(weeklyDietStatus).some(
+      status => status === 'PLANNED' || status === 'DONE'
+    );
+  };
 
   /**
    * 컴포넌트 마운트 시 오늘 데이터 로드
@@ -361,7 +416,7 @@ export default function Dashboard({
                       <div className="today-exercise-item-info">
                         <p className="today-exercise-item-name">{item.name}</p>
                         <p className="today-exercise-item-detail">
-                          {item.sets}세트 × {item.quantity}회 • 휴식 {item.restSeconds}초
+                          {item.amount} • 휴식 {item.restSeconds}초
                         </p>
                       </div>
                       <ExternalLink
@@ -383,6 +438,21 @@ export default function Dashboard({
               <div className="plan-card-content">
                 <p className="plan-card-title">로딩 중...</p>
               </div>
+            </div>
+          ) : hasWeeklyWorkoutPlan() ? (
+            /* 휴식일 카드 (주간 계획은 있지만 오늘은 휴식) */
+            <div className="rest-day-card">
+              <div className="rest-day-content">
+                <span className="rest-day-emoji">😴</span>
+                <p className="rest-day-title">오늘은 휴식일</p>
+                <p className="rest-day-desc">푹 쉬고 내일 다시 힘내요!</p>
+              </div>
+              <button 
+                className="rest-day-view-btn"
+                onClick={() => setActiveTab('exerciseView')}
+              >
+                주간 운동 보기
+              </button>
             </div>
           ) : (
             /* 운동 계획 생성 버튼 */
@@ -451,7 +521,7 @@ export default function Dashboard({
                           {menuNames.length > 25 ? menuNames.substring(0, 25) + '...' : menuNames}
                         </p>
                         <p className="today-diet-item-detail">
-                          식단{index + 1} • {mealCalories}kcal
+                          {meal.title} • {mealCalories}kcal
                         </p>
                       </div>
                       <ExternalLink
@@ -468,12 +538,20 @@ export default function Dashboard({
                 })}
               </ul>
             </div>
-          ) : isLoadingToday ? (
-            /* 로딩 중 */
-            <div className="plan-card loading">
-              <div className="plan-card-content">
-                <p className="plan-card-title">로딩 중...</p>
+          ) : hasWeeklyDietPlan() ? (
+            /* 휴식일 카드 (주간 계획은 있지만 오늘은 식단 없음) */
+            <div className="rest-day-card diet">
+              <div className="rest-day-content">
+                <span className="rest-day-emoji">🍽️</span>
+                <p className="rest-day-title">오늘은 자유 식단</p>
+                <p className="rest-day-desc">오늘은 편하게 드세요!</p>
               </div>
+              <button 
+                className="rest-day-view-btn"
+                onClick={() => setActiveTab('dietView')}
+              >
+                주간 식단 보기
+              </button>
             </div>
           ) : (
             /* 식단 계획 생성 버튼 */

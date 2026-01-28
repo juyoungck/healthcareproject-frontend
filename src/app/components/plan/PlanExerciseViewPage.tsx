@@ -11,7 +11,7 @@ import { useState, useEffect, useMemo, useCallback} from 'react';
 import { Clock, Check, ExternalLink, Dumbbell, RefreshCw, ArrowLeft } from 'lucide-react';
 import { getDailyWorkout, getWeeklyWorkoutStatus, updateWorkoutItemCheck } from '../../../api/workout';
 import type { DailyWorkoutResponse, WorkoutItem } from '../../../api/types/workout';
-import type { DayStatus } from '../../../api/types/calendar';
+import type { DayStatus, WeeklyStatusMap } from '../../../api/types/calendar';
 
 /**
  * Props 타입 정의
@@ -28,16 +28,26 @@ interface PlanExerciseViewPageProps {
  */
 const getWeekDates = (): string[] => {
   const today = new Date();
-  const dayOfWeek = today.getDay(); // 0(일) ~ 6(토)
-  const sunday = new Date(today);
-  sunday.setDate(today.getDate() - dayOfWeek);
+  const todayDayOfWeek = today.getDay(); // 0(일) ~ 6(토)
 
   const dates: string[] = [];
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(sunday);
-    date.setDate(sunday.getDate() + i);
+
+  for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+    const date = new Date(today);
+
+    if (dayOfWeek < todayDayOfWeek) {
+      /* 오늘 이전 요일 → 다음 주 */
+      const daysToAdd = 7 - todayDayOfWeek + dayOfWeek;
+      date.setDate(today.getDate() + daysToAdd);
+    } else {
+      /* 오늘 이후 요일 (오늘 포함) → 이번 주 */
+      const daysToAdd = dayOfWeek - todayDayOfWeek;
+      date.setDate(today.getDate() + daysToAdd);
+    }
+
     dates.push(date.toISOString().split('T')[0]);
   }
+
   return dates;
 };
 
@@ -77,7 +87,7 @@ export default function PlanExerciseViewPage({
   /**
    * 주간 상태 (테두리 색상용)
    */
-  const [weeklyStatus, setWeeklyStatus] = useState<{ [date: string]: DayStatus }>({});
+  const [weeklyStatus, setWeeklyStatus] = useState<WeeklyStatusMap>({});
 
   /**
    * 날짜별 운동 데이터 캐시
@@ -94,14 +104,25 @@ export default function PlanExerciseViewPage({
    */
   const loadWeeklyStatus = useCallback(async () => {
     try {
-      const startDate = weekDates[0];
-      const endDate = weekDates[6];
-      const status = await getWeeklyWorkoutStatus(startDate, endDate);
-      setWeeklyStatus(status);
+      const today = new Date();
+      const endDay = new Date(today);
+      endDay.setDate(today.getDate() + 6);
+
+      const startDate = today.toISOString().split('T')[0];
+      const endDate = endDay.toISOString().split('T')[0];
+
+      const response = await getWeeklyWorkoutStatus(startDate, endDate);
+
+      const statusMap: WeeklyStatusMap = {};
+      response.days.forEach(day => {
+        statusMap[day.date] = day.status;
+      });
+      
+      setWeeklyStatus(statusMap);
     } catch (error) {
       console.error('주간 운동 상태 조회 실패:', error);
     }
-  }, [weekDates]);
+  }, []);
 
   /**
    * 특정 날짜 운동 데이터 로드
@@ -218,7 +239,7 @@ export default function PlanExerciseViewPage({
           return (
             <button
               key={date}
-              className={`exercise-view-day-tab ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''} status-${status.toLowerCase()}`}
+              className={`exercise-view-day-tab ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''} status-${(status || 'no_status').toLowerCase()}`}
               onClick={() => handleDateClick(date)}
             >
               <span className="exercise-view-day-tab-label">
@@ -277,9 +298,15 @@ export default function PlanExerciseViewPage({
                   <div className="exercise-view-item-center">
                     <p className="exercise-view-item-name">{item.name}</p>
                     <p className="exercise-view-item-detail">
-                      {item.sets}세트 × {item.quantity}회 • 휴식 {item.restSeconds}초
+                      {item.amount} • 휴식 {item.restSeconds}초
                     </p>
                   </div>
+                  {/* 강도 텍스트 */}
+                  {item.rpe != null && (
+                    <span className="exercise-view-item-rpe">
+                      강도 {item.rpe}/10
+                    </span>
+                  )}
                   <ExternalLink
                     size={20}
                     className="exercise-view-item-arrow"

@@ -11,7 +11,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Check, ExternalLink, Utensils, RefreshCw, ArrowLeft, Flame } from 'lucide-react';
 import { getDailyDiet, getWeeklyDietStatus, updateDietItemCheck } from '../../../api/dietplan';
 import type { DailyDietResponse, DietMealItem } from '../../../api/types/dietplan';
-import type { DayStatus } from '../../../api/types/calendar';
+import type { DayStatus, WeeklyStatusMap } from '../../../api/types/calendar';
 
 /**
  * Props 타입 정의
@@ -29,16 +29,24 @@ interface PlanDietViewPageProps {
  */
 const getWeekDates = (): string[] => {
   const today = new Date();
-  const dayOfWeek = today.getDay();
-  const sunday = new Date(today);
-  sunday.setDate(today.getDate() - dayOfWeek);
+  const todayDayOfWeek = today.getDay();
 
   const dates: string[] = [];
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(sunday);
-    date.setDate(sunday.getDate() + i);
+
+  for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+    const date = new Date(today);
+
+    if (dayOfWeek < todayDayOfWeek) {
+      const daysToAdd = 7 - todayDayOfWeek + dayOfWeek;
+      date.setDate(today.getDate() + daysToAdd);
+    } else {
+      const daysToAdd = dayOfWeek - todayDayOfWeek;
+      date.setDate(today.getDate() + daysToAdd);
+    }
+
     dates.push(date.toISOString().split('T')[0]);
   }
+
   return dates;
 };
 
@@ -84,7 +92,7 @@ export default function PlanDietViewPage({
   /**
    * 주간 상태 (테두리 색상용)
    */
-  const [weeklyStatus, setWeeklyStatus] = useState<{ [date: string]: DayStatus }>({});
+  const [weeklyStatus, setWeeklyStatus] = useState<WeeklyStatusMap>({});
 
   /**
    * 날짜별 식단 데이터 캐시
@@ -101,14 +109,25 @@ export default function PlanDietViewPage({
    */
   const loadWeeklyStatus = useCallback(async () => {
     try {
-      const startDate = weekDates[0];
-      const endDate = weekDates[6];
-      const status = await getWeeklyDietStatus(startDate, endDate);
-      setWeeklyStatus(status);
+      const today = new Date();
+      const endDay = new Date(today);
+      endDay.setDate(today.getDate() + 6);
+
+      const startDate = today.toISOString().split('T')[0];
+      const endDate = endDay.toISOString().split('T')[0];
+
+      const response = await getWeeklyDietStatus(startDate, endDate);
+    
+      const statusMap: WeeklyStatusMap = {};
+      response.days.forEach(day => {
+        statusMap[day.date] = day.status;
+      });
+      
+      setWeeklyStatus(statusMap);
     } catch (error) {
       console.error('주간 식단 상태 조회 실패:', error);
     }
-  }, [weekDates]);
+  }, []);
 
   /**
    * 특정 날짜 식단 데이터 로드
@@ -245,7 +264,7 @@ export default function PlanDietViewPage({
           return (
             <button
               key={date}
-              className={`diet-view-day-tab ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''} status-${status.toLowerCase()}`}
+              className={`diet-view-day-tab ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''} status-${(status || 'no_status').toLowerCase()}`}
               onClick={() => handleDateClick(date)}
             >
               <span className="diet-view-day-tab-label">
@@ -271,16 +290,16 @@ export default function PlanDietViewPage({
         ) : currentDayData && currentMeal ? (
           <>
             {/* 카테고리 헤더 */}
-            <div className="diet-view-category">
-              <Utensils size={20} className="diet-view-category-icon" />
-              <div className="diet-view-category-info">
-                <h2 className="diet-view-category-title">{getTotalCalories()}kcal</h2>
-                <p className="diet-view-category-meta">
-                  <Flame size={14} />
-                  {currentMeal.items.length}개 메뉴
-                </p>
+              <div className="diet-view-category">
+                <Utensils size={20} className="diet-view-category-icon" />
+                <div className="diet-view-category-info">
+                  <h2 className="diet-view-category-title">{getTotalCalories()}kcal</h2>
+                  <p className="diet-view-category-meta">
+                    <Flame size={14} />
+                    {currentMeal.items.length}개 메뉴 {currentMeal.items.reduce((sum, item) => sum + item.calories, 0)}kcal
+                  </p>
+                </div>
               </div>
-            </div>
 
             {/* 메뉴 목록 */}
             <ul className="diet-view-list">
@@ -300,9 +319,9 @@ export default function PlanDietViewPage({
                     {item.isChecked ? <Check size={14} /> : <div className="diet-view-item-check-empty" />}
                   </div>
                   <div className="diet-view-item-center">
-                    <p className="diet-view-item-name">{item.name}</p>
+                    <p className="diet-view-item-name">{item.name} {item.calories}kcal</p>
                     <p className="diet-view-item-detail">
-                      {item.calories}kcal • 탄 {item.carbs}g 단 {item.proteins}g 지 {item.fats}g
+                      탄수화물 {item.carbs}g • 단백질 {item.proteins}g • 지방 {item.fats}g
                     </p>
                   </div>
                   <ExternalLink
@@ -342,7 +361,7 @@ export default function PlanDietViewPage({
                   onClick={() => setSelectedMealIndex(index)}
                 >
                   <span className="diet-view-meal-tab-label">
-                    식단{index + 1}
+                    {meal.title}
                   </span>
                   {allChecked && (
                     <Check size={10} className="diet-view-meal-tab-check" />

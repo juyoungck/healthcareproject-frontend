@@ -30,6 +30,7 @@ export interface DietMealItem {
 export interface DietMeal {
   dietMealId: number;
   sortOrder: number;
+  title: string;
   items: DietMealItem[];
 }
 

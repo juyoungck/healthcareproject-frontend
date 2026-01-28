@@ -1031,10 +1031,11 @@
 
 .diet-view-day-tabs {
   display: flex;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-lg);
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
   overflow-x: auto;
-  scrollbar-width: none;
 }
 
 .diet-view-day-tabs::-webkit-scrollbar {
@@ -1042,33 +1043,59 @@
 }
 
 .diet-view-day-tab {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: var(--element-size-lg);
-  aspect-ratio: 1 / 1;
-  padding: var(--spacing-xs);
-  background-color: var(--color-gray-50);
-  border: var(--border-width-md) solid transparent;
+  min-width: var(--element-size-3xl-plus);
+  height: var(--element-size-3xl-plus);
+  padding: var(--spacing-sm);
   border-radius: var(--border-radius-md);
+  border: var(--border-width-sm) solid var(--color-gray-200);
+  background-color: var(--color-white);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
 }
 
 .diet-view-day-tab:hover {
   background-color: var(--color-gray-100);
 }
 
-.diet-view-day-tab.today:not(.selected) {
-  border-color: var(--color-gray-300);
-  background-color: var(--color-white);
+/* 오늘 날짜 표시 */
+.diet-view-day-tab.today {
+  position: relative;
+}
+
+.diet-view-day-tab.today::after {
+  content: '';
+  position: absolute;
+  bottom: var(--spacing-xs);
+  width: var(--size-2xs);
+  height: var(--size-2xs);
+  border-radius: var(--border-radius-full);
+  background-color: var(--color-primary);
 }
 
 .diet-view-day-tab.selected {
-  border-color: var(--color-diet);
+  border-width: var(--border-width-md);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-sm);
+}
+
+.diet-view-day-tab.selected.status-done {
+  border-color: var(--color-success);
+  background-color: var(--color-success-light);
+}
+
+.diet-view-day-tab.selected.status-planned {
+  border-color: var(--color-workout-incomplete);
+  background-color: var(--color-workout-light);
+}
+
+.diet-view-day-tab.selected.status-no_status {
+  border-color: var(--color-gray-400);
   background-color: var(--color-white);
+  opacity: 1;
 }
 
 .diet-view-day-tab.has-meal .diet-view-day-tab-label {
@@ -1088,8 +1115,7 @@
 .diet-view-day-tab-label {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  color: var(--color-gray-600);
-  white-space: nowrap;
+  color: var(--color-gray-500);
 }
 
 .diet-view-day-tab.selected .diet-view-day-tab-label {
@@ -1103,8 +1129,7 @@
 
 .diet-view-day-tab-progress {
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-diet);
+  color: var(--color-primary);
   margin-top: var(--spacing-2xs);
 }
 
@@ -1541,11 +1566,29 @@
   background-color: var(--color-success-light);
 }
 
-.diet-view-day-tab.status-planned {
-  border-color: var(--color-primary);
+.diet-view-day-tab.status-done .diet-view-day-tab-label {
+  color: var(--color-success);
 }
 
-.diet-view-day-tab.status-no_plan {
-  border-color: var(--color-border);
-  opacity: 0.7;
+.diet-view-day-tab.status-planned {
+  border-color: var(--color-workout-incomplete);
+  background-color: var(--color-primary-light);
+}
+
+.diet-view-day-tab.status-planned .diet-view-day-tab-label {
+  color: var(--color-workout-incomplete);
+}
+
+.diet-view-day-tab.status-no_status {
+  border-color: var(--color-gray-200);
+  background-color: var(--color-gray-50);
+  opacity: 0.6;
+}
+
+.diet-view-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: var(--element-size-12xl);
+  color: var(--color-gray-500);
 }
