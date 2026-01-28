@@ -17,6 +17,7 @@ import type { WorkoutAiResponse } from '../../api/types/ai';
  */
 interface PlanExercisePageProps {
   onBack: () => void;
+  onComplete?: (plan: WorkoutAiResponse) => void;
 }
 
 /**
@@ -27,7 +28,7 @@ type ViewType = 'create' | 'loading' | 'result';
 /**
  * PlanExercisePage 컴포넌트
  */
-export default function PlanExercisePage({ onBack }: PlanExercisePageProps) {
+export default function PlanExercisePage({ onBack, onComplete }: PlanExercisePageProps) {
   /**
    * 현재 화면 상태
    */
@@ -87,14 +88,16 @@ export default function PlanExercisePage({ onBack }: PlanExercisePageProps) {
    * 재생성 핸들러
    */
   const handleRegenerate = () => {
-    setCurrentView('loading');
+    setCurrentView('create');
   };
 
   /**
    * 계획 저장 핸들러
-   * - API 응답이 이미 저장된 상태이므로 화면만 이동
    */
   const handleSave = () => {
+    if (planData) {
+      onComplete?.(planData);
+    }
     onBack();
   };
 

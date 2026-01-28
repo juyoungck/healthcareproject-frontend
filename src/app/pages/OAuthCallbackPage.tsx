@@ -89,13 +89,11 @@ export default function OAuthCallbackPage({
         /* 온보딩 완료 여부 확인 */
         setMessage('정보 확인 중...');
         try {
-          const { completed } = await getOnboardingStatus();
-          
+          const completed = await getOnboardingStatus();
+  
           if (completed) {
-            /* 기존 회원 → 대시보드로 이동 */
             onLoginSuccess();
           } else {
-            /* 신규 가입자 → 온보딩 표시 */
             setStatus('signup-complete');
           }
         } catch {

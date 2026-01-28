@@ -19,7 +19,8 @@ import type {
  * @returns 생성된 운동 계획
  */
 export const generateWorkoutPlan = async (request: WorkoutAiRequest): Promise<WorkoutAiResponse> => {
-  const response = await apiClient.put('/api/workouts/ai/routines', request);
+  const response = await apiClient.put('/api/workouts/ai/routines', request, {timeout: 60000}
+  );
   return response.data.data;
 };
 
@@ -31,6 +32,6 @@ export const generateWorkoutPlan = async (request: WorkoutAiRequest): Promise<Wo
  * @returns 생성된 7일 식단 계획
  */
 export const generateDietPlan = async (request: DietAiRequest): Promise<DietAiResponse> => {
-  const response = await apiClient.put('/api/diets/ai/week-plans', request);
+  const response = await apiClient.put('/api/diets/ai/week-plans', request, {timeout: 60000});
   return response.data.data;
 };

@@ -4,7 +4,7 @@
  * 로그인한 사용자에게 표시되는 메인 서비스 화면
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   Dumbbell,
@@ -13,8 +13,6 @@ import {
   Utensils,
   Home,
   MessageSquare,
-  Calendar,
-  ChevronRight,
   Clock,
   Check,
   ExternalLink
@@ -27,12 +25,14 @@ import PlanExercisePage from './PlanExercisePage';
 import PlanExerciseViewPage from '../components/plan/PlanExerciseViewPage';
 import PlanDietPage from './PlanDietPage';
 import PlanDietViewPage from '../components/plan/PlanDietViewPage';
-import { ExercisePlan } from '../components/plan/PlanExerciseResult';
-import { DietPlan } from '../components/plan/PlanDietResult';
-import { MealType } from '../../data/plan';
 import WeekCalendar from '../components/calendar/WeekCalendar';
 import CalendarPage from './CalendarPage';
 import MyPage from './MyPage';
+
+import { getDailyWorkout, updateWorkoutItemCheck } from '../../api/workout';
+import { getDailyDiet, updateDietItemCheck } from '../../api/dietplan';
+import type { DailyWorkoutResponse, WorkoutItem } from '../../api/types/workout';
+import type { DailyDietResponse, DietMeal, DietMealItem } from '../../api/types/dietplan';
 
 /**
  * Props 타입 정의
@@ -46,12 +46,6 @@ interface DashboardProps {
 }
 
 /**
- * 현재 로그인한 사용자 ID
- * TODO: 실제 구현 시 인증 시스템에서 가져오기
- */
-const currentUserId = 1;
-
-/**
  * 탭 타입 정의
  */
 type TabType = 'home' | 'exercise' | 'diet' | 'pt' | 'board' | 'exerciseView' | 'dietView' | 'calendar';
@@ -62,25 +56,11 @@ type TabType = 'home' | 'exercise' | 'diet' | 'pt' | 'board' | 'exerciseView' | 
 type SubPageType = 'none' | 'exercisePlan' | 'dietPlan';
 
 /**
- * 끼니 그룹 타입 정의
+ * 오늘 날짜 문자열 반환 (YYYY-MM-DD)
  */
-interface MealGroup {
-  type: string;
-  typeLabel: string;
-  meals: Array<{
-    id: number;
-    type: string;
-    typeLabel: string;
-    menu: string;
-    calories: number;
-    nutrients: {
-      carb: number;
-      protein: number;
-      fat: number;
-    };
-  }>;
-  totalCalories: number;
-}
+const getTodayDateString = (): string => {
+  return new Date().toISOString().split('T')[0];
+};
 
 /**
  * Dashboard 컴포넌트
@@ -92,7 +72,7 @@ export default function Dashboard({
   onMyPageShown,
   onOpenAdminPage
 }: DashboardProps) {
-  const { user: userInfo, updateUser } = useAuth();
+  const { user: userInfo } = useAuth();
 
   /**
    * 현재 활성 탭 상태
@@ -125,76 +105,164 @@ export default function Dashboard({
   const [videoPTFilter, setVideoPTFilter] = useState<string | null>(null);
 
   /**
-   * 저장된 운동 계획
+   * ===== 오늘의 운동/식단 (API 조회) =====
    */
-  const [savedExercisePlan, setSavedExercisePlan] = useState<ExercisePlan | null>(null);
+  const [todayWorkout, setTodayWorkout] = useState<DailyWorkoutResponse | null>(null);
+  const [todayDiet, setTodayDiet] = useState<DailyDietResponse | null>(null);
+  const [isLoadingToday, setIsLoadingToday] = useState(true);
 
   /**
-   * 완료된 운동 목록
-   */
-  const [completedExercises, setCompletedExercises] = useState<{ [key: string]: boolean }>({});
-
-  /**
-   * 저장된 식단 계획
-   */
-  const [savedDietPlan, setSavedDietPlan] = useState<DietPlan | null>(null);
-
-  /**
-   * 완료된 식단 목록
-   */
-  const [completedMeals, setCompletedMeals] = useState<{ [key: string]: boolean }>({});
-
-  /**
-   * 선택된 운동 ID
+   * 선택된 운동/음식 ID
    */
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
-
-  /**
-   * 선택된 음식 ID
-   */
   const [selectedFoodId, setSelectedFoodId] = useState<number | null>(null);
 
   /**
-   * 선택된 끼니 타입 (식단 뷰 초기 탭)
+   * 선택된 끼니 인덱스 (식단 뷰 초기 탭)
    */
-  const [selectedMealType, setSelectedMealType] = useState<MealType>('breakfast');
+  const [selectedMealIndex, setSelectedMealIndex] = useState<number>(0);
 
   /**
-   * 오늘 날짜 인덱스
+   * 오늘 운동/식단 데이터 로드
    */
-  const today = new Date().getDay();
+  const loadTodayData = useCallback(async () => {
+    setIsLoadingToday(true);
+    const today = getTodayDateString();
+
+    try {
+      /* 오늘 운동 조회 */
+      const workoutData = await getDailyWorkout(today);
+      setTodayWorkout(workoutData);
+    } catch (error: any) {
+      /* 404는 정상 (해당 날짜에 운동 없음) */
+      if (error?.response?.status !== 404) {
+        console.error('오늘 운동 조회 실패:', error);
+      }
+      setTodayWorkout(null);
+    }
+
+    try {
+      /* 오늘 식단 조회 */
+      const dietData = await getDailyDiet(today);
+      setTodayDiet(dietData);
+    } catch (error: any) {
+      /* 404는 정상 (해당 날짜에 식단 없음) */
+      if (error?.response?.status !== 404) {
+        console.error('오늘 식단 조회 실패:', error);
+      }
+      setTodayDiet(null);
+    }
+
+    setIsLoadingToday(false);
+  }, []);
 
   /**
-   * 예시 주간 활동 데이터
+   * 주간 캘린더 새로고침 키
    */
-  const dailyStatus = [
-    { workout: false, diet: false, pt: false },
-    { workout: true, diet: true, pt: false },
-    { workout: true, diet: false, pt: true },
-    { workout: false, diet: false, pt: false },
-    { workout: false, diet: false, pt: false },
-    { workout: false, diet: false, pt: false },
-    { workout: false, diet: false, pt: false },
-  ];
+  const [calendarRefreshKey, setCalendarRefreshKey] = useState<number>(0);
 
   /**
-   * 운동 완료 토글
+   * 컴포넌트 마운트 시 오늘 데이터 로드
    */
-  const handleToggleExercise = (exerciseKey: string) => {
-    setCompletedExercises(prev => ({
-      ...prev,
-      [exerciseKey]: !prev[exerciseKey]
-    }));
+  useEffect(() => {
+    loadTodayData();
+  }, [loadTodayData]);
+
+  /**
+   * 운동 체크 토글 핸들러 (API 호출)
+   */
+  const handleToggleWorkoutItem = async (item: WorkoutItem) => {
+    if (!todayWorkout) return;
+
+    const newChecked = !item.isChecked;
+
+    /* 낙관적 업데이트 */
+    setTodayWorkout(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        items: prev.items.map(i =>
+          i.workoutItemId === item.workoutItemId
+            ? { ...i, isChecked: newChecked }
+            : i
+        ),
+        completedCount: prev.completedCount + (newChecked ? 1 : -1)
+      };
+    });
+
+    try {
+      await updateWorkoutItemCheck(item.workoutItemId, newChecked);
+      setCalendarRefreshKey(prev => prev + 1);
+    } catch (error) {
+      console.error('운동 체크 업데이트 실패:', error);
+      /* 실패 시 롤백 */
+      setTodayWorkout(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          items: prev.items.map(i =>
+            i.workoutItemId === item.workoutItemId
+              ? { ...i, isChecked: !newChecked }
+              : i
+          ),
+          completedCount: prev.completedCount + (newChecked ? -1 : 1)
+        };
+      });
+    }
   };
 
   /**
-   * 식단 완료 토글
+   * 끼니 전체 체크 토글 핸들러 (API 호출)
    */
-  const handleToggleMeal = (mealKey: string) => {
-    setCompletedMeals(prev => ({
-      ...prev,
-      [mealKey]: !prev[mealKey]
-    }));
+  const handleToggleMeal = async (meal: DietMeal) => {
+    if (!todayDiet) return;
+
+    /* 현재 끼니의 모든 아이템이 체크되어 있는지 확인 */
+    const allChecked = meal.items.length > 0 && meal.items.every(item => item.isChecked);
+    const newChecked = !allChecked;
+
+    /* 낙관적 업데이트: 해당 끼니의 모든 아이템 토글 */
+    setTodayDiet(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        meals: prev.meals.map(m => 
+          m.dietMealId === meal.dietMealId
+            ? {
+                ...m,
+                items: m.items.map(item => ({ ...item, isChecked: newChecked }))
+              }
+            : m
+        )
+      };
+    });
+
+    /* 모든 아이템에 대해 API 호출 */
+    try {
+      await Promise.all(
+        meal.items.map(item => 
+          updateDietItemCheck(item.dietMealItemId, newChecked)
+        )
+      );
+      setCalendarRefreshKey(prev => prev + 1);
+    } catch (error) {
+      console.error('식단 체크 업데이트 실패:', error);
+      /* 실패 시 롤백 */
+      setTodayDiet(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          meals: prev.meals.map(m =>
+            m.dietMealId === meal.dietMealId
+              ? {
+                  ...m,
+                  items: m.items.map(item => ({ ...item, isChecked: !newChecked }))
+                }
+              : m
+          )
+        };
+      });
+    }
   };
 
   /**
@@ -202,24 +270,15 @@ export default function Dashboard({
    */
   const getHeaderTitle = (): string => {
     switch (activeTab) {
-      case 'home':
-        return '운동운동';
-      case 'exercise':
-        return '운동';
-      case 'exerciseView':
-        return '주간운동';
-      case 'diet':
-        return '식단';
-      case 'dietView':
-        return '주간식단';
-      case 'pt':
-        return '화상PT';
-      case 'board':
-        return '게시판';
-      case 'calendar':
-        return '캘린더';
-      default:
-        return '운동운동';
+      case 'home': return '운동운동';
+      case 'exercise': return '운동';
+      case 'exerciseView': return '주간운동';
+      case 'diet': return '식단';
+      case 'dietView': return '주간식단';
+      case 'pt': return '화상PT';
+      case 'board': return '게시판';
+      case 'calendar': return '캘린더';
+      default: return '운동운동';
     }
   };
 
@@ -234,130 +293,75 @@ export default function Dashboard({
   };
 
   /**
-   * 오늘 요일 가져오기
+   * AI 계획 생성 완료 핸들러 (운동)
    */
-  const getTodayDayName = () => String(new Date().getDay());
-
-  /**
-   * 오늘의 운동 계획 가져오기
-   */
-  const getTodayExercise = () => {
-    if (!savedExercisePlan) return null;
-    return savedExercisePlan.dailyPlans.find(plan => plan.dayName === getTodayDayName());
+  const handleExercisePlanComplete = () => {
+    setSubPage('none');
+    loadTodayData();
   };
 
   /**
-   * 오늘의 식단 가져오기
+   * AI 계획 생성 완료 핸들러 (식단)
    */
-  const getTodayDiet = () => {
-    if (!savedDietPlan) return null;
-    return savedDietPlan.dailyMeals.find(meal => meal.dayName === getTodayDayName());
+  const handleDietPlanComplete = () => {
+    setSubPage('none');
+    loadTodayData();
   };
-
-  /**
-   * 끼니별 그룹화 함수
-   */
-  const groupMealsByType = (meals: DietPlan['dailyMeals'][0]['meals']): MealGroup[] => {
-    const groups = meals.reduce((acc, meal) => {
-      const type = meal.type;
-      if (!acc[type]) {
-        acc[type] = {
-          type: meal.type,
-          typeLabel: meal.typeLabel,
-          meals: [],
-          totalCalories: 0
-        };
-      }
-      acc[type].meals.push(meal);
-      acc[type].totalCalories += meal.calories;
-      return acc;
-    }, {} as Record<string, MealGroup>);
-
-    return Object.values(groups);
-  };
-
-  /**
-   * 서브페이지 렌더링
-   */
-  if (subPage === 'exercisePlan') {
-    return (
-      <PlanExercisePage
-        onBack={() => setSubPage('none')}
-        onSavePlan={(plan) => {
-          setSavedExercisePlan(plan);
-          setSubPage('none');
-        }}
-      />
-    );
-  }
-
-  if (subPage === 'dietPlan') {
-    return (
-      <PlanDietPage
-        onBack={() => setSubPage('none')}
-        onSavePlan={(plan) => {
-          setSavedDietPlan(plan);
-          setSubPage('none');
-        }}
-      />
-    );
-  }
 
   /**
    * 홈 탭 콘텐츠 렌더링
    */
   const renderHomeContent = () => {
-    const todayExercise = getTodayExercise();
-    const todayDiet = getTodayDiet();
-
     return (
       <>
-        {/* 운동/식단 계획 박스 */}
+        {/* 계획 생성/오늘의 계획 카드 그리드 */}
         <div className="plan-grid">
           {/* 운동 카드 */}
-          {savedExercisePlan && todayExercise ? (
+          {todayWorkout ? (
+            /* 오늘의 운동 카드 */
             <div className="today-exercise-card">
-              <div className="today-exercise-header" onClick={() => setActiveTab('exerciseView')}>
+              <div
+                className="today-exercise-header"
+                onClick={() => setActiveTab('exerciseView')}
+              >
                 <span className="today-exercise-label">오늘의 운동</span>
                 <ExternalLink size={16} className="today-exercise-arrow" />
               </div>
-              <div className="today-exercise-category" onClick={() => setActiveTab('exerciseView')} style={{ cursor: 'pointer' }}>
-                <Dumbbell size={20} className="today-exercise-category-icon" />
+
+              {/* 카테고리 헤더 */}
+              <div className="today-exercise-category">
+                <Dumbbell size={16} className="today-exercise-category-icon" />
                 <div className="today-exercise-category-info">
-                  <p className="today-exercise-category-title">{todayExercise.category}</p>
+                  <h3 className="today-exercise-category-title">{todayWorkout.title}</h3>
                   <p className="today-exercise-category-meta">
                     <Clock size={12} />
-                    {todayExercise.totalMinutes}분 • {todayExercise.exercises.length}개 운동
+                    {todayWorkout.totalMinutes}분 • {todayWorkout.exerciseCount}개 운동
                   </p>
                 </div>
               </div>
+
+              {/* 운동 리스트 */}
               <ul className="today-exercise-list">
-                {todayExercise.exercises.map((exercise) => {
-                  const exerciseKey = `${getTodayDayName()}-${exercise.id}`;
-                  const isCompleted = completedExercises[exerciseKey];
-                  return (
-                    <li
-                      key={exercise.id}
-                      className={`today-exercise-item ${isCompleted ? 'completed' : ''}`}
-                      onClick={() => handleToggleExercise(exerciseKey)}
-                    >
-                      <button
-                        className="today-exercise-item-check"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleExercise(exerciseKey);
-                        }}
-                      >
-                        {isCompleted ? (
-                          <Check size={16} />
-                        ) : (
-                          <div className="today-exercise-item-check-empty" />
-                        )}
+                {todayWorkout.items.map((item) => (
+                  <li
+                    key={item.workoutItemId}
+                    className={`today-exercise-item ${item.isChecked ? 'completed' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleWorkoutItem(item);
+                    }}
+                  >
+                      <button className="today-exercise-item-check">
+                        {item.isChecked ? (
+                        <Check size={12} />
+                      ) : (
+                        <div className="today-exercise-item-check-empty" />
+                      )}
                       </button>
                       <div className="today-exercise-item-info">
-                        <p className="today-exercise-item-name">{exercise.name}</p>
+                        <p className="today-exercise-item-name">{item.name}</p>
                         <p className="today-exercise-item-detail">
-                          {exercise.sets}세트 × {exercise.reps}회 • 휴식 {exercise.restSeconds}초
+                          {item.sets}세트 × {item.quantity}회 • 휴식 {item.restSeconds}초
                         </p>
                       </div>
                       <ExternalLink
@@ -365,30 +369,23 @@ export default function Dashboard({
                         className="today-exercise-item-arrow"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedExerciseId(exercise.id);
+                          setSelectedExerciseId(item.exerciseId);
                           setActiveTab('exercise');
                         }}
                       />
-                    </li>
-                  );
-                })}
+                  </li>
+                ))}
               </ul>
             </div>
-          ) : savedExercisePlan ? (
-            <div className="today-exercise-card rest-day" onClick={() => setActiveTab('exerciseView')}>
-              <div className="today-exercise-header">
-                <span className="today-exercise-label">오늘의 운동</span>
-                <ExternalLink size={16} className="today-exercise-arrow" />
-              </div>
-              <div className="today-exercise-rest">
-                <Dumbbell size={32} className="today-exercise-rest-icon" />
-                <div className="today-exercise-rest-info">
-                  <p className="today-exercise-rest-title">휴식일</p>
-                  <p className="today-exercise-rest-text">오늘은 쉬는 날이에요</p>
-                </div>
+          ) : isLoadingToday ? (
+            /* 로딩 중 */
+            <div className="plan-card loading">
+              <div className="plan-card-content">
+                <p className="plan-card-title">로딩 중...</p>
               </div>
             </div>
           ) : (
+            /* 운동 계획 생성 버튼 */
             <button className="plan-card" onClick={() => setSubPage('exercisePlan')}>
               <div className="plan-card-content">
                 <Dumbbell className="plan-card-icon workout" />
@@ -397,90 +394,73 @@ export default function Dashboard({
             </button>
           )}
 
-          {/* 식단 카드 - 끼니별 그룹화 적용 */}
-          {savedDietPlan && todayDiet ? (
+          {/* 식단 카드 */}
+          {todayDiet ? (
+            /* 오늘의 식단 카드 */
             <div className="today-diet-card">
-              <div className="today-diet-header" onClick={() => {
-                setSelectedMealType('breakfast');
-                setActiveTab('dietView');
-              }}>
+              <div
+                className="today-diet-header"
+                onClick={() => setActiveTab('dietView')}
+              >
                 <span className="today-diet-label">오늘의 식단</span>
                 <ExternalLink size={16} className="today-diet-arrow" />
               </div>
-              <div className="today-diet-category" onClick={() => { setSelectedMealType('breakfast'); setActiveTab('dietView'); }} style={{ cursor: 'pointer' }}>
-                <Utensils size={20} className="today-diet-category-icon" />
+
+              {/* 칼로리 헤더 */}
+              <div className="today-diet-category">
+                <Utensils size={16} className="today-diet-category-icon" />
                 <div className="today-diet-category-info">
-                  <p className="today-diet-category-title">{todayDiet.totalCalories}kcal</p>
+                  <h3 className="today-diet-category-title">
+                    {todayDiet.meals.reduce((sum, meal) =>
+                      sum + meal.items.reduce((s, item) => s + item.calories, 0), 0
+                    )}kcal
+                  </h3>
                   <p className="today-diet-category-meta">
-                    {todayDiet.meals.length}개 메뉴
+                    {todayDiet.meals.length}끼 식단
                   </p>
                 </div>
               </div>
-              {/* 끼니별 그룹화된 리스트 */}
-              <ul className="today-diet-list">
-                {groupMealsByType(todayDiet.meals).map((group) => {
-                  /**
-                   * 해당 끼니의 모든 메뉴가 완료되었는지 확인
-                   */
-                  const allCompleted = group.meals.every(
-                    (meal) => completedMeals[`${getTodayDayName()}-${meal.id}`]
-                  );
 
-                  /**
-                   * 메뉴명 전체 나열 (CSS로 말줄임 처리)
-                   */
-                  const menuNames = group.meals.map((m) => m.menu).join(', ');
+              {/* 끼니별 리스트 */}
+              <ul className="today-diet-list">
+                {todayDiet.meals.map((meal, index) => {
+                  const mealCalories = meal.items.reduce((sum, item) => sum + item.calories, 0);
+                  const menuNames = meal.items.map(item => item.name).join(' + ');
+                  const allChecked = meal.items.length > 0 && meal.items.every(item => item.isChecked);
 
                   return (
                     <li
-                      key={group.type}
-                      className={`today-diet-item ${allCompleted ? 'completed' : ''}`}
-                      onClick={() => {
-                        const newCompletedState = !allCompleted;
-                        setCompletedMeals((prev) => {
-                          const updated = { ...prev };
-                          group.meals.forEach((meal) => {
-                            const mealKey = `${getTodayDayName()}-${meal.id}`;
-                            updated[mealKey] = newCompletedState;
-                          });
-                          return updated;
-                        });
+                      key={meal.dietMealId}
+                      className={`today-diet-item ${allChecked ? 'completed' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (meal.items.length > 0) {
+                          handleToggleMeal(meal);
+                        }
                       }}
                     >
-                      <button
-                        className="today-diet-item-check"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newCompletedState = !allCompleted;
-                          setCompletedMeals((prev) => {
-                            const updated = { ...prev };
-                            group.meals.forEach((meal) => {
-                              const mealKey = `${getTodayDayName()}-${meal.id}`;
-                              updated[mealKey] = newCompletedState;
-                            });
-                            return updated;
-                          });
-                        }}
-                      >
-                        {allCompleted ? (
-                          <Check size={16} />
+                      <button className="today-diet-item-check">
+                        {allChecked ? (
+                          <Check size={12} />
                         ) : (
                           <div className="today-diet-item-check-empty" />
                         )}
                       </button>
                       <div className="today-diet-item-info">
-                        <p className="today-diet-item-name">{menuNames}</p>
+                        <p className="today-diet-item-name">
+                          {menuNames.length > 25 ? menuNames.substring(0, 25) + '...' : menuNames}
+                        </p>
                         <p className="today-diet-item-detail">
-                          {group.typeLabel} • {group.totalCalories}kcal
+                          식단{index + 1} • {mealCalories}kcal
                         </p>
                       </div>
                       <ExternalLink
                         size={16}
-                        className="today-diet-item-arrow"
+                        className="today-exercise-item-arrow"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedMealType(group.type as MealType);
-                          setActiveTab('dietView');
+                          setSelectedMealIndex(index);
+                          setActiveTab('dietView')
                         }}
                       />
                     </li>
@@ -488,24 +468,15 @@ export default function Dashboard({
                 })}
               </ul>
             </div>
-          ) : savedDietPlan ? (
-            <div className="today-diet-card rest-day" onClick={() => {
-              setSelectedMealType('breakfast');
-              setActiveTab('dietView');
-            }}>
-              <div className="today-diet-header">
-                <span className="today-diet-label">오늘의 식단</span>
-                <ExternalLink size={16} className="today-diet-arrow" />
-              </div>
-              <div className="today-diet-rest">
-                <Utensils size={32} className="today-diet-rest-icon" />
-                <div className="today-diet-rest-info">
-                  <p className="today-diet-rest-title">식단 없음</p>
-                  <p className="today-diet-rest-text">오늘은 등록된 식단이 없어요</p>
-                </div>
+          ) : isLoadingToday ? (
+            /* 로딩 중 */
+            <div className="plan-card loading">
+              <div className="plan-card-content">
+                <p className="plan-card-title">로딩 중...</p>
               </div>
             </div>
           ) : (
+            /* 식단 계획 생성 버튼 */
             <button className="plan-card" onClick={() => setSubPage('dietPlan')}>
               <div className="plan-card-content">
                 <Utensils className="plan-card-icon diet" />
@@ -516,9 +487,7 @@ export default function Dashboard({
         </div>
 
         {/* 화상회의 예약 확인 바 */}
-        <div className="video-call-bar"
-          onClick={() => handleNavigateToPT('my-reservation')}
-        >
+        <div className="video-call-bar" onClick={() => handleNavigateToPT('my-reservation')}>
           <div className="video-call-content">
             <div className="video-call-left">
               <Video className="video-call-icon" />
@@ -533,6 +502,7 @@ export default function Dashboard({
 
         {/* 주간 캘린더 */}
         <WeekCalendar
+          key={calendarRefreshKey}
           onNavigateToMonth={() => setActiveTab('calendar')}
           onNavigateToWorkout={() => setActiveTab('exerciseView')}
           onNavigateToDiet={() => setActiveTab('dietView')}
@@ -557,22 +527,17 @@ export default function Dashboard({
           />
         );
       case 'exerciseView':
-        return savedExercisePlan ? (
+        return (
           <PlanExerciseViewPage
             onBack={() => setActiveTab('home')}
-            planData={savedExercisePlan}
-            completedExercises={completedExercises}
-            onToggleExercise={handleToggleExercise}
             onExerciseClick={(id) => {
               setSelectedExerciseId(id);
               setActiveTab('exercise');
             }}
-            onRegenerate={(feedback) => {
-              console.log('운동 재생성 요청:', feedback);
-              setSubPage('exercisePlan');
-            }}
+            onRegenerate={() => setSubPage('exercisePlan')}
+            onDataChange={loadTodayData}
           />
-        ) : null;
+        );
       case 'diet':
         return (
           <DietPage
@@ -581,23 +546,18 @@ export default function Dashboard({
           />
         );
       case 'dietView':
-        return savedDietPlan ? (
+        return (
           <PlanDietViewPage
             onBack={() => setActiveTab('home')}
-            planData={savedDietPlan}
-            completedMeals={completedMeals}
-            onToggleMeal={handleToggleMeal}
             onFoodClick={(id) => {
               setSelectedFoodId(id);
               setActiveTab('diet');
             }}
-            onRegenerate={(feedback) => {
-              console.log('식단 재생성 요청:', feedback);
-              setSubPage('dietPlan');
-            }}
-            initialMealType={selectedMealType}
+            onRegenerate={() => setSubPage('dietPlan')}
+            initialMealIndex={selectedMealIndex}
+            onDataChange={loadTodayData}
           />
-        ) : null;
+        );
       case 'pt':
         return <VideoPTPage initialFilter={videoPTFilter} />;
       case 'board':
@@ -616,6 +576,27 @@ export default function Dashboard({
     }
   };
 
+  /**
+   * 서브페이지 렌더링
+   */
+  if (subPage === 'exercisePlan') {
+    return (
+      <PlanExercisePage
+        onBack={() => setSubPage('none')}
+        onComplete={handleExercisePlanComplete}
+      />
+    );
+  }
+
+  if (subPage === 'dietPlan') {
+    return (
+      <PlanDietPage
+        onBack={() => setSubPage('none')}
+        onComplete={handleDietPlanComplete}
+      />
+    );
+  }
+
   if (showMyPage) {
     return (
       <MyPage
@@ -623,7 +604,7 @@ export default function Dashboard({
         onLogout={onLogout}
         onEditOnboarding={onEditOnboarding}
         onOpenAdminPage={() => {
-          setShowMyPage(false);   
+          setShowMyPage(false);
           onOpenAdminPage?.();
         }}
       />

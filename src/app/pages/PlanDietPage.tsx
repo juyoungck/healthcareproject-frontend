@@ -17,6 +17,7 @@ import type { DietAiResponse } from '../../api/types/ai';
  */
 interface PlanDietPageProps {
   onBack: () => void;
+  onComplete?: (plan: DietAiResponse) => void;
 }
 
 /**
@@ -27,7 +28,7 @@ type ViewType = 'create' | 'loading' | 'result';
 /**
  * PlanDietPage 컴포넌트
  */
-export default function PlanDietPage({ onBack }: PlanDietPageProps) {
+export default function PlanDietPage({ onBack, onComplete }: PlanDietPageProps) {
   /**
    * 현재 화면 상태
    */
@@ -87,7 +88,7 @@ export default function PlanDietPage({ onBack }: PlanDietPageProps) {
    * 재생성 핸들러
    */
   const handleRegenerate = () => {
-    setCurrentView('loading');
+    setCurrentView('create');
   };
 
   /**
@@ -95,6 +96,9 @@ export default function PlanDietPage({ onBack }: PlanDietPageProps) {
    * - API 응답이 이미 저장된 상태이므로 화면만 이동
    */
   const handleSave = () => {
+    if (planData) {
+      onComplete?.(planData);
+    }
     onBack();
   };
 

@@ -27,6 +27,7 @@ export interface PTTrainerInfo {
   nickname: string;
   handle: string;
   profileImageUrl?: string | null;
+  bio?: string | null;
 }
 
 /**

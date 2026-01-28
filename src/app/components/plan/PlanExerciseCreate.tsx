@@ -6,13 +6,15 @@
  * - 온보딩 정보 기반 AI 추천
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Dumbbell } from 'lucide-react';
+import { getProfile, getInjuries } from '../../../api/me';
+import type { InjuryItem, InjuryLevel } from '../../../api/types/me';
 
 /**
  * Props 타입 정의
  */
-interface ExercisePlanCreateProps {
+interface PlanExerciseCreateProps {
   onBack: () => void;
   onGenerate: (dates: string[], additionalRequest: string) => void;
 }
@@ -31,46 +33,134 @@ const WEEK_DAYS = [
 ];
 
 /**
+ * 부상 레벨 한글 매핑
+ */
+const INJURY_LEVEL_LABELS: Record<InjuryLevel, string> = {
+  MILD: '경미',
+  CAUTION: '주의',
+  SEVERE: '심각',
+};
+
+/**
+ * weeklyDays에 따른 기본 요일 선택
+ * 1일: 수
+ * 2일: 화, 목
+ * 3일: 월, 수, 금
+ * 4일: 월, 화, 목, 금
+ * 5일: 월, 화, 수, 목, 금
+ * 6일: 월, 화, 수, 목, 금, 토
+ * 7일: 전체
+ */
+const getDefaultDaysByWeeklyDays = (weeklyDays: number): number[] => {
+  switch (weeklyDays) {
+    case 1:
+      return [3]; // 수
+    case 2:
+      return [2, 4]; // 화, 목
+    case 3:
+      return [1, 3, 5]; // 월, 수, 금
+    case 4:
+      return [1, 2, 4, 5]; // 월, 화, 목, 금
+    case 5:
+      return [1, 2, 3, 4, 5]; // 월~금
+    case 6:
+      return [1, 2, 3, 4, 5, 6]; // 월~토
+    case 7:
+      return [0, 1, 2, 3, 4, 5, 6]; // 전체
+    default:
+      return [1, 3, 5]; // 기본: 월, 수, 금
+  }
+};
+
+/**
  * 선택된 요일을 이번 주 날짜 문자열로 변환
  * @param selectedDays 선택된 요일 배열 (0: 일요일 ~ 6: 토요일)
  * @returns ISO 날짜 문자열 배열 (예: ["2026-01-17", "2026-01-19"])
  */
 const convertDaysToDateStrings = (selectedDays: number[]): string[] => {
   const today = new Date();
-  const currentDayOfWeek = today.getDay(); /* 0: 일요일 ~ 6: 토요일 */
-  
+  const currentDayOfWeek = today.getDay();
+
   return selectedDays.map(dayId => {
-    /* 오늘 기준으로 해당 요일까지의 차이 계산 */
     let diff = dayId - currentDayOfWeek;
-    /* 이미 지난 요일이면 다음 주로 */
-    if (diff < 0) {
-      diff += 7;
-    }
-    
+    /* 지난 요일이면 다음 주로 */
+    if (diff < 0) diff += 7;
+
     const targetDate = new Date(today);
     targetDate.setDate(today.getDate() + diff);
-    
-    /* ISO 날짜 문자열 반환 (YYYY-MM-DD) */
     return targetDate.toISOString().split('T')[0];
   }).sort();
 };
 
 /**
- * ExercisePlanCreate 컴포넌트
+ * 부상 정보를 문자열로 변환
  */
-export default function ExercisePlanCreate({ 
+const formatInjuriesToString = (injuries: InjuryItem[]): string => {
+  if (injuries.length === 0) return '';
+
+  const injuryTexts = injuries.map(injury => {
+    const levelLabel = INJURY_LEVEL_LABELS[injury.injuryLevel];
+    return `${injury.injuryPart}(${levelLabel})`;
+  });
+
+  return `부상 이력: ${injuryTexts.join(', ')}. 해당 부위에 무리가 가지 않는 운동으로 구성해주세요.`;
+};
+
+/**
+ * PlanExerciseCreate 컴포넌트
+ */
+export default function PlanExerciseCreate({ 
   onBack, 
   onGenerate 
-}: ExercisePlanCreateProps) {
+}: PlanExerciseCreateProps) {
   /**
    * 선택된 요일 상태 (0: 일요일 ~ 6: 토요일)
    */
-  const [selectedDays, setSelectedDays] = useState<number[]>([1, 3, 5]); // 기본: 월, 수, 금
+  const [selectedDays, setSelectedDays] = useState<number[]>([1, 3, 5]);
 
   /**
-   * 추가 요청사항 상태
+   * 부상 정보 (API 요청 시 자동 포함)
+   */
+  const [injuries, setInjuries] = useState<InjuryItem[]>([]);
+
+  /**
+   * 추가 요청사항
    */
   const [additionalRequest, setAdditionalRequest] = useState<string>('');
+
+  /**
+   * 로딩 상태
+   */
+  const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * 사용자 온보딩 정보 불러오기
+   */
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        /* 프로필 정보 (운동 주기) */
+        const profile = await getProfile();
+        console.log('프로필 응답:', profile);
+        if (profile?.weeklyDays) {
+          setSelectedDays(getDefaultDaysByWeeklyDays(profile.weeklyDays));
+        }
+
+        /* 부상 정보 */
+        const injuriesData = await getInjuries();
+        console.log('부상 정보 응답:', injuriesData);
+        if (injuriesData?.injuries) {
+          setInjuries(injuriesData.injuries);
+        }
+      } catch (error) {
+        console.error('사용자 정보 로드 실패:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   /**
    * 요일 토글 핸들러
@@ -93,10 +183,32 @@ export default function ExercisePlanCreate({
       alert('운동할 요일을 최소 1일 이상 선택해주세요.');
       return;
     }
-    /* 요일을 날짜 문자열로 변환하여 전달 */
+
     const dateStrings = convertDaysToDateStrings(selectedDays);
-    onGenerate(dateStrings, additionalRequest);
+
+    /* 부상 정보 + 사용자 추가 요청사항 합치기 */
+    const injuryText = formatInjuriesToString(injuries);
+    const userRequest = additionalRequest.trim();
+
+    let combinedRequest = '';
+    if (injuryText && userRequest) {
+      combinedRequest = `${injuryText}\n추가 요청: ${userRequest}`;
+    } else if (injuryText) {
+      combinedRequest = injuryText;
+    } else if (userRequest) {
+      combinedRequest = userRequest;
+    }
+
+    onGenerate(dateStrings, combinedRequest);
   };
+
+  if (isLoading) {
+    return (
+      <div className="exercise-plan-container">
+        <div className="exercise-plan-loading">정보를 불러오는 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="exercise-plan-container">
@@ -141,13 +253,32 @@ export default function ExercisePlanCreate({
           </p>
         </section>
 
-        {/* 추가 요청사항 섹션 */}
+        {/* 부상 정보 표시 (있을 경우) */}
+        {injuries.length > 0 && (
+          <section className="exercise-plan-injury-info">
+            <h3 className="exercise-plan-injury-title">🩹 등록된 부상 정보</h3>
+            <ul className="exercise-plan-injury-list">
+              {injuries.map(injury => (
+                <li key={injury.injuryId} className="exercise-plan-injury-item">
+                  <span className="exercise-plan-injury-part">{injury.injuryPart}</span>
+                  <span className={`exercise-plan-injury-level ${injury.injuryLevel.toLowerCase()}`}>
+                    {INJURY_LEVEL_LABELS[injury.injuryLevel]}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="exercise-plan-injury-note">
+              * 부상 정보가 AI 계획 생성 시 자동으로 반영됩니다
+            </p>
+          </section>
+        )}
+
+        {/* 추가 요청사항 */}
         <section className="exercise-plan-section">
           <h2 className="exercise-plan-section-title">추가 요청사항 (선택)</h2>
-          <p className="exercise-plan-section-desc">AI가 참고할 추가 요청을 입력하세요</p>
           <textarea
             className="exercise-plan-textarea"
-            placeholder="예: 덤벨 운동 위주로 구성해주세요&#10;예: 유산소 운동 비중을 늘려주세요"
+            placeholder="예: 상체 위주로 해주세요, 유산소 포함해주세요..."
             value={additionalRequest}
             onChange={(e) => setAdditionalRequest(e.target.value)}
             rows={3}

@@ -27,6 +27,20 @@ export type WorkoutDietStatus = 'NONE' | 'COMPLETE' | 'INCOMPLETE' | 'FAILED';
 export type VideoPtStatus = 'NONE' | 'HAS_RESERVATION';
 
 /**
+ * 운동/식단 날짜별 상태
+ */
+export type DayStatus = 'DONE' | 'PLANNED' | 'NO_PLAN';
+
+/**
+ * 주간 운동/식단 상태 응답
+ * key: 날짜 (YYYY-MM-DD)
+ * value: 상태
+ */
+export type WeeklyStatusResponse = {
+  [date: string]: DayStatus;
+};
+
+/**
  * ===========================================
  * 주간 컬러코드 API
  * GET /api/me/calendar/weekly?startDate={startDate}
@@ -186,3 +200,4 @@ export interface DietCheckResponse {
   dietMealItemId: number;
   checked: boolean;
 }
+

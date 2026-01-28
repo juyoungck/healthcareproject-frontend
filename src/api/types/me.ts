@@ -69,9 +69,7 @@ export interface OnboardingRequest {
  * 온보딩 완료여부 응답
  * GET /api/me/onboarding/status
  */
-export interface OnboardingStatusResponse {
-  completed: boolean;
-}
+export type OnboardingStatusResponse = boolean;
 
 /**
  * ===========================================

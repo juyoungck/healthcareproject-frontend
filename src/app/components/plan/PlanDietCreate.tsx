@@ -6,8 +6,10 @@
  * - AI 식단 계획 생성
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Utensils, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { getProfile, getAllergies } from '../../../api/me';
+import type { GoalType } from '../../../api/types/me';
 
 /**
  * Props 타입 정의
@@ -50,6 +52,31 @@ const DIET_GOALS = [
 ];
 
 /**
+ * 목표 라벨 (API note 전달용)
+ */
+const GOAL_LABELS: Record<DietGoal, string> = {
+  bulk: '벌크업 (근육량 증가를 위한 고칼로리 식단)',
+  diet: '다이어트 (체중 감량을 위한 저칼로리 식단)',
+  maintain: '체중 유지 (현재 체중 유지 식단)',
+};
+
+/**
+ * GoalType → DietGoal 매핑
+ */
+const mapGoalTypeToDietGoal = (goalType: GoalType | null): DietGoal => {
+  switch (goalType) {
+    case 'DIET':
+      return 'diet';
+    case 'BULK':
+      return 'bulk';
+    case 'MAINTAIN':
+    case 'FLEXIBILITY':
+    default:
+      return 'maintain';
+  }
+};
+
+/**
  * 알러지 데이터
  */
 const ALLERGIES = [
@@ -78,15 +105,6 @@ const ALLERGIES = [
 ];
 
 /**
- * 목표 라벨 매핑 (note에 포함용)
- */
-const GOAL_LABELS: { [key in DietGoal]: string } = {
-  bulk: '벌크업 (근육량 증가를 위한 고칼로리 식단)',
-  diet: '다이어트 (체중 감량을 위한 저칼로리 식단)',
-  maintain: '체중 유지 (현재 체중 유지 식단)',
-};
-
-/**
  * PlanDietCreate 컴포넌트
  */
 export default function PlanDietCreate({ 
@@ -103,23 +121,61 @@ export default function PlanDietCreate({
    */
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>(['none']);
 
-  /**
-   * 추가 요청사항 상태
+  /*
+   * 추가 요청사항
    */
   const [additionalNote, setAdditionalNote] = useState<string>('');
+
+  /**
+   * 로딩 상태
+   */
+  const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * 사용자 온보딩 정보 불러오기
+   */
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        /* 프로필 정보 (목표) */
+        const profile = await getProfile();
+        if (profile?.goalType) {
+          setSelectedGoal(mapGoalTypeToDietGoal(profile.goalType));
+        }
+
+        /* 알레르기 정보 */
+        const allergiesData = await getAllergies();
+        if (allergiesData?.allergies && allergiesData.allergies.length > 0) {
+          /* NONE 제외한 실제 알레르기가 있는 경우 */
+          const userAllergies = allergiesData.allergies.filter(a => a !== 'NONE');
+          if (userAllergies.length > 0) {
+            setSelectedAllergies(userAllergies);
+          } else {
+            setSelectedAllergies(['NONE']);
+          }
+        }
+      } catch (error) {
+        console.error('사용자 정보 로드 실패:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   /**
    * 알러지 토글 핸들러
    */
   const handleAllergyToggle = (allergyId: string) => {
-    if (allergyId === 'none') {
-      setSelectedAllergies(['none']);
+    if (allergyId === 'NONE') {
+      setSelectedAllergies(['NONE']);
     } else {
       setSelectedAllergies(prev => {
-        const filtered = prev.filter(a => a !== 'none');
+        const filtered = prev.filter(a => a !== 'NONE');
         if (filtered.includes(allergyId)) {
           const result = filtered.filter(a => a !== allergyId);
-          return result.length === 0 ? ['none'] : result;
+          return result.length === 0 ? ['NONE'] : result;
         } else {
           return [...filtered, allergyId];
         }
@@ -131,17 +187,25 @@ export default function PlanDietCreate({
    * 계획 생성 핸들러
    */
   const handleGenerate = () => {
-    /* 알레르기 필터링 (NONE 제외) */
-    const filteredAllergies = selectedAllergies.filter(a => a !== 'NONE');
-    
-    /* goal과 additionalNote를 합쳐서 note 생성 */
+    /* NONE 제외한 알레르기만 전달 */
+    const allergiesForApi = selectedAllergies.filter(a => a !== 'NONE');
+
+    /* goal + 추가 요청사항을 note로 합침 */
     const goalText = `목표: ${GOAL_LABELS[selectedGoal]}`;
-    const combinedNote = additionalNote 
-      ? `${goalText}\n추가 요청: ${additionalNote}`
+    const combinedNote = additionalNote.trim()
+      ? `${goalText}\n추가 요청: ${additionalNote.trim()}`
       : goalText;
-    
-    onGenerate(filteredAllergies, combinedNote);
+
+    onGenerate(allergiesForApi, combinedNote);
   };
+
+  if (isLoading) {
+    return (
+      <div className="diet-plan-container">
+        <div className="diet-plan-loading">정보를 불러오는 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="diet-plan-container">
@@ -200,7 +264,7 @@ export default function PlanDietCreate({
             {ALLERGIES.map(allergy => (
               <button
                 key={allergy.id}
-                className={`diet-plan-allergy-btn ${selectedAllergies.includes(allergy.id) ? 'selected' : ''} ${allergy.id === 'none' ? 'none' : ''}`}
+                className={`diet-plan-allergy-btn ${selectedAllergies.includes(allergy.id) ? 'selected' : ''} ${allergy.id === 'NONE' ? 'none' : ''}`}
                 onClick={() => handleAllergyToggle(allergy.id)}
               >
                 {allergy.label}
@@ -209,13 +273,12 @@ export default function PlanDietCreate({
           </div>
         </section>
 
-        {/* 추가 요청사항 섹션 */}
+        {/* 추가 요청사항 */}
         <section className="diet-plan-section">
           <h2 className="diet-plan-section-title">추가 요청사항 (선택)</h2>
-          <p className="diet-plan-section-desc">AI가 참고할 추가 요청을 입력하세요</p>
           <textarea
             className="diet-plan-textarea"
-            placeholder="예: 닭가슴살 대신 다른 단백질로 대체해주세요&#10;예: 아침은 간단하게 해주세요"
+            placeholder="예: 채식 위주로 해주세요, 간편식 위주로..."
             value={additionalNote}
             onChange={(e) => setAdditionalNote(e.target.value)}
             rows={3}
