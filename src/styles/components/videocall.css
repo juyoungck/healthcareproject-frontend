@@ -738,3 +738,174 @@
 .videocall-more-dropdown .videocall-more-item.report:hover {
   background-color: rgba(239, 68, 68, 0.2);
 }
+
+/**
+ * ===========================================
+ * 강퇴 기능 스타일
+ * ===========================================
+ */
+
+/**
+ * 강퇴 메뉴 아이템
+ */
+.videocall-more-item.kick {
+  color: var(--color-error);
+}
+
+.videocall-more-item.kick:hover {
+  background-color: var(--color-error-light, #fef2f2);
+}
+
+/**
+ * 강퇴 모달
+ */
+.kick-modal {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  width: 90%;
+  max-width: 360px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.kick-modal-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.kick-modal-icon {
+  color: var(--color-error);
+}
+
+.kick-modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.kick-modal-desc {
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-lg);
+}
+
+/**
+ * 강퇴 사용자 목록
+ */
+.kick-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: var(--spacing-lg);
+}
+
+.kick-user-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+}
+
+.kick-user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.kick-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.kick-user-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-500);
+}
+
+.kick-user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.kick-user-nickname {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-gray-900);
+}
+
+.kick-user-handle {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+}
+
+.kick-user-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-white);
+  background-color: var(--color-error);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.kick-user-btn:hover {
+  background-color: var(--color-error-dark, #dc2626);
+}
+
+.kick-empty {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-gray-500);
+  font-size: 0.875rem;
+}
+
+.kick-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.kick-modal-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.kick-modal-btn.cancel {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+
+.kick-modal-btn.cancel:hover {
+  background-color: var(--color-gray-200);
+}
+
+/**
+ * 강퇴 확인 팝업 아이콘
+ */
+.vc-leave-popup-icon.kick {
+  background-color: var(--color-error-light, #fef2f2);
+  color: var(--color-error);
+}

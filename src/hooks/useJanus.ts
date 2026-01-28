@@ -31,7 +31,7 @@ export interface JanusParticipant {
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'failed';
 
 /** 방 종료 사유 */
-export type RoomEndReason = 'TRAINER_LEFT' | 'ADMIN_CLOSED' | 'UNKNOWN';
+export type RoomEndReason = 'TRAINER_LEFT' | 'ADMIN_CLOSED' | 'UNKNOWN' | 'KICKED';
 
 /**
  * useJanus 훅 옵션
@@ -586,6 +586,12 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
       onRoomDestroyed?.('ADMIN_CLOSED');
     };
     
+    (window as any).__simulateKicked = () => {
+  console.log('강퇴 시뮬레이션');
+  disconnect();
+  onRoomDestroyed?.('KICKED');
+};
+
     return () => {
       delete (window as any).__simulateTrainerLeft;
       delete (window as any).__simulateAdminClosed;

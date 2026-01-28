@@ -19,14 +19,15 @@ import {
   MonitorOff,
   MoreVertical,
   User,
+  UserX,
   Lock,
   Copy,
   Check,
-  Flag,         
-  AlertTriangle 
+  Flag,
+  AlertTriangle
 } from 'lucide-react';
 import { useJanus, RoomEndReason } from '../../../hooks/useJanus';
-import { leavePTRoom, updatePTRoomStatus, getPTRoomParticipants } from '../../../api/pt';
+import { leavePTRoom, updatePTRoomStatus, getPTRoomParticipants, kickPTParticipant } from '../../../api/pt';
 import type { GetPTRoomDetailResponse, PTParticipantUser } from '../../../api/types/pt';
 import { reportContent } from '../../../api/report';
 
@@ -115,6 +116,10 @@ export default function VideoCallRoom({
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedReportReason, setSelectedReportReason] = useState('');
   const [isReporting, setIsReporting] = useState(false);
+  const [showKickModal, setShowKickModal] = useState(false);
+  const [kickTargetUser, setKickTargetUser] = useState<PTParticipantUser | null>(null);
+  const [showKickConfirm, setShowKickConfirm] = useState(false);
+  const [isKicking, setIsKicking] = useState(false);
 
   /* 참여자 프로필 정보 */
   const [participantProfiles, setParticipantProfiles] = useState<Map<string, PTParticipantUser>>(new Map());
@@ -334,6 +339,69 @@ export default function VideoCallRoom({
     }
   };
 
+
+  /**
+   * 강퇴 모달 열기
+   */
+  const handleOpenKickModal = () => {
+    setShowMoreMenu(false);
+    setShowKickModal(true);
+  };
+
+  /**
+   * 강퇴 대상 선택
+   */
+  const handleSelectKickTarget = (user: PTParticipantUser) => {
+    setKickTargetUser(user);
+    setShowKickModal(false);
+    setShowKickConfirm(true);
+  };
+
+  /**
+   * 강퇴 확인 취소
+   */
+  const handleCancelKick = () => {
+    setShowKickConfirm(false);
+    setKickTargetUser(null);
+  };
+
+  /**
+   * 강퇴 실행
+   */
+  const handleConfirmKick = async () => {
+    if (!kickTargetUser) return;
+
+    setIsKicking(true);
+    try {
+      await kickPTParticipant(room.ptRoomId, {
+        targetHandle: kickTargetUser.handle
+      });
+
+      /* 참여자 목록 갱신 */
+      const response = await getPTRoomParticipants(room.ptRoomId);
+      const profileMap = new Map<string, PTParticipantUser>();
+      response.users.forEach(user => {
+        profileMap.set(user.handle, user);
+      });
+      setParticipantProfiles(profileMap);
+
+      setShowKickConfirm(false);
+      setKickTargetUser(null);
+    } catch (error: any) {
+      const errorCode = error.response?.data?.error?.code;
+      if (errorCode === 'COMMON-001') {
+        alert('자기 자신은 강퇴할 수 없습니다.');
+      } else if (errorCode === 'P001') {
+        alert('해당 사용자는 현재 방에 참여 중이 아닙니다.');
+      } else {
+        alert(error.response?.data?.error?.message || '강퇴에 실패했습니다.');
+      }
+      console.error('강퇴 실패:', error);
+    } finally {
+      setIsKicking(false);
+    }
+  };
+
   /**
    * 종료 버튼 클릭 핸들러
    */
@@ -478,31 +546,41 @@ export default function VideoCallRoom({
           )}
 
           {/* 더보기 메뉴 */}
-          {!isTrainer && (
-            <div className="videocall-more-menu-container">
-              <button
-                className="videocall-more-btn"
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-              >
-                <MoreVertical size={20} />
-              </button>
+          <div className="videocall-more-menu-container">
+            <button
+              className="videocall-more-btn"
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+            >
+              <MoreVertical size={20} />
+            </button>
 
-              {showMoreMenu && (
-                <div className="videocall-more-dropdown">
+            {showMoreMenu && (
+              <div className="videocall-more-dropdown">
+                {/* 신고하기 - 모든 사용자 */}
+                <button
+                  className="videocall-more-item report"
+                  onClick={() => {
+                    setShowMoreMenu(false);
+                    setShowReportModal(true);
+                  }}
+                >
+                  <Flag size={16} />
+                  신고하기
+                </button>
+
+                {/* 강퇴하기 - 트레이너 전용 */}
+                {isTrainer && (
                   <button
-                    className="videocall-more-item report"
-                    onClick={() => {
-                      setShowMoreMenu(false);
-                      setShowReportModal(true);
-                    }}
+                    className="videocall-more-item kick"
+                    onClick={handleOpenKickModal}
                   >
-                    <Flag size={16} />
-                    신고하기
+                    <UserX size={16} />
+                    강퇴하기
                   </button>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -757,19 +835,25 @@ export default function VideoCallRoom({
         {roomEndReason && (
           <div className="modal-overlay" style={{ zIndex: 'var(--z-modal)' }}>
             <div className="vc-leave-popup">
-              <div className={`vc-leave-popup-icon ${roomEndReason === 'ADMIN_CLOSED' ? 'admin' : 'ended'}`}>
-                <Phone size={32} />
+              <div className={`vc-leave-popup-icon ${roomEndReason === 'ADMIN_CLOSED' ? 'admin' :
+                  roomEndReason === 'KICKED' ? 'kick' : 'ended'
+                }`}>
+                {roomEndReason === 'KICKED' ? <UserX size={32} /> : <Phone size={32} />}
               </div>
               <h3 className="vc-leave-popup-title">
                 {roomEndReason === 'ADMIN_CLOSED'
                   ? 'PT가 강제 종료되었습니다'
-                  : 'PT가 종료되었습니다'
+                  : roomEndReason === 'KICKED'
+                    ? '강퇴되었습니다'
+                    : 'PT가 종료되었습니다'
                 }
               </h3>
               <p className="vc-leave-popup-desc">
                 {roomEndReason === 'ADMIN_CLOSED'
                   ? '관리자에 의해 화상PT가 강제 종료되었습니다.'
-                  : '트레이너가 화상PT를 종료했습니다.'
+                  : roomEndReason === 'KICKED'
+                    ? '트레이너에 의해 화상PT에서 강퇴되었습니다.'
+                    : '트레이너가 화상PT를 종료했습니다.'
                 }
               </p>
               <div className="vc-leave-popup-actions">
@@ -836,6 +920,110 @@ export default function VideoCallRoom({
                   disabled={!selectedReportReason || isReporting}
                 >
                   {isReporting ? '신고 중...' : '신고하기'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 강퇴 참여자 선택 모달 */}
+        {showKickModal && (
+          <div className="modal-overlay" style={{ zIndex: 'var(--z-modal)' }} onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowKickModal(false);
+            }
+          }}>
+            <div className="kick-modal">
+              <div className="kick-modal-header">
+                <UserX size={24} className="kick-modal-icon" />
+                <h3 className="kick-modal-title">참여자 강퇴</h3>
+              </div>
+
+              <p className="kick-modal-desc">
+                강퇴할 참여자를 선택하세요.
+              </p>
+
+              <div className="kick-user-list">
+                {Array.from(participantProfiles.values())
+                  .filter(user => user.handle !== room.trainer.handle)
+                  .map(user => (
+                    <div key={user.handle} className="kick-user-item">
+                      <div className="kick-user-info">
+                        {user.profileImageUrl ? (
+                          <img
+                            src={user.profileImageUrl}
+                            alt={user.nickname}
+                            className="kick-user-avatar"
+                          />
+                        ) : (
+                          <div className="kick-user-avatar-placeholder">
+                            <User size={20} />
+                          </div>
+                        )}
+                        <div className="kick-user-details">
+                          <span className="kick-user-nickname">{user.nickname}</span>
+                          <span className="kick-user-handle">@{user.handle}</span>
+                        </div>
+                      </div>
+                      <button
+                        className="kick-user-btn"
+                        onClick={() => handleSelectKickTarget(user)}
+                      >
+                        강퇴
+                      </button>
+                    </div>
+                  ))}
+
+                {Array.from(participantProfiles.values())
+                  .filter(user => user.handle !== room.trainer.handle).length === 0 && (
+                    <div className="kick-empty">
+                      강퇴할 참여자가 없습니다.
+                    </div>
+                  )}
+              </div>
+
+              <div className="kick-modal-actions">
+                <button
+                  className="kick-modal-btn cancel"
+                  onClick={() => setShowKickModal(false)}
+                >
+                  닫기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 강퇴 확인 팝업 */}
+        {showKickConfirm && kickTargetUser && (
+          <div className="modal-overlay" style={{ zIndex: 'var(--z-modal)' }} onClick={(e) => {
+            if (e.target === e.currentTarget && !isKicking) {
+              handleCancelKick();
+            }
+          }}>
+            <div className="vc-leave-popup">
+              <div className="vc-leave-popup-icon kick">
+                <UserX size={32} />
+              </div>
+              <h3 className="vc-leave-popup-title">참여자 강퇴</h3>
+              <p className="vc-leave-popup-desc">
+                <strong>"{kickTargetUser.nickname}"</strong>님을 강퇴하시겠습니까?<br />
+                강퇴된 사용자는 이 방에 다시 입장할 수 없습니다.
+              </p>
+              <div className="vc-leave-popup-actions">
+                <button
+                  className="vc-leave-popup-btn cancel"
+                  onClick={handleCancelKick}
+                  disabled={isKicking}
+                >
+                  취소
+                </button>
+                <button
+                  className="vc-leave-popup-btn confirm"
+                  onClick={handleConfirmKick}
+                  disabled={isKicking}
+                >
+                  {isKicking ? '강퇴 중...' : '강퇴하기'}
                 </button>
               </div>
             </div>
