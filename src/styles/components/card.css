@@ -524,6 +524,7 @@
   background-color: var(--color-gray-50);
   border: var(--border-width-sm) solid var(--color-gray-200);
   border-radius: var(--border-radius-sm);
+  cursor: pointer;
   transition: all var(--transition-fast);
 }
 

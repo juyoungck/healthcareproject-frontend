@@ -1497,10 +1497,17 @@
   color: var(--color-primary);
 }
 
-/* ===========================================
- * 추가 요청사항 텍스트영역
- * =========================================== */
 
+/* 로딩 상태 */
+.exercise-plan-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--text-secondary);
+}
+
+/* 추가 요청사항 textarea */
 .exercise-plan-textarea {
   width: 100%;
   padding: var(--spacing-md);
@@ -1512,7 +1519,6 @@
   min-height: 80px;
   background-color: var(--bg-secondary);
   color: var(--text-primary);
-  transition: border-color 0.2s ease;
 }
 
 .exercise-plan-textarea:focus {
@@ -1522,4 +1528,100 @@
 
 .exercise-plan-textarea::placeholder {
   color: var(--text-tertiary);
+}
+
+/* ===========================================
+ * 부상 정보 섹션
+ * =========================================== */
+
+.exercise-plan-injury-info {
+  background-color: var(--bg-warning-light, #fff8e6);
+  border: 1px solid var(--border-warning, #ffd666);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.exercise-plan-injury-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.exercise-plan-injury-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-sm) 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.exercise-plan-injury-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--bg-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+.exercise-plan-injury-part {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.exercise-plan-injury-level {
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-xxs, 10px);
+  font-weight: var(--font-weight-medium);
+}
+
+.exercise-plan-injury-level.mild {
+  background-color: var(--color-success-light, #e6f7e6);
+  color: var(--color-success, #52c41a);
+}
+
+.exercise-plan-injury-level.caution {
+  background-color: var(--color-warning-light, #fff7e6);
+  color: var(--color-warning, #faad14);
+}
+
+.exercise-plan-injury-level.severe {
+  background-color: var(--color-error-light, #fff2f0);
+  color: var(--color-error, #ff4d4f);
+}
+
+.exercise-plan-injury-note {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* 날짜 탭 상태별 스타일 */
+.exercise-view-day-tab.status-done {
+  border-color: var(--color-success);
+  background-color: var(--color-success-light);
+}
+
+.exercise-view-day-tab.status-planned {
+  border-color: var(--color-primary);
+}
+
+.exercise-view-day-tab.status-no_plan {
+  border-color: var(--color-border);
+  opacity: 0.7;
+}
+
+/* 로딩 상태 */
+.exercise-view-loading,
+.diet-view-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: var(--color-text-secondary);
 }

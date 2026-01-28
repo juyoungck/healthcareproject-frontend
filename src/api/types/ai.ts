@@ -127,5 +127,9 @@ export interface DietMealItem {
   nutritionAmount: number;
   grams: number;
   count: number;
+  calories: number;
+  carbs: number;
+  proteins: number;
+  fats: number;
   isChecked: boolean;
 }

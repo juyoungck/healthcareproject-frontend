@@ -109,11 +109,11 @@ export default function PlanDietResult({
 
         {/* 고려된 사항 */}
         {planData.considerations && planData.considerations.length > 0 && (
-          <section className="diet-result-considerations">
-            <h3 className="diet-result-considerations-title">
+          <section className="exercise-result-considerations">
+            <h3 className="exercise-result-considerations-title">
               📋 고려된 사항
             </h3>
-            <ul className="diet-result-considerations-list">
+            <ul className="exercise-result-considerations-list">
               {planData.considerations.map((item, index) => (
                 <li key={index}>{item}</li>
               ))}
@@ -167,7 +167,7 @@ export default function PlanDietResult({
                           <div className="diet-result-meal-center">
                             <p className="diet-result-meal-menu">{item.name}</p>
                             <span className="diet-result-meal-nutrients">
-                              {item.grams}g × {item.count}개
+                              {item.nutritionAmount}{item.nutritionUnit} × {item.count}개
                             </span>
                           </div>
                         </div>
