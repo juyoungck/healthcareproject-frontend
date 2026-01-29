@@ -124,7 +124,7 @@ export default function AdminBoardList() {
 
       const response = await apiClient.get('/api/admin/board', { params });
       const data = response.data.data;
-      
+
       // 관리자 API 응답을 AdminPost 형태로 변환
       const postList: AdminPost[] = data.list.map((post: any) => ({
         postId: post.postId,
@@ -137,7 +137,7 @@ export default function AdminBoardList() {
         isNotice: post.isNotice,
         status: post.status || 'POSTED',
       }));
-      
+
       setPosts(postList);
       setTotal(data.total);
     } catch (err) {
@@ -192,7 +192,7 @@ export default function AdminBoardList() {
   const handleViewDetail = async (post: AdminPost) => {
     setSelectedPost({ ...post, content: undefined });
     setIsDetailLoading(true);
-    
+
     try {
       const response = await apiClient.get(`/api/board/posts/${post.postId}`);
       const detail = response.data.data;
@@ -285,21 +285,19 @@ export default function AdminBoardList() {
     <div className="admin-board-page">
       {/* 헤더 영역 */}
       <div className="admin-section-header">
-        <div className="admin-header-row">
-          <div className="admin-header-left">
-            <h2 className="admin-section-title" style={{ margin: 0 }}>게시글 관리</h2>
-            <span className="admin-section-count" style={{ margin: 0 }}>전체 {total}건</span>
-          </div>
-          <div className="admin-search-box">
-            <Search size={18} />
-            <input
-              type="text"
-              placeholder="제목, 작성자 검색"
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-            />
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 className="admin-section-title" style={{ margin: 0 }}>게시글 관리</h2>
+          <span className="admin-section-count" style={{ margin: 0 }}>전체 {total}건</span>
+        </div>
+        <div className="admin-search-box">
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="제목 또는 작성자 검색"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+          />
         </div>
       </div>
 
@@ -453,7 +451,7 @@ function NoticeModal({ onClose, onSave }: NoticeModalProps) {
       return;
     }
     if (isSubmitting) return; // 중복 클릭 방지
-    
+
     setIsSubmitting(true);
     onSave({
       title: title.trim(),
@@ -591,9 +589,9 @@ function PostDetailModal({ post, isLoading, onClose }: PostDetailModalProps) {
           <hr style={{ border: 'none', borderTop: '1px solid #e0e0e0', marginBottom: '20px' }} />
 
           {/* 내용 */}
-          <div style={{ 
-            minHeight: '200px', 
-            lineHeight: '1.7', 
+          <div style={{
+            minHeight: '200px',
+            lineHeight: '1.7',
             color: '#333',
             whiteSpace: 'pre-wrap'
           }}>

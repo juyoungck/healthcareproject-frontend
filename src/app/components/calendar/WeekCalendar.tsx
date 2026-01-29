@@ -28,10 +28,10 @@ import CalendarPopup from './CalendarPopup';
 interface WeekCalendarProps {
   /** 월간 캘린더 이동 핸들러 */
   onNavigateToMonth?: () => void;
-  /** 운동 상세 페이지 이동 핸들러 */
-  onNavigateToWorkout?: () => void;
-  /** 식단 상세 페이지 이동 핸들러 */
-  onNavigateToDiet?: () => void;
+  /** 운동 상세 페이지 이동 핸들러 (날짜 전달) */
+  onNavigateToWorkout?: (dateStr: string) => void;
+  /** 식단 상세 페이지 이동 핸들러 (날짜 전달) */
+  onNavigateToDiet?: (dateStr: string) => void;
   /** 화상PT 상세 페이지 이동 핸들러 */
   onNavigateToPT?: () => void;
 }
@@ -368,6 +368,8 @@ export default function WeekCalendar({
           onNavigateToDiet={onNavigateToDiet}
           onNavigateToPT={onNavigateToPT}
           onMemoSaved={handleMemoSaved}
+          workoutStatus={calendarStatus[getDateKey(weekDates[selectedDayIndex])]?.workout?.status}
+          dietStatus={calendarStatus[getDateKey(weekDates[selectedDayIndex])]?.diet?.status}
         />
       )}
     </div>

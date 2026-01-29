@@ -18,6 +18,10 @@ export interface FoodListItem {
   name: string;
   imageUrl: string;
   allergyCodes: string;
+  calories?: number;
+  carbs?: number;
+  protein?: number;
+  fat?: number;
 }
 
 /**

@@ -32,10 +32,10 @@ import CalendarPopup from './CalendarPopup';
 interface MonthCalendarProps {
   /** 뒤로가기 핸들러 */
   onNavigateBack?: () => void;
-  /** 운동 상세 페이지 이동 핸들러 */
-  onNavigateToWorkout?: () => void;
-  /** 식단 상세 페이지 이동 핸들러 */
-  onNavigateToDiet?: () => void;
+  /** 운동 상세 페이지 이동 핸들러 (날짜 전달) */
+  onNavigateToWorkout?: (dateStr: string) => void;
+  /** 식단 상세 페이지 이동 핸들러 (날짜 전달) */
+  onNavigateToDiet?: (dateStr: string) => void;
   /** 화상PT 상세 페이지 이동 핸들러 */
   onNavigateToPT?: () => void;
 }
@@ -93,11 +93,10 @@ export default function MonthCalendar({
       setIsLoading(true);
 
       try {
-        /* 현재 월의 1일 ~ 말일만 요청 (최대 31일) */
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
+        /* 화면에 보이는 전체 날짜 범위 요청 (42일) */
+        const days = generateCalendarDays(currentDate);
+        const firstDay = days[0].date;
+        const lastDay = days[days.length - 1].date;
 
         const startDateKey = getDateKey(firstDay);
         const endDateKey = getDateKey(lastDay);
@@ -290,6 +289,8 @@ export default function MonthCalendar({
           onNavigateToDiet={onNavigateToDiet}
           onNavigateToPT={onNavigateToPT}
           onMemoSaved={handleMemoSaved}
+          workoutStatus={calendarStatus[getDateKey(selectedDate)]?.workout?.status}
+          dietStatus={calendarStatus[getDateKey(selectedDate)]?.diet?.status}
         />
       )}
     </div>

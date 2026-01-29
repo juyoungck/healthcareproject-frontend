@@ -125,6 +125,11 @@ export default function Dashboard({
   const [selectedFoodId, setSelectedFoodId] = useState<number | null>(null);
 
   /**
+   * ViewPage 초기 날짜 (캘린더에서 선택한 날짜)
+   */
+  const [viewPageInitialDate, setViewPageInitialDate] = useState<string | undefined>(undefined);
+
+  /**
    * 선택된 끼니 인덱스 (식단 뷰 초기 탭)
    */
   const [selectedMealIndex, setSelectedMealIndex] = useState<number>(0);
@@ -197,7 +202,7 @@ export default function Dashboard({
    * 주간 캘린더 새로고침 키
    */
   const [calendarRefreshKey, setCalendarRefreshKey] = useState<number>(0);
-  
+
   /**
    * 주간 운동 계획 존재 여부 확인
    */
@@ -281,12 +286,12 @@ export default function Dashboard({
       if (!prev) return null;
       return {
         ...prev,
-        meals: prev.meals.map(m => 
+        meals: prev.meals.map(m =>
           m.dietMealId === meal.dietMealId
             ? {
-                ...m,
-                items: m.items.map(item => ({ ...item, isChecked: newChecked }))
-              }
+              ...m,
+              items: m.items.map(item => ({ ...item, isChecked: newChecked }))
+            }
             : m
         )
       };
@@ -295,7 +300,7 @@ export default function Dashboard({
     /* 모든 아이템에 대해 API 호출 */
     try {
       await Promise.all(
-        meal.items.map(item => 
+        meal.items.map(item =>
           updateDietItemCheck(item.dietMealItemId, newChecked)
         )
       );
@@ -310,9 +315,9 @@ export default function Dashboard({
           meals: prev.meals.map(m =>
             m.dietMealId === meal.dietMealId
               ? {
-                  ...m,
-                  items: m.items.map(item => ({ ...item, isChecked: !newChecked }))
-                }
+                ...m,
+                items: m.items.map(item => ({ ...item, isChecked: !newChecked }))
+              }
               : m
           )
         };
@@ -406,28 +411,28 @@ export default function Dashboard({
                       handleToggleWorkoutItem(item);
                     }}
                   >
-                      <button className="today-exercise-item-check">
-                        {item.isChecked ? (
+                    <button className="today-exercise-item-check">
+                      {item.isChecked ? (
                         <Check size={12} />
                       ) : (
                         <div className="today-exercise-item-check-empty" />
                       )}
-                      </button>
-                      <div className="today-exercise-item-info">
-                        <p className="today-exercise-item-name">{item.name}</p>
-                        <p className="today-exercise-item-detail">
-                          {item.amount} • 휴식 {item.restSeconds}초
-                        </p>
-                      </div>
-                      <ExternalLink
-                        size={16}
-                        className="today-exercise-item-arrow"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedExerciseId(item.exerciseId);
-                          setActiveTab('exercise');
-                        }}
-                      />
+                    </button>
+                    <div className="today-exercise-item-info">
+                      <p className="today-exercise-item-name">{item.name}</p>
+                      <p className="today-exercise-item-detail">
+                        {item.amount} • 휴식 {item.restSeconds}초
+                      </p>
+                    </div>
+                    <ExternalLink
+                      size={16}
+                      className="today-exercise-item-arrow"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedExerciseId(item.exerciseId);
+                        setActiveTab('exercise');
+                      }}
+                    />
                   </li>
                 ))}
               </ul>
@@ -447,7 +452,7 @@ export default function Dashboard({
                 <p className="rest-day-title">오늘은 휴식일</p>
                 <p className="rest-day-desc">푹 쉬고 내일 다시 힘내요!</p>
               </div>
-              <button 
+              <button
                 className="rest-day-view-btn"
                 onClick={() => setActiveTab('exerciseView')}
               >
@@ -546,7 +551,7 @@ export default function Dashboard({
                 <p className="rest-day-title">오늘은 자유 식단</p>
                 <p className="rest-day-desc">오늘은 편하게 드세요!</p>
               </div>
-              <button 
+              <button
                 className="rest-day-view-btn"
                 onClick={() => setActiveTab('dietView')}
               >
@@ -582,8 +587,14 @@ export default function Dashboard({
         <WeekCalendar
           key={calendarRefreshKey}
           onNavigateToMonth={() => setActiveTab('calendar')}
-          onNavigateToWorkout={() => setActiveTab('exerciseView')}
-          onNavigateToDiet={() => setActiveTab('dietView')}
+          onNavigateToWorkout={(dateStr) => {
+            setViewPageInitialDate(dateStr);
+            setActiveTab('exerciseView');
+          }}
+          onNavigateToDiet={(dateStr) => {
+            setViewPageInitialDate(dateStr);
+            setActiveTab('dietView');
+          }}
           onNavigateToPT={() => handleNavigateToPT('my-reservation')}
         />
       </>
@@ -607,13 +618,17 @@ export default function Dashboard({
       case 'exerciseView':
         return (
           <PlanExerciseViewPage
-            onBack={() => setActiveTab('home')}
+            onBack={() => {
+              setViewPageInitialDate(undefined);
+              setActiveTab('home');
+            }}
             onExerciseClick={(id) => {
               setSelectedExerciseId(id);
               setActiveTab('exercise');
             }}
             onRegenerate={() => setSubPage('exercisePlan')}
             onDataChange={loadTodayData}
+            initialDate={viewPageInitialDate}
           />
         );
       case 'diet':
@@ -626,7 +641,10 @@ export default function Dashboard({
       case 'dietView':
         return (
           <PlanDietViewPage
-            onBack={() => setActiveTab('home')}
+            onBack={() => {
+              setViewPageInitialDate(undefined);
+              setActiveTab('home');
+            }}
             onFoodClick={(id) => {
               setSelectedFoodId(id);
               setActiveTab('diet');
@@ -634,6 +652,7 @@ export default function Dashboard({
             onRegenerate={() => setSubPage('dietPlan')}
             initialMealIndex={selectedMealIndex}
             onDataChange={loadTodayData}
+            initialDate={viewPageInitialDate}
           />
         );
       case 'pt':
@@ -644,8 +663,14 @@ export default function Dashboard({
         return (
           <CalendarPage
             onNavigateBack={() => setActiveTab('home')}
-            onNavigateToWorkout={() => setActiveTab('exerciseView')}
-            onNavigateToDiet={() => setActiveTab('dietView')}
+            onNavigateToWorkout={(dateStr) => {
+              setViewPageInitialDate(dateStr);
+              setActiveTab('exerciseView');
+            }}
+            onNavigateToDiet={(dateStr) => {
+              setViewPageInitialDate(dateStr);
+              setActiveTab('dietView');
+            }}
             onNavigateToPT={() => handleNavigateToPT('my-reservation')}
           />
         );

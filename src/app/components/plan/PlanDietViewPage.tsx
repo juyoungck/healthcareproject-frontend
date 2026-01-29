@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Check, ExternalLink, Utensils, RefreshCw, ArrowLeft, Flame } from 'lucide-react';
+import { Check, ExternalLink, Utensils, RefreshCw, ArrowLeft, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getDailyDiet, getWeeklyDietStatus, updateDietItemCheck } from '../../../api/dietplan';
 import type { DailyDietResponse, DietMealItem } from '../../../api/types/dietplan';
 import type { DayStatus, WeeklyStatusMap } from '../../../api/types/calendar';
@@ -22,33 +22,8 @@ interface PlanDietViewPageProps {
   onRegenerate?: () => void;
   initialMealIndex?: number;
   onDataChange?: () => void;
+  initialDate?: string;
 }
-
-/**
- * 주간 날짜 배열 생성 (오늘 기준 일요일~토요일)
- */
-const getWeekDates = (): string[] => {
-  const today = new Date();
-  const todayDayOfWeek = today.getDay();
-
-  const dates: string[] = [];
-
-  for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
-    const date = new Date(today);
-
-    if (dayOfWeek < todayDayOfWeek) {
-      const daysToAdd = 7 - todayDayOfWeek + dayOfWeek;
-      date.setDate(today.getDate() + daysToAdd);
-    } else {
-      const daysToAdd = dayOfWeek - todayDayOfWeek;
-      date.setDate(today.getDate() + daysToAdd);
-    }
-
-    dates.push(date.toISOString().split('T')[0]);
-  }
-
-  return dates;
-};
 
 /**
  * 날짜 포맷 함수 (2026-01-17 → 17(토))
@@ -67,12 +42,46 @@ export default function PlanDietViewPage({
   onFoodClick,
   onRegenerate,
   initialMealIndex = 0,
-  onDataChange
+  onDataChange,
+  initialDate
 }: PlanDietViewPageProps) {
+
+  /**
+     * 특정 날짜가 속한 주의 일요일 계산
+     */
+  const getSundayOfWeek = (dateStr: string): Date => {
+    const date = new Date(dateStr);
+    const dayOfWeek = date.getDay();
+    const sunday = new Date(date);
+    sunday.setDate(date.getDate() - dayOfWeek);
+    return sunday;
+  };
+
+  /**
+   * 주간 시작일 (일요일) 상태
+   */
+  const [weekStartDate, setWeekStartDate] = useState<Date>(() => {
+    const baseDate = initialDate || new Date().toISOString().split('T')[0];
+    return getSundayOfWeek(baseDate);
+  });
+
+  /**
+   * 주간 날짜 배열 생성 (일~토)
+   */
+  const getWeekDates = useCallback((): string[] => {
+    const dates: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(weekStartDate);
+      date.setDate(weekStartDate.getDate() + i);
+      dates.push(date.toISOString().split('T')[0]);
+    }
+    return dates;
+  }, [weekStartDate]);
+
   /**
    * 주간 날짜 배열
    */
-  const weekDates = useMemo(() => getWeekDates(), []);
+  const weekDates = useMemo(() => getWeekDates(), [getWeekDates]);
 
   /**
    * 오늘 날짜 (YYYY-MM-DD)
@@ -80,9 +89,12 @@ export default function PlanDietViewPage({
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   /**
-   * 선택된 날짜
+   * 선택된 날짜 (초기값: initialDate 또는 오늘)
    */
-  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    if (initialDate) return initialDate;
+    return todayStr;
+  });
 
   /**
    * 선택된 끼니 인덱스
@@ -105,29 +117,27 @@ export default function PlanDietViewPage({
   const [isLoading, setIsLoading] = useState(false);
 
   /**
-   * 주간 상태 로드
-   */
+     * 주간 상태 로드 (현재 표시 중인 주 범위)
+     */
   const loadWeeklyStatus = useCallback(async () => {
+    if (weekDates.length === 0) return;
+
+    const startDate = weekDates[0];
+    const endDate = weekDates[6];
+
     try {
-      const today = new Date();
-      const endDay = new Date(today);
-      endDay.setDate(today.getDate() + 6);
-
-      const startDate = today.toISOString().split('T')[0];
-      const endDate = endDay.toISOString().split('T')[0];
-
       const response = await getWeeklyDietStatus(startDate, endDate);
-    
+
       const statusMap: WeeklyStatusMap = {};
       response.days.forEach(day => {
         statusMap[day.date] = day.status;
       });
-      
+
       setWeeklyStatus(statusMap);
     } catch (error) {
       console.error('주간 식단 상태 조회 실패:', error);
     }
-  }, []);
+  }, [weekDates]);
 
   /**
    * 특정 날짜 식단 데이터 로드
@@ -155,8 +165,8 @@ export default function PlanDietViewPage({
    */
   useEffect(() => {
     loadWeeklyStatus();
-    loadDayDiet(todayStr);
-  }, [loadWeeklyStatus, loadDayDiet, todayStr]);
+    loadDayDiet(initialDate || todayStr);
+  }, []);
 
   /**
    * 날짜 탭 클릭 핸들러
@@ -165,6 +175,44 @@ export default function PlanDietViewPage({
     setSelectedDate(date);
     setSelectedMealIndex(0);
     loadDayDiet(date);
+  };
+
+  /**
+   * 주 변경 시 상태 리로드
+   */
+  useEffect(() => {
+    loadWeeklyStatus();
+    if (!weekDates.includes(selectedDate)) {
+      setSelectedDate(weekDates[0]);
+      loadDayDiet(weekDates[0]);
+    }
+  }, [weekStartDate]);
+
+  /**
+   * 이전 주로 이동
+   */
+  const handlePrevWeek = () => {
+    const newStart = new Date(weekStartDate);
+    newStart.setDate(weekStartDate.getDate() - 7);
+    setWeekStartDate(newStart);
+  };
+
+  /**
+   * 다음 주로 이동
+   */
+  const handleNextWeek = () => {
+    const newStart = new Date(weekStartDate);
+    newStart.setDate(weekStartDate.getDate() + 7);
+    setWeekStartDate(newStart);
+  };
+
+  /**
+   * 현재 주 범위 텍스트
+   */
+  const getWeekRangeText = (): string => {
+    const start = new Date(weekDates[0]);
+    const end = new Date(weekDates[6]);
+    return `${start.getMonth() + 1}/${start.getDate()} ~ ${end.getMonth() + 1}/${end.getDate()}`;
   };
 
   /**
@@ -203,6 +251,9 @@ export default function PlanDietViewPage({
    */
   const handleToggleDiet = async (item: DietMealItem) => {
     if (!currentDayData) return;
+
+    /* 미래 날짜는 체크 불가 */
+    if (selectedDate > todayStr) return;
 
     const newChecked = !item.isChecked;
 
@@ -253,6 +304,17 @@ export default function PlanDietViewPage({
         </button>
       </header>
 
+      {/* 주간 네비게이션 */}
+      <div className="diet-view-week-nav">
+        <button className="diet-view-week-nav-btn" onClick={handlePrevWeek}>
+          <ChevronLeft size={20} />
+        </button>
+        <span className="diet-view-week-nav-text">{getWeekRangeText()}</span>
+        <button className="diet-view-week-nav-btn" onClick={handleNextWeek}>
+          <ChevronRight size={20} />
+        </button>
+      </div>
+
       {/* 요일 탭 */}
       <div className="diet-view-day-tabs">
         {weekDates.map((date) => {
@@ -290,16 +352,16 @@ export default function PlanDietViewPage({
         ) : currentDayData && currentMeal ? (
           <>
             {/* 카테고리 헤더 */}
-              <div className="diet-view-category">
-                <Utensils size={20} className="diet-view-category-icon" />
-                <div className="diet-view-category-info">
-                  <h2 className="diet-view-category-title">{getTotalCalories()}kcal</h2>
-                  <p className="diet-view-category-meta">
-                    <Flame size={14} />
-                    {currentMeal.items.length}개 메뉴 {currentMeal.items.reduce((sum, item) => sum + item.calories, 0)}kcal
-                  </p>
-                </div>
+            <div className="diet-view-category">
+              <Utensils size={20} className="diet-view-category-icon" />
+              <div className="diet-view-category-info">
+                <h2 className="diet-view-category-title">{getTotalCalories()}kcal</h2>
+                <p className="diet-view-category-meta">
+                  <Flame size={14} />
+                  {currentMeal.items.length}개 메뉴 {currentMeal.items.reduce((sum, item) => sum + item.calories, 0)}kcal
+                </p>
               </div>
+            </div>
 
             {/* 메뉴 목록 */}
             <ul className="diet-view-list">

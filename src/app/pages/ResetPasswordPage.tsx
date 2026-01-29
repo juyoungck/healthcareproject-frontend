@@ -18,6 +18,9 @@ interface ResetPasswordPageProps {
   onGoToHome: () => void;
 }
 
+/* 비밀번호 정규식 (8자 이상, 영문, 숫자, 특수문자 각각 1개 이상) */
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+
 /**
  * ResetPasswordPage 컴포넌트
  */
@@ -54,7 +57,7 @@ export default function ResetPasswordPage({ onGoToHome }: ResetPasswordPageProps
    * 비밀번호 유효성 검사
    */
   const validatePassword = (pw: string): boolean => {
-    return pw.length >= 8;
+    return PASSWORD_REGEX.test(pw);
   };
 
   /**
@@ -71,7 +74,7 @@ export default function ResetPasswordPage({ onGoToHome }: ResetPasswordPageProps
     }
 
     if (!validatePassword(password)) {
-      setError('비밀번호는 8자 이상이어야 합니다.');
+      setError('비밀번호는 8자 이상, 영문, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.');
       return;
     }
 
@@ -84,7 +87,7 @@ export default function ResetPasswordPage({ onGoToHome }: ResetPasswordPageProps
 
     try {
       /* 비밀번호 재설정 API 호출 */
-      await resetPassword({ token, email, password });
+      await resetPassword({ token, email, newPassword: password });
 
       /* 성공 상태로 전환 */
       setIsSuccess(true);
