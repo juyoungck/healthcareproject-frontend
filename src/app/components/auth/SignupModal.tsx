@@ -25,6 +25,9 @@ interface SignupModalProps {
  */
 type SignupStep = 'info' | 'verify' | 'complete';
 
+/* 비밀번호 정규식 (8자 이상, 영문, 숫자, 특수문자 각각 1개 이상) */
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+
 /**
  * SignupModal 컴포넌트
  */
@@ -224,8 +227,8 @@ export default function SignupModal({
       return;
     }
 
-    if (password.length < 8) {
-      setError('비밀번호는 8자 이상이어야 합니다.');
+    if (!PASSWORD_REGEX.test(password)) {
+      setError('비밀번호는 8자 이상, 영문, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.');
       return;
     }
 
@@ -392,7 +395,7 @@ export default function SignupModal({
                   id="signup-password"
                   type={showPassword ? 'text' : 'password'}
                   className="form-input"
-                  placeholder="8자 이상 입력하세요"
+                  placeholder="영문, 숫자, 특수문자 포함 8자 이상"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />

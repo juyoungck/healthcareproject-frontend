@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, AlertCircle, X, Trash2 } from 'lucide-react';
+import { Plus, AlertCircle, X, Trash2 } from 'lucide-react';
 import apiClient from '../../../api/client';
 import type {
   FoodListItem,
@@ -28,7 +28,6 @@ export default function AdminDietList() {
   const [foods, setFoods] = useState<FoodListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchKeyword, setSearchKeyword] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   /**
@@ -42,10 +41,6 @@ export default function AdminDietList() {
       const params: FoodListParams = {
         limit: 100,
       };
-
-      if (searchKeyword) {
-        params.keyword = searchKeyword;
-      }
 
       const response = await apiClient.get<{ data: FoodListResponse }>('/api/foods', { params });
       setFoods(response.data.data.items);
@@ -63,15 +58,6 @@ export default function AdminDietList() {
   useEffect(() => {
     fetchFoods();
   }, []);
-
-  /**
-   * 검색 실행 (Enter 키)
-   */
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      fetchFoods();
-    }
-  };
 
   /**
    * 등록 모달 열기
@@ -110,7 +96,6 @@ export default function AdminDietList() {
 
   /**
    * 삭제 핸들러 (DELETE /api/foods/{id})
-   * TODO: 백엔드 API 구현 필요
    */
   const handleDelete = async (foodId: number) => {
     if (!confirm('해당 음식을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
@@ -156,21 +141,11 @@ export default function AdminDietList() {
 
   return (
     <div className="admin-diet-list">
-      {/* 헤더 영역 - 타이틀, 카운트, 검색 */}
+      {/* 헤더 영역 */}
       <div className="admin-section-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <h2 className="admin-section-title" style={{ margin: 0 }}>식단 관리</h2>
           <span className="admin-section-count" style={{ margin: 0 }}>전체 {foods.length}건</span>
-        </div>
-        <div className="admin-search-box">
-          <Search size={18} />
-          <input
-            type="text"
-            placeholder="음식명 검색"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-          />
         </div>
       </div>
 
@@ -271,14 +246,21 @@ export default function AdminDietList() {
  * ===========================================
  */
 const ALLERGY_OPTIONS = [
-  '유제품',
-  '계란',
   '밀',
-  '땅콩',
+  '메밀',
   '대두',
-  '갑각류',
-  '생선',
+  '참깨',
+  '땅콩',
   '견과류',
+  '갑각류',
+  '연체류',
+  '생선',
+  '계란',
+  '우유',
+  '소고기',
+  '돼지고기',
+  '닭고기',
+  '아황산류',
 ];
 
 interface DietModalProps {
@@ -369,7 +351,7 @@ function DietModal({ onClose, onSave }: DietModalProps) {
           </div>
 
           <div className="admin-form-group">
-            <label className="admin-form-label">영양정보 (100g 기준) *</label>
+            <label className="admin-form-label">영양정보</label>
             <div className="admin-nutrition-grid">
               <div className="admin-nutrition-item">
                 <label>칼로리</label>

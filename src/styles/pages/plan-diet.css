@@ -1592,3 +1592,45 @@
   min-height: var(--element-size-12xl);
   color: var(--color-gray-500);
 }
+
+/**
+ * ===========================================
+ * 주간 식단 보기 - 주간 네비게이션
+ * ===========================================
+ */
+
+.diet-view-week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+}
+
+.diet-view-week-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-lg);
+  height: var(--element-size-lg);
+  color: var(--color-gray-600);
+  background-color: var(--color-gray-100);
+  border: none;
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-view-week-nav-btn:hover {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-800);
+}
+
+.diet-view-week-nav-text {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
+  min-width: 6rem;
+  text-align: center;
+}

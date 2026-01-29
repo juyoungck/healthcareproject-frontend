@@ -274,7 +274,7 @@ export default function AdminPTList() {
           <Search size={18} />
           <input
             type="text"
-            placeholder="트레이너 핸들로 검색"
+            placeholder="트레이너 또는 제목 검색"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             onKeyDown={handleSearchKeyDown}
