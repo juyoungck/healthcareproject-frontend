@@ -54,6 +54,22 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+    /* 에러 응답에서 에러 코드 추출 */
+    const errorCode = (error.response?.data as { error?: { code?: string } })?.error?.code;
+
+    /* 토큰 재발급이 필요 없는 인증 에러들 (로그인 관련) */
+    const skipRefreshCodes = [
+      'AUTH-005',  // 로그인 실패
+      'AUTH-015',  // 이미 탈퇴된 회원
+      'AUTH-017',  // 비밀번호 불일치
+      'AUTH-018',  // 이메일 미인증
+    ];
+
+    /* 로그인 관련 에러는 토큰 재발급 시도 없이 바로 반환 */
+    if (errorCode && skipRefreshCodes.includes(errorCode)) {
+      return Promise.reject(error);
+    }
+    
     /* 401 에러이고 재시도하지 않은 경우 */
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -64,7 +80,7 @@ apiClient.interceptors.response.use(
         if (!refreshToken) {
           throw new Error('No refresh token');
         }
-
+        
         /* 토큰 재발급 요청 */
         const response = await axios.post(`${BASE_URL}/api/auth/token/reissue`, {
           refreshToken,

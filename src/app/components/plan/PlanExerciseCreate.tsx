@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, Dumbbell } from 'lucide-react';
+import { ArrowLeft, Calendar, Dumbbell, X } from 'lucide-react';
 import { getProfile, getInjuries } from '../../../api/me';
 import type { InjuryItem, InjuryLevel } from '../../../api/types/me';
 
@@ -134,6 +134,11 @@ export default function PlanExerciseCreate({
   const [isLoading, setIsLoading] = useState(true);
 
   /**
+   * 온보딩 완료 여부
+   */
+  const [hasOnboardingData, setHasOnboardingData] = useState(true);
+
+  /**
    * 사용자 온보딩 정보 불러오기
    */
   useEffect(() => {
@@ -142,6 +147,15 @@ export default function PlanExerciseCreate({
         /* 프로필 정보 (운동 주기) */
         const profile = await getProfile();
         console.log('프로필 응답:', profile);
+
+        /* 온보딩 완료 여부 확인 (필수 값 체크) */
+        if (!profile || !profile.heightCm || !profile.weightKg || !profile.age) {
+          setHasOnboardingData(false);
+          setIsLoading(false);
+          return;
+        }
+        setHasOnboardingData(true);
+        
         if (profile?.weeklyDays) {
           setSelectedDays(getDefaultDaysByWeeklyDays(profile.weeklyDays));
         }
@@ -154,6 +168,7 @@ export default function PlanExerciseCreate({
         }
       } catch (error) {
         console.error('사용자 정보 로드 실패:', error);
+        setHasOnboardingData(false);
       } finally {
         setIsLoading(false);
       }
@@ -206,6 +221,43 @@ export default function PlanExerciseCreate({
     return (
       <div className="exercise-plan-container">
         <div className="exercise-plan-loading">정보를 불러오는 중...</div>
+      </div>
+    );
+  }
+
+  /* 온보딩 미완료 시 안내 팝업 */
+  if (!hasOnboardingData) {
+    return (
+      <div className="exercise-plan-container">
+        {/* 헤더 */}
+        <header className="exercise-plan-header">
+          <button className="exercise-plan-back-btn" onClick={onBack}>
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="exercise-plan-title">운동 계획 생성</h1>
+          <div className="exercise-plan-header-spacer" />
+        </header>
+
+        {/* 온보딩 필요 안내 */}
+        <main className="exercise-plan-content">
+          <div className="onboarding-required-popup">
+            <button className="onboarding-required-close" onClick={onBack}>
+              <X size={20} />
+            </button>
+            <div className="onboarding-required-icon">⚠️</div>
+            <h2 className="onboarding-required-title">온보딩 정보가 필요합니다</h2>
+            <p className="onboarding-required-desc">
+              AI 운동 계획을 생성하려면<br />
+              먼저 신체 정보를 입력해주세요
+            </p>
+            <button 
+              className="onboarding-required-btn"
+              onClick={onBack}
+            >
+              돌아가기
+            </button>
+          </div>
+        </main>
       </div>
     );
   }

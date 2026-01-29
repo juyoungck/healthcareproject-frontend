@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Utensils, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ArrowLeft, Utensils, TrendingUp, TrendingDown, Minus, X } from 'lucide-react';
 import { getProfile, getAllergies } from '../../../api/me';
 import type { GoalType } from '../../../api/types/me';
 
@@ -132,6 +132,11 @@ export default function PlanDietCreate({
   const [isLoading, setIsLoading] = useState(true);
 
   /**
+   * 온보딩 완료 여부
+   */
+  const [hasOnboardingData, setHasOnboardingData] = useState(true);
+
+  /**
    * 사용자 온보딩 정보 불러오기
    */
   useEffect(() => {
@@ -139,6 +144,15 @@ export default function PlanDietCreate({
       try {
         /* 프로필 정보 (목표) */
         const profile = await getProfile();
+
+        /* 온보딩 완료 여부 확인 (필수 값 체크) */
+        if (!profile || !profile.heightCm || !profile.weightKg || !profile.age) {
+          setHasOnboardingData(false);
+          setIsLoading(false);
+          return;
+        }
+        setHasOnboardingData(true);
+        
         if (profile?.goalType) {
           setSelectedGoal(mapGoalTypeToDietGoal(profile.goalType));
         }
@@ -156,6 +170,7 @@ export default function PlanDietCreate({
         }
       } catch (error) {
         console.error('사용자 정보 로드 실패:', error);
+        setHasOnboardingData(false);
       } finally {
         setIsLoading(false);
       }
@@ -203,6 +218,43 @@ export default function PlanDietCreate({
     return (
       <div className="diet-plan-container">
         <div className="diet-plan-loading">정보를 불러오는 중...</div>
+      </div>
+    );
+  }
+
+  /* 온보딩 미완료 시 안내 */
+  if (!hasOnboardingData) {
+    return (
+      <div className="diet-plan-container">
+        {/* 헤더 */}
+        <header className="diet-plan-header">
+          <button className="diet-plan-back-btn" onClick={onBack}>
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="diet-plan-title">식단 계획 생성</h1>
+          <div className="diet-plan-header-spacer" />
+        </header>
+
+        {/* 온보딩 필요 안내 */}
+        <main className="diet-plan-content">
+          <div className="onboarding-required-popup">
+            <button className="onboarding-required-close" onClick={onBack}>
+              <X size={20} />
+            </button>
+            <div className="onboarding-required-icon">⚠️</div>
+            <h2 className="onboarding-required-title">온보딩 정보가 필요합니다</h2>
+            <p className="onboarding-required-desc">
+              AI 식단 계획을 생성하려면<br />
+              먼저 신체 정보를 입력해주세요
+            </p>
+            <button 
+              className="onboarding-required-btn"
+              onClick={onBack}
+            >
+              돌아가기
+            </button>
+          </div>
+        </main>
       </div>
     );
   }
