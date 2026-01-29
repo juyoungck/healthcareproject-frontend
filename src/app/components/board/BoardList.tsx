@@ -80,9 +80,9 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
 
       if (isReset) {
         setNotices(response.notices);
-        setDisplayedPosts(response.items);
+        setDisplayedPosts(response.list);
       } else {
-        setDisplayedPosts(prev => [...prev, ...response.items]);
+        setDisplayedPosts(prev => [...prev, ...response.list]);
       }
 
       setHasMore(response.pageInfo.hasNext);

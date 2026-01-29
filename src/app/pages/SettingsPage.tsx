@@ -55,6 +55,9 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
   /* 탈퇴 확인 문구 상수 */
   const WITHDRAW_CONFIRM_TEXT = '회원탈퇴';
 
+  /* 비밀번호 정규식 (8자 이상, 영문, 숫자, 특수문자 각각 1개 이상) */
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+
   /**
    * 로그아웃 핸들러
    */
@@ -130,10 +133,10 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
       setPasswordError('새 비밀번호를 입력해주세요.');
       return;
     }
-    if (newPassword.length < 8) {
-      setPasswordError('비밀번호는 8자 이상이어야 합니다.');
-      return;
-    }
+    if (!PASSWORD_REGEX.test(newPassword)) {
+    setPasswordError('비밀번호는 8자 이상, 영문, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.');
+    return;
+  }
     if (newPassword !== confirmPassword) {
       setPasswordError('새 비밀번호가 일치하지 않습니다.');
       return;
@@ -321,7 +324,7 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
                   <input
                     type={showNewPassword ? 'text' : 'password'}
                     className="form-input"
-                    placeholder="새 비밀번호를 입력하세요 (8자 이상)"
+                    placeholder="새 비밀번호를 입력하세요 (영문, 숫자, 특수문자 포함 8자 이상)"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                   />

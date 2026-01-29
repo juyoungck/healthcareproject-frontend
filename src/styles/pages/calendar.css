@@ -529,6 +529,7 @@
  * 팝업 아이템 (운동/식단/PT/메모)
  */
 .calendar-popup-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
@@ -597,28 +598,57 @@
 }
 
 /**
- * 상태 텍스트
+ * 상태 배지 - 공통
  */
 .calendar-popup-item-status {
-  font-size: var(--font-size-sm);
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  white-space: nowrap;
+  color: var(--color-white);
 }
 
-.calendar-popup-item-status.complete {
-  color: var(--color-success);
+/**
+ * 상태 배지 - 운동 (파란 계열)
+ */
+.calendar-popup-item-status.workout.scheduled {
+  background-color: var(--color-blue-800);
 }
 
-.calendar-popup-item-status.incomplete {
-  color: var(--color-warning);
+.calendar-popup-item-status.workout.complete {
+  background-color: var(--color-blue-500);
 }
 
-.calendar-popup-item-status.failed {
-  color: var(--color-failed);
+.calendar-popup-item-status.workout.incomplete {
+  background-color: var(--color-sky-400);
 }
 
-.calendar-popup-item-status.scheduled,
-.calendar-popup-item-status.none {
-  color: var(--color-gray-500);
+.calendar-popup-item-status.workout.failed {
+  background-color: var(--color-gray-400);
+}
+
+/**
+ * 상태 배지 - 식단 (초록 계열)
+ */
+.calendar-popup-item-status.diet.scheduled {
+  background-color: var(--color-teal-600);
+}
+
+.calendar-popup-item-status.diet.complete {
+  background-color: var(--color-green-500);
+}
+
+.calendar-popup-item-status.diet.incomplete {
+  background-color: var(--color-lime-400);
+}
+
+.calendar-popup-item-status.diet.failed {
+  background-color: var(--color-gray-400);
 }
 
 /**

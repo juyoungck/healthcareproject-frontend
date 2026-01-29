@@ -88,7 +88,7 @@ export interface PasswordResetRequest {
 export interface PasswordResetConfirm {
   token: string;
   email: string;
-  currentPassword: string;
+  currentPassword?: string;  
   newPassword: string;
 }
 

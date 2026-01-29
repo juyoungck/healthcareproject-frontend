@@ -13,6 +13,7 @@ import { formatDateShort, getDateKey } from '../../../utils/calendar';
 import { getDailyDetail } from '../../../api/calendar';
 import { getMemo, putMemo } from '../../../api/memo';
 import { DailyDetailResponse } from '../../../api/types/calendar';
+import { WorkoutDietStatus } from '../../../api/types/calendar';
 
 /**
  * ===========================================
@@ -24,14 +25,18 @@ interface CalendarPopupProps {
   date: Date;
   /** 팝업 닫기 핸들러 */
   onClose: () => void;
-  /** 운동 상세 페이지 이동 핸들러 */
-  onNavigateToWorkout?: () => void;
-  /** 식단 상세 페이지 이동 핸들러 */
-  onNavigateToDiet?: () => void;
+  /** 운동 상세 페이지 이동 핸들러 (날짜 전달) */
+  onNavigateToWorkout?: (dateStr: string) => void;
+  /** 식단 상세 페이지 이동 핸들러 (날짜 전달) */
+  onNavigateToDiet?: (dateStr: string) => void;
   /** 화상PT 상세 페이지 이동 핸들러 */
   onNavigateToPT?: () => void;
   /** 메모 저장 성공 콜백 (마커 업데이트용) */
   onMemoSaved?: (dateKey: string, hasContent: boolean) => void;
+  /** 운동 상태값 */
+  workoutStatus?: WorkoutDietStatus;
+  /** 식단 상태값 */
+  dietStatus?: WorkoutDietStatus;
 }
 
 /**
@@ -47,16 +52,45 @@ export default function CalendarPopup({
   onNavigateToDiet,
   onNavigateToPT,
   onMemoSaved,
+  workoutStatus,
+  dietStatus,
 }: CalendarPopupProps) {
-  
+
   /**
    * ===========================================
    * 파생 데이터
    * ===========================================
    */
-  
+
   /** 날짜 키 (YYYY-MM-DD) - useEffect 의존성용 */
   const dateKey = getDateKey(date);
+  /**
+   * 상태값 → 텍스트 + CSS 클래스 변환
+   */
+  const getStatusInfo = (status: WorkoutDietStatus | undefined): { text: string; className: string } | null => {
+    if (!status || status === 'NONE') return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const targetDate = new Date(dateKey);
+    targetDate.setHours(0, 0, 0, 0);
+
+    /* 미래 날짜 + FAILED = 예정 */
+    if (status === 'FAILED' && targetDate > today) {
+      return { text: '예정', className: 'scheduled' };
+    }
+
+    const statusMap: Record<string, { text: string; className: string }> = {
+      COMPLETE: { text: '완료', className: 'complete' },
+      INCOMPLETE: { text: '미흡', className: 'incomplete' },
+      FAILED: { text: '안함', className: 'failed' },
+    };
+
+    return statusMap[status] || null;
+  };
+
+  const workoutStatusInfo = getStatusInfo(workoutStatus);
+  const dietStatusInfo = getStatusInfo(dietStatus);
 
   /**
    * ===========================================
@@ -145,7 +179,7 @@ export default function CalendarPopup({
    */
   const handleWorkoutClick = () => {
     if (onNavigateToWorkout && dailyDetail?.workout?.exists) {
-      onNavigateToWorkout();
+      onNavigateToWorkout(dateKey);
     }
   };
 
@@ -154,7 +188,7 @@ export default function CalendarPopup({
    */
   const handleDietClick = () => {
     if (onNavigateToDiet && dailyDetail?.diet?.exists) {
-      onNavigateToDiet();
+      onNavigateToDiet(dateKey);
     }
   };
 
@@ -233,6 +267,11 @@ export default function CalendarPopup({
               >
                 <div className="calendar-popup-item-header">
                   <span className="calendar-popup-item-title workout">운동</span>
+                  {workoutStatusInfo && (
+                    <span className={`calendar-popup-item-status workout ${workoutStatusInfo.className}`}>
+                      {workoutStatusInfo.text}
+                    </span>
+                  )}
                 </div>
                 {dailyDetail?.workout?.exists ? (
                   <div className="calendar-popup-item-body">
@@ -258,6 +297,11 @@ export default function CalendarPopup({
               >
                 <div className="calendar-popup-item-header">
                   <span className="calendar-popup-item-title diet">식단</span>
+                  {dietStatusInfo && (
+                    <span className={`calendar-popup-item-status diet ${dietStatusInfo.className}`}>
+                      {dietStatusInfo.text}
+                    </span>
+                  )}
                 </div>
                 {dailyDetail?.diet?.exists ? (
                   <div className="calendar-popup-item-body">

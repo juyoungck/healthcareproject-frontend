@@ -16,10 +16,10 @@ import MonthCalendar from '../components/calendar/MonthCalendar';
 interface CalendarPageProps {
   /** 뒤로가기 핸들러 */
   onNavigateBack?: () => void;
-  /** 운동 상세 페이지 이동 핸들러 */
-  onNavigateToWorkout?: () => void;
-  /** 식단 상세 페이지 이동 핸들러 */
-  onNavigateToDiet?: () => void;
+  /** 운동 상세 페이지 이동 핸들러 (날짜 전달) */
+  onNavigateToWorkout?: (dateStr: string) => void;
+  /** 식단 상세 페이지 이동 핸들러 (날짜 전달) */
+  onNavigateToDiet?: (dateStr: string) => void;
   /** 화상PT 상세 페이지 이동 핸들러 */
   onNavigateToPT?: () => void;
 }

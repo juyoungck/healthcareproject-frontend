@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, X, Trash2, Video } from 'lucide-react';
+import { Plus, X, Trash2, Video } from 'lucide-react';
 import apiClient from '../../../api/client';
 import type {
   ExerciseListItem,
@@ -18,8 +18,6 @@ import type {
   ExerciseListResponse,
   BodyPart,
   Difficulty,
-  BODY_PART_LABELS,
-  DIFFICULTY_LABELS,
 } from '../../../api/types/exercise';
 
 /**
@@ -84,7 +82,6 @@ export default function AdminExerciseList() {
   const [error, setError] = useState<string | null>(null);
   const [filterBodyParts, setFilterBodyParts] = useState<BodyPart[]>([]);
   const [filterDifficulties, setFilterDifficulties] = useState<Difficulty[]>([]);
-  const [searchKeyword, setSearchKeyword] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [videoModal, setVideoModal] = useState<{ isOpen: boolean; url: string; title: string }>({
     isOpen: false,
@@ -144,10 +141,6 @@ export default function AdminExerciseList() {
         limit: 100,
       };
 
-      if (searchKeyword) {
-        params.keyword = searchKeyword;
-      }
-
       const response = await apiClient.get<{ data: ExerciseListResponse }>('/api/exercises', { params });
       setExercises(response.data.data.items);
     } catch (err) {
@@ -173,15 +166,6 @@ export default function AdminExerciseList() {
   useEffect(() => {
     fetchExercises();
   }, []);
-
-  /**
-   * 검색 실행 (Enter 키)
-   */
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      fetchExercises();
-    }
-  };
 
   /**
    * 등록 모달 열기
@@ -218,7 +202,6 @@ export default function AdminExerciseList() {
 
   /**
    * 삭제 핸들러 (DELETE /api/exercises/{id})
-   * TODO: 백엔드 API 구현 필요
    */
   const handleDelete = async (exerciseId: number) => {
     if (!confirm('해당 운동을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
@@ -264,21 +247,11 @@ export default function AdminExerciseList() {
 
   return (
     <div className="admin-exercise-list">
-      {/* 헤더 영역 - 타이틀, 카운트, 검색 */}
+      {/* 헤더 영역 */}
       <div className="admin-section-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <h2 className="admin-section-title" style={{ margin: 0 }}>운동 관리</h2>
           <span className="admin-section-count" style={{ margin: 0 }}>전체 {filteredExercises.length}건</span>
-        </div>
-        <div className="admin-search-box">
-          <Search size={18} />
-          <input
-            type="text"
-            placeholder="운동명 검색"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-          />
         </div>
       </div>
 
@@ -384,7 +357,7 @@ export default function AdminExerciseList() {
                         className="admin-video-btn"
                         onClick={() => setVideoModal({
                           isOpen: true,
-                          url: exercise.youtubeUrl!,
+                          url: exercise.youtubeUrl as string,
                           title: exercise.name,
                         })}
                         title="영상 보기"

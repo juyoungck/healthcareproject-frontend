@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Search, Eye, Check, X, FileText, Image, Download } from 'lucide-react';
+import { Eye, Check, X, Download } from 'lucide-react';
 import type { TrainerApplicant } from '../../../api/types/admin';
 import { getTrainerPending, approveTrainer, rejectTrainer } from '../../../api/admin';
 
@@ -40,7 +40,6 @@ export default function AdminTrainerList() {
   const [totalElements, setTotalElements] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedApplicant, setSelectedApplicant] = useState<TrainerApplicant | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
@@ -71,20 +70,6 @@ export default function AdminTrainerList() {
   }, []);
 
   /**
-   * 필터링된 목록 (검색)
-   */
-  const filteredApplicants = applicants.filter((app) => {
-    if (searchKeyword) {
-      const keyword = searchKeyword.toLowerCase();
-      return (
-        app.nickname.toLowerCase().includes(keyword) ||
-        app.handle.toLowerCase().includes(keyword)
-      );
-    }
-    return true;
-  });
-
-  /**
    * 상세 보기 핸들러
    */
   const handleViewDetail = (applicant: TrainerApplicant) => {
@@ -100,7 +85,6 @@ export default function AdminTrainerList() {
 
     try {
       await approveTrainer(handle);
-      // 목록에서 제거 (승인되면 PENDING 목록에서 사라짐)
       setApplicants((prev) => prev.filter((app) => app.handle !== handle));
       setTotalElements((prev) => prev - 1);
       setIsDetailModalOpen(false);
@@ -117,7 +101,6 @@ export default function AdminTrainerList() {
   const handleReject = async (handle: string, reason: string) => {
     try {
       await rejectTrainer(handle, reason);
-      // 목록에서 제거 (거절되면 PENDING 목록에서 사라짐)
       setApplicants((prev) => prev.filter((app) => app.handle !== handle));
       setTotalElements((prev) => prev - 1);
       setIsDetailModalOpen(false);
@@ -159,20 +142,11 @@ export default function AdminTrainerList() {
 
   return (
     <div className="admin-trainer-page">
-      {/* 헤더 영역 - 타이틀, 카운트, 검색 */}
+      {/* 헤더 영역 */}
       <div className="admin-section-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <h2 className="admin-section-title" style={{ margin: 0 }}>트레이너 승인 관리</h2>
           <span className="admin-section-count" style={{ margin: 0 }}>승인 대기 {totalElements}명</span>
-        </div>
-        <div className="admin-search-box">
-          <Search size={18} />
-          <input
-            type="text"
-            placeholder="닉네임 또는 핸들 검색"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-          />
         </div>
       </div>
 
@@ -190,14 +164,14 @@ export default function AdminTrainerList() {
             </tr>
           </thead>
           <tbody>
-            {filteredApplicants.length === 0 ? (
+            {applicants.length === 0 ? (
               <tr>
                 <td colSpan={6} className="admin-table-empty">
                   승인 대기중인 신청이 없습니다.
                 </td>
               </tr>
             ) : (
-              filteredApplicants.map((app, index) => (
+              applicants.map((app, index) => (
                 <tr key={app.handle}>
                   <td>{index + 1}</td>
                   <td>

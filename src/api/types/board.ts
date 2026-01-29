@@ -66,7 +66,7 @@ export interface PostListItem {
 
 export interface GetPostsResponse {
     notices: PostListItem[];
-    items: PostListItem[];
+    list: PostListItem[]; 
     pageInfo: {
         nextCursorId: number | null;
         hasNext: boolean;
