@@ -155,14 +155,14 @@ export default function AdminPTList() {
     try {
       const params: {
         status?: AdminPTRoomStatus;
-        trainerHandle?: string;
+        q?: string;
       } = {};
 
       if (filterStatus !== 'ALL') {
         params.status = filterStatus;
       }
       if (searchKeyword) {
-        params.trainerHandle = searchKeyword;
+        params.q = searchKeyword;
       }
 
       const response = await apiClient.get<{ data: AdminPTRoomListResponse }>('/api/admin/pt-rooms', { params });

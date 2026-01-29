@@ -293,7 +293,7 @@ export default function AdminBoardList() {
           <Search size={18} />
           <input
             type="text"
-            placeholder="제목 또는 작성자 검색"
+            placeholder="제목 검색"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             onKeyDown={handleSearchKeyDown}
