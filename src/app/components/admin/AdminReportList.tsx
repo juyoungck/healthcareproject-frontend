@@ -10,7 +10,7 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, X, Eye, User, FileText, MessageSquare, Video, Users, AlertCircle } from 'lucide-react';
 import type { Report, ReportStatus, ReportType } from '../../../api/types/admin';
-import { getAdminReports, processReport, rejectReport } from '../../../api/admin';
+import { getAdminReports, processReport, rejectReport, getAdminCommentDetail } from '../../../api/admin';
 import apiClient from '../../../api/client';
 
 /**
@@ -165,11 +165,20 @@ export default function AdminReportList() {
           setDetailData(null);
         }
       } else if (report.type === 'COMMENT') {
-        setDetailData({
-          handle: report.targetAuthorHandle || '',
-          content: '',
-          isLimited: true,
-        });
+        try {
+          const comment = await getAdminCommentDetail(report.targetId);
+          setDetailData({
+            postId: comment.postId,
+            postTitle: comment.postTitle,
+            authorNickname: comment.author.nickname,
+            authorHandle: comment.author.handle,
+            content: comment.content,
+            status: comment.status,
+            createdAt: comment.createdAt,
+          });
+        } catch {
+          setDetailData(null);
+        }
       }
     } catch (err) {
       console.error('상세 조회 실패:', err);
@@ -415,7 +424,7 @@ function ReportDetailModal({ type, data, loading, onClose }: ReportDetailModalPr
     } else if (type === 'PT_ROOM') {
       return { nickname: data.trainer?.nickname || '알 수 없음', handle: data.trainer?.handle || '' };
     } else if (type === 'COMMENT') {
-      return { nickname: data.handle || '알 수 없음', handle: '' };
+      return { nickname: data.authorNickname || '알 수 없음', handle: data.authorHandle || '' };
     }
     return { nickname: '', handle: '' };
   };

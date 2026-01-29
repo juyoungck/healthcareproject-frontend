@@ -123,6 +123,26 @@ export interface Report {
   createdAt: string;
 }
 
+/** 댓글 상태 */
+export type CommentStatus = 'PUBLIC' | 'HIDDEN' | 'DELETED';
+
+/** 관리자 댓글 상세 응답 */
+export interface AdminCommentDetail {
+  commentId: number;
+  postId: number;
+  postTitle: string;
+  author: {
+    userId: number;
+    nickname: string;
+    handle: string;
+  };
+  content: string;
+  status: CommentStatus;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
 /**
  * ===========================================
  * 운동 관련

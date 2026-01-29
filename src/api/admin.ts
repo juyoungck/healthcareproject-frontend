@@ -23,6 +23,7 @@ import type {
   ReportStatus,
   ReportType,
   ExercisePart,
+  AdminCommentDetail,
   ExerciseLevel,
   AdminPTRoomStatus,
 } from './types/admin';
@@ -272,6 +273,19 @@ export const processReport = async (reportId: number): Promise<void> => {
  */
 export const rejectReport = async (reportId: number): Promise<void> => {
   await updateReportStatus(reportId, 'REJECTED');
+};
+
+/**
+ * 댓글 상세 조회 (관리자용)
+ * GET /api/admin/reports/comments/{commentId}
+ */
+export const getAdminCommentDetail = async (
+  commentId: number
+): Promise<AdminCommentDetail> => {
+  const response = await apiClient.get<ApiResponse<AdminCommentDetail>>(
+    `/api/admin/reports/comments/${commentId}`
+  );
+  return response.data.data;
 };
 
 /**
