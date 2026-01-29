@@ -173,36 +173,32 @@ export default function SignupModal({
    * 이메일 인증 발송 핸들러
    */
   const handleSendVerification = async () => {
-    setIsLoading(true);
+    if (isLoading) return;
     setError('');
 
-    try {
-      /* 이메일 인증 코드 발송 API 호출 */
-      await requestEmailVerification({ email });
-      setIsEmailSent(true);
-    } catch (err: unknown) {
+    /* 바로 코드 입력 화면으로 전환 */
+    setIsEmailSent(true);
+
+    /* 백그라운드에서 이메일 발송 (await 없이) */
+    requestEmailVerification({ email }).catch((err: unknown) => {
+      console.error('이메일 발송 실패:', err);
       const axiosError = err as {
         response?: {
           data?: {
-            error?: { code?: string; message?: string };
-            code?: string;
-            message?: string;
+            error?: { code?: string };
           };
           status?: number;
         };
       };
 
-      const errorCode = axiosError.response?.data?.error?.code
-        || axiosError.response?.data?.code;
+      const errorCode = axiosError.response?.data?.error?.code;
 
       if (errorCode === 'AUTH-008' || axiosError.response?.status === 429) {
         setError('요청이 너무 많습니다. 잠시 후 다시 시도해주세요.');
       } else {
-        setError('인증 이메일 발송에 실패했습니다.');
+        setError('인증 이메일 발송에 실패했습니다. 재전송을 시도해주세요.');
       }
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   /**
@@ -519,12 +515,19 @@ export default function SignupModal({
                 type="button"
                 className="form-submit-btn"
                 onClick={handleSendVerification}
-                disabled={isLoading}
               >
-                {isLoading ? '발송 중...' : '인증 코드 발송'}
+                인증 코드 발송
               </button>
             ) : (
               <>
+                {/* 안내 문구 */}
+                <div className="verify-notice-box">
+                  <p className="verify-notice-text">
+                    📧 인증 코드가 발송되었습니다.<br />
+                    이메일 수신까지 <strong>최대 20초</strong> 정도 소요될 수 있습니다.
+                  </p>
+                </div>
+
                 <div className="form-group">
                   <label className="form-label" htmlFor="verify-code">
                     인증 코드
@@ -540,7 +543,7 @@ export default function SignupModal({
                   />
                 </div>
 
-                {error && <p className="form-error">{error}</p>}
+                {error && <p className="form-error-bottom">{error}</p>}
 
                 <button
                   type="submit"
@@ -555,10 +558,14 @@ export default function SignupModal({
                   className="form-link form-link-center"
                   onClick={handleSendVerification}
                 >
-                  인증 코드 재발송
+                  이메일이 안 오셨나요? 재전송
                 </button>
               </>
             )}
+            {/* 안내 문구 */}
+            <p className="verify-notice">
+              인증 완료 후 로그인이 가능합니다
+            </p>
           </form>
         );
 

@@ -19,7 +19,8 @@ export const requestEmailVerification = async (
 ): Promise<void> => {
   await apiClient.post<ApiResponse<void>>(
     '/api/auth/email/verify/request',
-    data
+    data,
+    { timeout: 30000 }
   );
 };
 

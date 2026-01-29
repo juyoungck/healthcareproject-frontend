@@ -197,6 +197,7 @@ export default function LandingPage({ onLogin, onSignupComplete }: LandingPagePr
       {showLoginModal && (
         <LoginModal 
           onClose={closeAllModals}
+          onSignupComplete={onSignupComplete}
           onLoginSuccess={handleLoginSuccess}
           onSwitchToSignup={openSignupModal}
         />

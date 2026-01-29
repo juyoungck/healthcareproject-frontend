@@ -180,6 +180,13 @@
   margin-bottom: var(--spacing-md);
 }
 
+.form-error-bottom {
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  margin-top: calc(-1 * var(--spacing-2xs));
+  margin-bottom: var(--spacing-sm);
+}
+
 /**
  * ===========================================
  * 폼 제출 버튼
@@ -302,4 +309,54 @@
   margin-bottom: var(--spacing-sm);
   border-bottom: var(--border-width-sm) solid var(--color-gray-200);
   font-weight: var(--font-weight-medium);
+}
+
+/**
+ * ===========================================
+ * 이메일 인증 안내 박스
+ * ===========================================
+ */
+.verify-info {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.verify-email {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-xs);
+}
+
+.verify-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  line-height: 1.5;
+}
+
+.verify-notice-box {
+  background-color: var(--color-primary-light, #eff6ff);
+  border: var(--border-width-sm) solid var(--color-primary-lighter, #bfdbfe);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.verify-notice-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary-dark, #1d4ed8);
+  line-height: 1.6;
+  margin: 0;
+  text-align: center;
+}
+
+.verify-notice-text strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+.verify-notice {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-400);
+  text-align: center;
+  margin-top: var(--spacing-md);
 }

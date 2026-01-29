@@ -92,13 +92,35 @@ export default function OAuthCallbackPage({
           const completed = await getOnboardingStatus();
   
           if (completed) {
+            /* 온보딩 완료 → 대시보드로 */
             onLoginSuccess();
           } else {
-            setStatus('signup-complete');
+            /* 온보딩 미완료 → 첫 로그인 여부 확인 (이메일 기반) */
+            const { getMe } = await import('../../api/me');
+            const meResponse = await getMe();
+            const welcomeKey = `welcome_shown_${meResponse.email}`;
+            const hasSeenWelcome = localStorage.getItem(welcomeKey);
+
+            if (!hasSeenWelcome) {
+              /* 첫 로그인 → 환영 화면 표시 */
+              localStorage.setItem(welcomeKey, 'true');
+              setStatus('signup-complete');
+            } else {
+              /* 재로그인 → 바로 온보딩으로 */
+              onLoginSuccess();
+            }
           }
         } catch {
           /* 온보딩 상태 조회 실패 시 신규 가입자로 처리 */
-          setStatus('signup-complete');
+          const userIdForStorage = `social_welcome_shown_${provider}`;
+          const hasSeenWelcome = localStorage.getItem(userIdForStorage);
+
+          if (!hasSeenWelcome) {
+            localStorage.setItem(userIdForStorage, 'true');
+            setStatus('signup-complete');
+          } else {
+            onLoginSuccess();
+          }
         }
       } else if (action === 'connect') {
         /* 소셜 계정 연동 처리 */
