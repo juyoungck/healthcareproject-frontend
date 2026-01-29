@@ -121,6 +121,13 @@ src/
 
 ---
 
+## Related Repositories
+
+- **Backend**: https://github.com/Ozymandias089/healthcareproject-backend
+- **Frontend**: https://github.com/juyoungck/healthcareproject-frontend
+
+---
+
 ## 문서 (Notion)
 
 - 기획: [Notion 링크](notion.so/)
