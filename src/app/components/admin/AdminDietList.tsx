@@ -17,6 +17,21 @@ import type {
   FoodListParams,
   FoodListResponse,
 } from '../../../api/types/food';
+import { getApiErrorMessage } from '../../../api/apiError';
+import { ALLERGY_OPTIONS, ALLERGY_LABELS } from '../../../constants/admin';
+import type { AllergyType } from '../../../api/types/me';
+
+/**
+ * 알레르기 코드를 한글 라벨로 변환
+ * @param allergyCodes 쉼표로 구분된 알레르기 코드 (예: "WHEAT,EGG,MILK")
+ * @returns 한글 라벨 문자열 (예: "밀, 계란, 우유")
+ */
+const formatAllergyLabels = (allergyCodes: string): string => {
+  return allergyCodes
+    .split(',')
+    .map(code => ALLERGY_LABELS[code.trim() as AllergyType] || code.trim())
+    .join(', ');
+};
 
 /**
  * ===========================================
@@ -45,8 +60,7 @@ export default function AdminDietList() {
       const response = await apiClient.get<{ data: FoodListResponse }>('/api/foods', { params });
       setFoods(response.data.data.items);
     } catch (err) {
-      console.error('음식 목록 조회 실패:', err);
-      setError('음식 목록을 불러오는데 실패했습니다.');
+      setError(getApiErrorMessage(err, '음식 목록을 불러오는데 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }
@@ -89,8 +103,7 @@ export default function AdminDietList() {
       fetchFoods();
       alert('음식이 등록되었습니다.');
     } catch (err) {
-      console.error('음식 등록 실패:', err);
-      alert('음식 등록에 실패했습니다.');
+      alert(getApiErrorMessage(err, '음식 등록에 실패했습니다.'));
     }
   };
 
@@ -105,8 +118,7 @@ export default function AdminDietList() {
       fetchFoods();
       alert('음식이 삭제되었습니다.');
     } catch (err) {
-      console.error('음식 삭제 실패:', err);
-      alert('음식 삭제에 실패했습니다.');
+      alert(getApiErrorMessage(err, '음식 삭제에 실패했습니다.'));
     }
   };
 
@@ -194,7 +206,7 @@ export default function AdminDietList() {
                     {food.allergyCodes ? (
                       <div className="admin-allergy-badges">
                         <AlertCircle size={14} className="admin-allergy-icon" />
-                        {food.allergyCodes}
+                        {formatAllergyLabels(food.allergyCodes)}
                       </div>
                     ) : (
                       '-'
@@ -245,23 +257,6 @@ export default function AdminDietList() {
  * 음식 등록 모달
  * ===========================================
  */
-const ALLERGY_OPTIONS = [
-  '밀',
-  '메밀',
-  '대두',
-  '참깨',
-  '땅콩',
-  '견과류',
-  '갑각류',
-  '연체류',
-  '생선',
-  '계란',
-  '우유',
-  '소고기',
-  '돼지고기',
-  '닭고기',
-  '아황산류',
-];
 
 interface DietModalProps {
   onClose: () => void;
@@ -441,12 +436,12 @@ function DietModal({ onClose, onSave }: DietModalProps) {
             <div className="admin-allergy-options">
               {ALLERGY_OPTIONS.map((allergy) => (
                 <button
-                  key={allergy}
+                  key={allergy.value}
                   type="button"
-                  className={`admin-allergy-btn ${allergyCodes.includes(allergy) ? 'active' : ''}`}
-                  onClick={() => handleAllergyToggle(allergy)}
+                  className={`admin-allergy-btn ${allergyCodes.includes(allergy.value) ? 'active' : ''}`}
+                  onClick={() => handleAllergyToggle(allergy.value)}
                 >
-                  {allergy}
+                  {allergy.label}
                 </button>
               ))}
             </div>

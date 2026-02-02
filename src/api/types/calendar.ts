@@ -12,6 +12,32 @@
 
 /**
  * ===========================================
+ * 프론트엔드 상태 타입 (UI용)
+ * ===========================================
+ */
+
+/**
+ * 활동 상태 타입 (UI 표시용)
+ * - none: 기록 없음
+ * - scheduled: 예정
+ * - failed: 실패
+ * - incomplete: 미흡
+ * - complete: 완료
+ */
+export type StatusType = 'none' | 'scheduled' | 'failed' | 'incomplete' | 'complete';
+
+/**
+ * 일일 상태 타입 (UI 표시용)
+ */
+export interface DailyStatus {
+  workout: StatusType;
+  diet: StatusType;
+  pt: StatusType;
+  memo: StatusType;
+}
+
+/**
+ * ===========================================
  * 상태 Enum
  * ===========================================
  */
@@ -32,9 +58,9 @@ export type VideoPtStatus = 'NONE' | 'HAS_RESERVATION';
 export type DayStatus = 'DONE' | 'PLANNED' | 'NO_STATUS';
 
 /**
- * 운동/식단 날짜별 상태 항목
+ * 운동/식단 날짜별 상태 항목 (주간 상태 API용)
  */
-export interface DayStatusItem {
+export interface WeeklyDayStatusItem {
   date: string;
   status: DayStatus;
 }
@@ -45,7 +71,7 @@ export interface DayStatusItem {
 export interface WeeklyStatusResponse {
   startDate: string;
   endDate: string;
-  days: DayStatusItem[];
+  days: WeeklyDayStatusItem[];
 }
 
 /**
@@ -135,84 +161,3 @@ export interface DailyDetailResponse {
   videoPt: VideoPtSummary;
   memo: MemoInfo;
 }
-
-/**
- * ===========================================
- * 날짜별 운동 조회 API
- * GET /api/me/workouts/days/{date}
- * ===========================================
- */
-
-/**
- * 운동 항목
- */
-export interface WorkoutItem {
-  workoutItemId: number;
-  exerciseId: number;
-  name: string;
-  quantity: number;
-  sets: number;
-  restSeconds: number;
-  isChecked: boolean;
-  sortOrder: number;
-}
-
-/**
- * 날짜별 운동 응답
- */
-export interface WorkoutDayResponse {
-  date: string;
-  workoutDayId: number;
-  title: string;
-  totalMinutes: number;
-  exerciseCount: number;
-  completedCount: number;
-  items: WorkoutItem[];
-}
-
-/**
- * ===========================================
- * 운동 체크박스 업데이트 API
- * PATCH /api/me/workout-items/{workoutItemId}/check
- * ===========================================
- */
-
-/**
- * 운동 체크박스 요청
- */
-export interface WorkoutCheckRequest {
-  checked: boolean;
-}
-
-/**
- * 운동 체크박스 응답
- */
-export interface WorkoutCheckResponse {
-  message: string;
-  workoutItemId: number;
-  checked: boolean;
-}
-
-/**
- * ===========================================
- * 식단 체크박스 업데이트 API
- * PATCH /api/diet-meal-items/{dietMealItemId}/check
- * ===========================================
- */
-
-/**
- * 식단 체크박스 요청
- */
-export interface DietCheckRequest {
-  checked: boolean;
-}
-
-/**
- * 식단 체크박스 응답
- */
-export interface DietCheckResponse {
-  message: string;
-  dietMealItemId: number;
-  checked: boolean;
-}
-

@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--spacing-lg);
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--color-overlay-dark);
   z-index: var(--z-modal-backdrop);
   animation: fadeIn 0.2s ease;
 }
@@ -268,7 +268,7 @@
 }
 
 .social-btn-kakao:hover {
-  background-color: #e6cf00;
+  background-color: var(--color-kakao-hover);
 }
 
 .social-btn-naver {
@@ -278,7 +278,7 @@
 }
 
 .social-btn-naver:hover {
-  background-color: #02b350;
+  background-color: var(--color-naver-hover);
 }
 
 .social-btn-google {

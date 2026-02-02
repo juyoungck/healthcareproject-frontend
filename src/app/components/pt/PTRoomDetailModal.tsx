@@ -5,21 +5,21 @@
  */
 
 import { useState } from 'react';
-import { 
-  X, 
+import {
+  X,
   User,
-  KeyRound, 
-  Users, 
-  Lock, 
+  KeyRound,
+  Users,
+  Lock,
   Video,
   Calendar,
   Copy,
   Check,
-  Flag,
-  AlertTriangle 
+  Flag
 } from 'lucide-react';
 import type { PTRoomListItem, GetPTRoomDetailResponse } from '../../../api/types/pt';
-import { reportContent } from '../../../api/report';
+import { PT_ENTRY_CODE_LENGTH } from '../../../constants/validation';
+import ReportModal from '../common/ReportModal';
 
 /**
  * Props 타입 정의
@@ -76,8 +76,6 @@ export default function PTRoomDetailModal({
   const [isCopied, setIsCopied] = useState(false);
   const [showCodePopup, setShowCodePopup] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedReportReason, setSelectedReportReason] = useState('');
-  const [isReporting, setIsReporting] = useState(false);
 
   /**
    * 모달 외부 클릭 핸들러
@@ -119,8 +117,9 @@ export default function PTRoomDetailModal({
     try {
       await onJoin(room, entryCode.toUpperCase());
       setShowCodePopup(false);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || '입장에 실패했습니다.';
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { error?: { message?: string } } } };
+      const errorMessage = axiosError.response?.data?.error?.message || '입장에 실패했습니다.';
       setCodeError(errorMessage);
     }
   };
@@ -145,54 +144,11 @@ export default function PTRoomDetailModal({
       await navigator.clipboard.writeText(shareLink);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      console.error('링크 복사 실패:', err);
+    } catch {
+      /* 클립보드 접근 실패 시 무시 */
     }
   };
 
-  /**
-   * 신고 사유 목록
-   */
-  const REPORT_REASONS = [
-    '스팸/광고',
-    '욕설/비방',
-    '음란물',
-    '개인정보 노출',
-    '사기/허위정보',
-    '기타'
-  ];
-
-  /**
-   * 신고 제출
-   */
-  const handleReport = async () => {
-    if (!selectedReportReason) return;
-
-    setIsReporting(true);
-    try {
-      await reportContent({
-        type: 'PT_ROOM',
-        id: room.ptRoomId,
-        cause: selectedReportReason,
-      });
-      alert('신고가 접수되었습니다.');
-      setShowReportModal(false);
-      setSelectedReportReason('');
-    } catch (error) {
-      const err = error as Error & { code?: string };
-      if (err.code === 'COMMUNITY-006') {
-        alert('본인의 화상PT는 신고할 수 없습니다.');
-      } else if (err.code === 'COMMUNITY-008') {
-        alert('이미 신고한 화상PT입니다.');
-      } else {
-        alert('신고에 실패했습니다.');
-      }
-      console.error('신고 실패:', error);
-    } finally {
-      setIsReporting(false);
-    }
-  };
-  
   /**
    * 상태 뱃지 렌더링
    */
@@ -427,7 +383,7 @@ export default function PTRoomDetailModal({
                         setEntryCode(e.target.value.toUpperCase());
                         setCodeError('');
                       }}
-                      maxLength={6}
+                      maxLength={PT_ENTRY_CODE_LENGTH}
                       autoFocus
                     />
                     {codeError && (
@@ -451,57 +407,12 @@ export default function PTRoomDetailModal({
 
         {/* 신고 모달 */}
         {showReportModal && (
-          <div className="modal-overlay" style={{ zIndex: 'var(--z-modal)' }} onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowReportModal(false);
-              setSelectedReportReason('');
-            }
-          }}>
-            <div className="report-popup">
-              <div className="report-popup-header">
-                <AlertTriangle size={24} className="report-popup-icon" />
-                <h3 className="report-popup-title">화상PT 신고</h3>
-              </div>
-
-              <p className="report-popup-desc">
-                신고 대상: <strong>{room.title}</strong>
-              </p>
-
-              <div className="report-popup-reasons">
-                {REPORT_REASONS.map((reason) => (
-                  <label key={reason} className="report-popup-reason">
-                    <input
-                      type="radio"
-                      name="reportReason"
-                      value={reason}
-                      checked={selectedReportReason === reason}
-                      onChange={(e) => setSelectedReportReason(e.target.value)}
-                    />
-                    <span>{reason}</span>
-                  </label>
-                ))}
-              </div>
-
-              <div className="report-popup-actions">
-                <button 
-                  className="report-popup-btn cancel"
-                  onClick={() => {
-                    setShowReportModal(false);
-                    setSelectedReportReason('');
-                  }}
-                >
-                  취소
-                </button>
-                <button 
-                  className="report-popup-btn submit"
-                  onClick={handleReport}
-                  disabled={!selectedReportReason || isReporting}
-                >
-                  {isReporting ? '신고 중...' : '신고하기'}
-                </button>
-              </div>
-            </div>
-          </div>
+          <ReportModal
+            type="PT_ROOM"
+            targetId={room.ptRoomId}
+            targetName={room.title}
+            onClose={() => setShowReportModal(false)}
+          />
         )}
 
       </div>

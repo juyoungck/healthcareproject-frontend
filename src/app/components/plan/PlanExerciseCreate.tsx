@@ -9,7 +9,8 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Dumbbell, X } from 'lucide-react';
 import { getProfile, getInjuries } from '../../../api/me';
-import type { InjuryItem, InjuryLevel } from '../../../api/types/me';
+import type { InjuryItem } from '../../../api/types/me';
+import { INJURY_LEVEL_LABELS } from '../../../constants/me';
 
 /**
  * Props 타입 정의
@@ -31,15 +32,6 @@ const WEEK_DAYS = [
   { id: 5, label: '금' },
   { id: 6, label: '토' },
 ];
-
-/**
- * 부상 레벨 한글 매핑
- */
-const INJURY_LEVEL_LABELS: Record<InjuryLevel, string> = {
-  MILD: '경미',
-  CAUTION: '주의',
-  SEVERE: '심각',
-};
 
 /**
  * weeklyDays에 따른 기본 요일 선택
@@ -146,7 +138,6 @@ export default function PlanExerciseCreate({
       try {
         /* 프로필 정보 (운동 주기) */
         const profile = await getProfile();
-        console.log('프로필 응답:', profile);
 
         /* 온보딩 완료 여부 확인 (필수 값 체크) */
         if (!profile || !profile.heightCm || !profile.weightKg || !profile.age) {
@@ -162,12 +153,10 @@ export default function PlanExerciseCreate({
 
         /* 부상 정보 */
         const injuriesData = await getInjuries();
-        console.log('부상 정보 응답:', injuriesData);
         if (injuriesData?.injuries) {
           setInjuries(injuriesData.injuries);
         }
-      } catch (error) {
-        console.error('사용자 정보 로드 실패:', error);
+      } catch {
         setHasOnboardingData(false);
       } finally {
         setIsLoading(false);

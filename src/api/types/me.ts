@@ -16,7 +16,7 @@ export type Gender = 'MALE' | 'FEMALE';
 export type ExperienceLevel = 'BEGINNER' | 'ELEMENTARY' | 'INTERMEDIATE' | 'ADVANCED';
 
 /** 운동 목표 */
-export type GoalType = 'DIET' | 'BULK' | 'FLEXIBILITY' |'MAINTAIN';
+export type GoalType = 'DIET' | 'BULK' | 'FLEXIBILITY' | 'MAINTAIN';
 
 /** 부상 정도 */
 export type InjuryLevel = 'MILD' | 'CAUTION' | 'SEVERE';
@@ -26,6 +26,25 @@ export type UserRole = 'USER' | 'TRAINER' | 'ADMIN';
 
 /** 회원 상태 */
 export type UserStatus = 'ACTIVE' | 'WITHDRAWN';
+
+/** 알러지 타입 */
+export type AllergyType =
+  | 'WHEAT'
+  | 'BUCKWHEAT'
+  | 'PEANUT'
+  | 'TREE_NUT'
+  | 'CRUSTACEAN'
+  | 'MOLLUSK'
+  | 'FISH'
+  | 'EGG'
+  | 'MILK'
+  | 'BEEF'
+  | 'PORK'
+  | 'CHICKEN'
+  | 'SOY'
+  | 'SESAME'
+  | 'SULFITE';
+
 
 /**
  * ===========================================

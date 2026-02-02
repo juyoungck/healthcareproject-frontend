@@ -109,8 +109,8 @@ export default function MonthCalendar({
         });
 
         setCalendarStatus(statusMap);
-      } catch (error) {
-        console.error('캘린더 상태 조회 실패:', error);
+      } catch {
+        /** 캘린더 상태 조회 실패는 조용히 처리 */
       } finally {
         setIsLoading(false);
       }

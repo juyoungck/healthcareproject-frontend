@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Utensils, TrendingUp, TrendingDown, Minus, X } from 'lucide-react';
 import { getProfile, getAllergies } from '../../../api/me';
 import type { GoalType } from '../../../api/types/me';
+import { ALLERGY_OPTIONS_WITH_NONE } from '../../../constants/me';
 
 /**
  * Props 타입 정의
@@ -77,34 +78,6 @@ const mapGoalTypeToDietGoal = (goalType: GoalType | null): DietGoal => {
 };
 
 /**
- * 알러지 데이터
- */
-const ALLERGIES = [
-  /* 곡물 */
-  { id: 'WHEAT', label: '밀' },
-  { id: 'BUCKWHEAT', label: '메밀' },
-   /* 콩/씨앗 */
-  { id: 'SOY', label: '대두' },
-  { id: 'SESAME', label: '참깨' },
-  /* 견과류 */
-  { id: 'PEANUT', label: '땅콩' },
-  { id: 'TREE_NUT', label: '견과류' },
-  /* 해산물 */
-  { id: 'CRUSTACEAN', label: '갑각류' },
-  { id: 'MOLLUSK', label: '연체류' },
-  { id: 'FISH', label: '생선' },
-  /* 동물성 */
-  { id: 'EGG', label: '계란' },
-  { id: 'MILK', label: '우유' },
-  { id: 'BEEF', label: '소고기' },
-  { id: 'PORK', label: '돼지고기' },
-  { id: 'CHICKEN', label: '닭고기' },
-  /* 기타 */
-  { id: 'SULFITE', label: '아황산류' },
-  { id: 'NONE', label: '없음' },
-];
-
-/**
  * PlanDietCreate 컴포넌트
  */
 export default function PlanDietCreate({ 
@@ -168,8 +141,7 @@ export default function PlanDietCreate({
             setSelectedAllergies(['NONE']);
           }
         }
-      } catch (error) {
-        console.error('사용자 정보 로드 실패:', error);
+      } catch {
         setHasOnboardingData(false);
       } finally {
         setIsLoading(false);
@@ -313,11 +285,11 @@ export default function PlanDietCreate({
           <p className="diet-plan-section-desc">선택한 알러지 식품은 식단에서 제외됩니다</p>
 
           <div className="diet-plan-allergies">
-            {ALLERGIES.map(allergy => (
+            {ALLERGY_OPTIONS_WITH_NONE.map(allergy => (
               <button
-                key={allergy.id}
-                className={`diet-plan-allergy-btn ${selectedAllergies.includes(allergy.id) ? 'selected' : ''} ${allergy.id === 'NONE' ? 'none' : ''}`}
-                onClick={() => handleAllergyToggle(allergy.id)}
+                key={allergy.value}
+                className={`diet-plan-allergy-btn ${selectedAllergies.includes(allergy.value) ? 'selected' : ''} ${allergy.value === 'NONE' ? 'none' : ''}`}
+                onClick={() => handleAllergyToggle(allergy.value)}
               >
                 {allergy.label}
               </button>

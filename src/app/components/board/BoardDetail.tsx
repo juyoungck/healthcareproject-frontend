@@ -23,13 +23,14 @@ import {
 } from 'lucide-react';
 import {
   CATEGORY_LABELS,
-  REPORT_REASONS,
   CATEGORY_MAP
-} from '../../../data/boards';
+} from '../../../constants/board';
 import { getPostDetail, deletePost, createComment, updateComment, deleteComment } from '../../../api/board';
 import { PostDetailResponse, CommentResponse } from '../../../api/types/board';
 import { getMe } from '../../../api/me';
-import { reportContent } from '../../../api/report';
+import { getApiErrorMessage } from '../../../api/apiError';
+import { formatDateWithTime } from '../../../utils/format';
+import ReportModal from '../common/ReportModal';
 
 /**
  * Props 타입 정의
@@ -65,10 +66,8 @@ export default function BoardDetail({
   const [editContent, setEditContent] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedReportReason, setSelectedReportReason] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'post' | 'comment' | 'reply'; id: number } | null>(null);
-  const [reportTarget, setReportTarget] = useState<{ type: 'POST' | 'COMMENT'; id: number } | null>(null);
-  const [isReporting, setIsReporting] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: 'POST' | 'COMMENT'; id: number; name: string } | null>(null);
   /**
    * 본인 글 여부 확인
    */
@@ -84,8 +83,7 @@ export default function BoardDetail({
         const data = await getPostDetail(postId);
         setPost(data);
       } catch (error) {
-        console.error('게시글 조회 실패:', error);
-        alert('게시글을 불러오는데 실패했습니다.');
+        alert(getApiErrorMessage(error, '게시글을 불러오는데 실패했습니다.'));
         onBack();
       } finally {
         setIsLoading(false);
@@ -103,26 +101,12 @@ export default function BoardDetail({
       try {
         const me = await getMe();
         setCurrentUserHandle(me.handle);
-      } catch (error) {
-        console.error('사용자 정보 조회 실패:', error);
+      } catch {
+        /** 사용자 정보 조회 실패는 조용히 처리 */
       }
     };
     fetchCurrentUser();
   }, []);
-
-  /**
-   * 날짜 포맷
-   */
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
-  };
 
   /**
    * 댓글 작성
@@ -140,8 +124,7 @@ export default function BoardDetail({
       setPost(data);
       setNewComment('');
     } catch (error) {
-      console.error('댓글 작성 실패:', error);
-      alert('댓글 작성에 실패했습니다.');
+      alert(getApiErrorMessage(error, '댓글 작성에 실패했습니다.'));
     }
   };
 
@@ -162,8 +145,7 @@ export default function BoardDetail({
       setReplyContent('');
       setReplyingTo(null);
     } catch (error) {
-      console.error('답글 작성 실패:', error);
-      alert('답글 작성에 실패했습니다.');
+      alert(getApiErrorMessage(error, '답글 작성에 실패했습니다.'));
     }
   };
 
@@ -196,8 +178,7 @@ export default function BoardDetail({
       setEditingCommentId(null);
       setEditContent('');
     } catch (error) {
-      console.error('댓글 수정 실패:', error);
-      alert('댓글 수정에 실패했습니다.');
+      alert(getApiErrorMessage(error, '댓글 수정에 실패했습니다.'));
     }
   };
 
@@ -225,8 +206,7 @@ export default function BoardDetail({
         setPost(data);
       }
     } catch (error) {
-      console.error('삭제 실패:', error);
-      alert('삭제에 실패했습니다.');
+      alert(getApiErrorMessage(error, '삭제에 실패했습니다.'));
     }
 
     setShowDeleteModal(false);
@@ -236,43 +216,9 @@ export default function BoardDetail({
   /**
    * 신고 모달 열기
    */
-  const handleReportClick = (type: 'POST' | 'COMMENT', id: number) => {
-    setReportTarget({ type, id });
+  const handleReportClick = (type: 'POST' | 'COMMENT', id: number, name: string) => {
+    setReportTarget({ type, id, name });
     setShowReportModal(true);
-  };
-
-  /**
-   * 신고 제출
-   */
-  const handleReport = async () => {
-    if (!selectedReportReason || !reportTarget) return;
-
-    setIsReporting(true);
-    try {
-      await reportContent({
-        type: reportTarget.type,
-        id: reportTarget.id,
-        cause: selectedReportReason,
-      });
-      alert('신고가 접수되었습니다.');
-      setShowReportModal(false);
-      setSelectedReportReason('');
-      setReportTarget(null);
-    } catch (error) {
-      const err = error as Error & { code?: string };
-      if (err.code === 'COMMUNITY-006') {
-        alert('본인의 게시글 또는 댓글은 신고할 수 없습니다.');
-      } else if (err.code === 'COMMUNITY-007') {
-        alert('공지사항은 신고할 수 없습니다.');
-      } else if (err.code === 'COMMUNITY-008') {
-        alert('이미 신고한 게시글 또는 댓글입니다.');
-      } else {
-        alert('신고에 실패했습니다.');
-      }
-      console.error('신고 실패:', error);
-    } finally {
-      setIsReporting(false);
-    }
   };
 
   /**
@@ -341,7 +287,7 @@ export default function BoardDetail({
         <div className="board-detail-meta">
           <span className="board-detail-author">{post.author.nickname}</span>
           <div className="board-detail-stats">
-            <span>{formatDate(post.createdAt)}</span>
+            <span>{formatDateWithTime(post.createdAt)}</span>
             <span className="board-detail-stat">
               <Eye size={14} />
               {post.viewCount}
@@ -379,7 +325,7 @@ export default function BoardDetail({
         ) : (
           <button
             className="board-action-btn report"
-            onClick={() => handleReportClick('POST', post.postId)}
+            onClick={() => handleReportClick('POST', post.postId, post.title)}
           >
             <Flag size={14} />
             신고
@@ -423,7 +369,7 @@ export default function BoardDetail({
                   <span className={`board-comment-author ${isPostAuthor(comment.author.handle) ? 'is-writer' : ''}`}>
                     {comment.author.nickname}
                   </span>
-                  <span className="board-comment-date">{formatDate(comment.createdAt)}</span>
+                  <span className="board-comment-date">{formatDateWithTime(comment.createdAt)}</span>
                 </div>
 
                 {/* 댓글 내용 또는 수정 폼 */}
@@ -434,7 +380,7 @@ export default function BoardDetail({
                       className="board-edit-input"
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
-                      onKeyPress={(e) => {
+                      onKeyDown={(e) => {
                         if (e.key === 'Enter') handleEditSave(comment.commentId);
                       }}
                     />
@@ -476,7 +422,7 @@ export default function BoardDetail({
                     ) : !isCommentAuthor(comment.author.handle) && (
                       <button
                         className="board-comment-action report"
-                        onClick={() => handleReportClick('COMMENT', comment.commentId)}
+                        onClick={() => handleReportClick('COMMENT', comment.commentId, '댓글')}
                       >
                         신고
                       </button>
@@ -493,7 +439,7 @@ export default function BoardDetail({
                       placeholder="답글을 입력하세요"
                       value={replyContent}
                       onChange={(e) => setReplyContent(e.target.value)}
-                      onKeyPress={(e) => {
+                      onKeyDown={(e) => {
                         if (e.key === 'Enter') handleAddReply(comment.commentId);
                       }}
                     />
@@ -523,7 +469,7 @@ export default function BoardDetail({
                     <span className={`board-comment-author ${isPostAuthor(reply.author.handle) ? 'is-writer' : ''}`}>
                       {reply.author.nickname}
                     </span>
-                    <span className="board-comment-date">{formatDate(reply.createdAt)}</span>
+                    <span className="board-comment-date">{formatDateWithTime(reply.createdAt)}</span>
                   </div>
 
                   {/* 대댓글 내용 또는 수정 폼 */}
@@ -534,7 +480,7 @@ export default function BoardDetail({
                         className="board-edit-input"
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
-                        onKeyPress={(e) => {
+                        onKeyDown={(e) => {
                           if (e.key === 'Enter') handleEditSave(reply.commentId);
                         }}
                       />
@@ -569,7 +515,7 @@ export default function BoardDetail({
                       ) : !isCommentAuthor(reply.author.handle) && (
                         <button
                           className="board-comment-action report"
-                          onClick={() => handleReportClick('COMMENT', reply.commentId)}
+                          onClick={() => handleReportClick('COMMENT', reply.commentId, '댓글')}
                         >
                           신고
                         </button>
@@ -618,44 +564,16 @@ export default function BoardDetail({
       )}
 
       {/* 신고 모달 */}
-      {showReportModal && (
-        <div className="modal-overlay" onClick={() => setShowReportModal(false)}>
-          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">신고하기</h2>
-              <button
-                className="modal-close-btn"
-                onClick={() => setShowReportModal(false)}
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="modal-form">
-              <p style={{ marginBottom: 'var(--spacing-md)', color: 'var(--color-gray-600)', fontSize: 'var(--font-size-sm)' }}>
-                신고 사유를 선택해주세요
-              </p>
-              <div className="report-options">
-                {REPORT_REASONS.map((reason) => (
-                  <label
-                    key={reason}
-                    className={`report-option ${selectedReportReason === reason ? 'selected' : ''}`}
-                    onClick={() => setSelectedReportReason(reason)}
-                  >
-                    <div className="report-radio" />
-                    <span className="report-label">{reason}</span>
-                  </label>
-                ))}
-              </div>
-              <button
-                className="form-submit-btn"
-                onClick={handleReport}
-                disabled={!selectedReportReason || isReporting}
-              >
-                {isReporting ? '신고 중...' : '신고하기'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {showReportModal && reportTarget && (
+        <ReportModal
+          type={reportTarget.type}
+          targetId={reportTarget.id}
+          targetName={reportTarget.name}
+          onClose={() => {
+            setShowReportModal(false);
+            setReportTarget(null);
+          }}
+        />
       )}
     </div>
   );

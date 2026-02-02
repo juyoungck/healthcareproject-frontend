@@ -10,6 +10,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Check, RefreshCw, Flame, ChevronDown, ChevronUp, Utensils } from 'lucide-react';
 import type { DietAiResponse, DietDay, DietMeal } from '../../../api/types/ai';
+import { formatDateKoreanShort } from '../../../utils/format';
 
 /**
  * Props 타입 정의
@@ -20,17 +21,6 @@ interface PlanDietResultProps {
   onRegenerate: () => void;
   planData: DietAiResponse;
 }
-
-/**
- * 날짜 포맷 함수 (2026-01-17 → 1월 17일 (토))
- */
-const formatDate = (logDate: string): string => {
-  const date = new Date(logDate);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
-  return `${month}월 ${day}일 (${dayOfWeek})`;
-};
 
 /**
  * 기간 포맷 함수 (2026-01-16 ~ 2026-01-22 → 1.16 ~ 1.22)
@@ -131,7 +121,7 @@ export default function PlanDietResult({
                 onClick={() => toggleDay(dietDay.dietDayId)}
               >
                 <h4 className="diet-result-day-name">
-                  {formatDate(dietDay.logDate)}
+                  {formatDateKoreanShort(dietDay.logDate)}
                 </h4>
                 <div className="diet-result-day-meta">
                   <span className="diet-result-day-calories">

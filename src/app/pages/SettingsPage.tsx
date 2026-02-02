@@ -15,48 +15,31 @@ import {
   Mail,
   LogOut,
   UserX,
-  AlertTriangle,
-  Lock,
   Key,
-  Eye,
-  EyeOff,
-  X,
-  Type
 } from 'lucide-react';
-import { withdrawUser, changePassword } from '../../api/me';
-import { getErrorMessage } from '../../constants/errorCodes';
+import PasswordChangeModal from '../components/settings/PasswordChangeModal';
+import WithdrawModal from '../components/settings/WithdrawModal';
 
+/**
+ * Props 타입 정의
+ */
 interface SettingsPageProps {
   onBack: () => void;
   onLogout: () => void;
 }
 
+/**
+ * SettingsPage 컴포넌트
+ */
 export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
   /**
    * Context에서 로그아웃 함수 가져오기
    */
   const { onLogout: contextLogout } = useAuth();
 
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawConfirmText, setWithdrawConfirmText] = useState('');
-  const [isWithdrawing, setIsWithdrawing] = useState(false);
-  const [withdrawError, setWithdrawError] = useState('');
-
-  /* 비밀번호 변경 모달 */
+  /** 모달 상태 */
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-
-  /* 탈퇴 확인 문구 상수 */
-  const WITHDRAW_CONFIRM_TEXT = '회원탈퇴';
-
-  /* 비밀번호 정규식 (8자 이상, 영문, 숫자, 특수문자 각각 1개 이상) */
-const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
 
   /**
    * 로그아웃 핸들러
@@ -69,104 +52,19 @@ const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\
   };
 
   /**
-   * 회원탈퇴 모달 닫기
+   * 비밀번호 변경 성공 핸들러
    */
-  const closeWithdrawModal = () => {
-    setShowWithdrawModal(false);
-    setWithdrawConfirmText('');
-    setWithdrawError('');
+  const handlePasswordChangeSuccess = () => {
+    contextLogout();
+    onLogout();
   };
 
   /**
-   * 회원탈퇴 핸들러
+   * 회원탈퇴 성공 핸들러
    */
-  const confirmWithdraw = async () => {
-    /* 확인 문구 검증 */
-    if (withdrawConfirmText !== WITHDRAW_CONFIRM_TEXT) {
-      setWithdrawError(`"${WITHDRAW_CONFIRM_TEXT}"를 정확히 입력해주세요.`);
-      return;
-    }
-
-    setIsWithdrawing(true);
-    setWithdrawError('');
-
-    try {
-      await withdrawUser();
-      alert('회원탈퇴가 완료되었습니다.');
-      closeWithdrawModal();
-      contextLogout();
-      onLogout();
-    } catch (err: unknown) {
-      console.error('회원탈퇴 실패:', err);
-      const axiosError = err as { response?: { data?: { error?: { code?: string } } } };
-      const errorCode = axiosError.response?.data?.error?.code;
-
-      setWithdrawError(getErrorMessage(errorCode, '회원탈퇴에 실패했습니다. 다시 시도해주세요.'));
-    } finally {
-      setIsWithdrawing(false);
-    }
-  };
-
-  /**
-   * 비밀번호 변경 모달 닫기
-   */
-  const closePasswordModal = () => {
-    setShowPasswordModal(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setPasswordError('');
-    setShowCurrentPassword(false);
-    setShowNewPassword(false);
-  };
-
-  /**
-   * 비밀번호 변경 핸들러
-   */
-  const handleChangePassword = async () => {
-    /* 입력값 검증 */
-    if (!currentPassword.trim()) {
-      setPasswordError('현재 비밀번호를 입력해주세요.');
-      return;
-    }
-    if (!newPassword.trim()) {
-      setPasswordError('새 비밀번호를 입력해주세요.');
-      return;
-    }
-    if (!PASSWORD_REGEX.test(newPassword)) {
-    setPasswordError('비밀번호는 8자 이상, 영문, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.');
-    return;
-  }
-    if (newPassword !== confirmPassword) {
-      setPasswordError('새 비밀번호가 일치하지 않습니다.');
-      return;
-    }
-    if (currentPassword === newPassword) {
-      setPasswordError('현재 비밀번호와 다른 비밀번호를 입력해주세요.');
-      return;
-    }
-
-    setIsChangingPassword(true);
-    setPasswordError('');
-
-    try {
-      await changePassword({
-        currentPassword,
-        newPassword
-      });
-      alert('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
-      closePasswordModal();
-      contextLogout();
-      onLogout();
-    } catch (err: unknown) {
-      console.error('비밀번호 변경 실패:', err);
-      const axiosError = err as { response?: { data?: { error?: { code?: string } } } };
-      const errorCode = axiosError.response?.data?.error?.code;
-
-      setPasswordError(getErrorMessage(errorCode, '비밀번호 변경에 실패했습니다.'));
-    } finally {
-      setIsChangingPassword(false);
-    }
+  const handleWithdrawSuccess = () => {
+    contextLogout();
+    onLogout();
   };
 
   /**
@@ -285,144 +183,18 @@ const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\
 
       {/* 비밀번호 변경 모달 */}
       {showPasswordModal && (
-        <div className="modal-overlay" onClick={closePasswordModal}>
-          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">비밀번호 변경</h2>
-              <button className="modal-close-btn" onClick={closePasswordModal}>
-                <X size={24} />
-              </button>
-            </div>
-            <div className="modal-form">
-              {/* 현재 비밀번호 */}
-              <div className="form-group">
-                <label className="form-label">현재 비밀번호</label>
-                <div className="form-input-wrapper">
-                  <Lock className="form-input-icon" size={20} />
-                  <input
-                    type={showCurrentPassword ? 'text' : 'password'}
-                    className="form-input"
-                    placeholder="현재 비밀번호를 입력하세요"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="form-input-toggle"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  >
-                    {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* 새 비밀번호 */}
-              <div className="form-group">
-                <label className="form-label">새 비밀번호</label>
-                <div className="form-input-wrapper">
-                  <Lock className="form-input-icon" size={20} />
-                  <input
-                    type={showNewPassword ? 'text' : 'password'}
-                    className="form-input"
-                    placeholder="새 비밀번호를 입력하세요 (영문, 숫자, 특수문자 포함 8자 이상)"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="form-input-toggle"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                  >
-                    {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* 새 비밀번호 확인 */}
-              <div className="form-group">
-                <label className="form-label">새 비밀번호 확인</label>
-                <div className="form-input-wrapper">
-                  <Lock className="form-input-icon" size={20} />
-                  <input
-                    type={showNewPassword ? 'text' : 'password'}
-                    className="form-input"
-                    placeholder="새 비밀번호를 다시 입력하세요"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleChangePassword()}
-                  />
-                </div>
-              </div>
-
-              {/* 에러 메시지 */}
-              {passwordError && (
-                <p className="form-error">{passwordError}</p>
-              )}
-
-              {/* 버튼 */}
-              <button
-                className="form-submit-btn"
-                onClick={handleChangePassword}
-                disabled={isChangingPassword}
-              >
-                {isChangingPassword ? '변경 중...' : '비밀번호 변경'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <PasswordChangeModal
+          onClose={() => setShowPasswordModal(false)}
+          onSuccess={handlePasswordChangeSuccess}
+        />
       )}
 
       {/* 회원탈퇴 확인 모달 */}
       {showWithdrawModal && (
-        <div className="modal-overlay" onClick={closeWithdrawModal}>
-          <div className="settings-withdraw-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="settings-withdraw-icon">
-              <AlertTriangle size={32} />
-            </div>
-            <h3 className="settings-withdraw-title">정말 탈퇴하시겠습니까?</h3>
-            <p className="settings-withdraw-desc">
-              탈퇴 시 모든 데이터가 삭제되며<br />복구할 수 없습니다.
-            </p>
-
-            {/* 확인 문구 입력 */}
-            <div className="settings-withdraw-confirm">
-              <p className="settings-withdraw-confirm-label">
-                탈퇴를 원하시면 <strong>"{WITHDRAW_CONFIRM_TEXT}"</strong>를 입력해주세요.
-              </p>
-              <div className="form-input-wrapper">
-                <Type className="form-input-icon" size={20} />
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder={WITHDRAW_CONFIRM_TEXT}
-                  value={withdrawConfirmText}
-                  onChange={(e) => setWithdrawConfirmText(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && confirmWithdraw()}
-                />
-              </div>
-              {withdrawError && (
-                <p className="settings-withdraw-error">{withdrawError}</p>
-              )}
-            </div>
-
-            <div className="settings-withdraw-actions">
-              <button
-                className="settings-withdraw-btn cancel"
-                onClick={closeWithdrawModal}
-                disabled={isWithdrawing}
-              >
-                취소
-              </button>
-              <button
-                className="settings-withdraw-btn confirm"
-                onClick={confirmWithdraw}
-                disabled={isWithdrawing || withdrawConfirmText !== WITHDRAW_CONFIRM_TEXT}
-              >
-                {isWithdrawing ? '처리중...' : '탈퇴하기'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <WithdrawModal
+          onClose={() => setShowWithdrawModal(false)}
+          onSuccess={handleWithdrawSuccess}
+        />
       )}
     </div>
   );

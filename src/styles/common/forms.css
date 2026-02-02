@@ -249,10 +249,6 @@
   color: var(--color-primary);
 }
 
-.form-link-divider {
-  color: var(--color-gray-300);
-}
-
 .form-link-center {
   display: block;
   margin: var(--spacing-md) auto 0;
@@ -314,26 +310,10 @@
 /**
  * ===========================================
  * 이메일 인증 안내 박스
+ * 참고: .verify-info, .verify-email, .verify-desc는
+ * modal.css에 정의되어 있으므로 여기서는 제외
  * ===========================================
  */
-.verify-info {
-  text-align: center;
-  margin-bottom: var(--spacing-lg);
-}
-
-.verify-email {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-gray-900);
-  margin-bottom: var(--spacing-xs);
-}
-
-.verify-desc {
-  font-size: var(--font-size-sm);
-  color: var(--color-gray-500);
-  line-height: 1.5;
-}
-
 .verify-notice-box {
   background-color: var(--color-primary-light, #eff6ff);
   border: var(--border-width-sm) solid var(--color-primary-lighter, #bfdbfe);

@@ -18,7 +18,7 @@ export interface WorkoutItem {
   exerciseId: number;
   name: string;
   restSeconds: number;
-  amount: String;
+  amount: string;
   rpe: number;
   isChecked: boolean;
   sortOrder: number;

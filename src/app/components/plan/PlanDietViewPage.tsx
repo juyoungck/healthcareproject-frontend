@@ -11,7 +11,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Check, ExternalLink, Utensils, RefreshCw, ArrowLeft, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getDailyDiet, getWeeklyDietStatus, updateDietItemCheck } from '../../../api/dietplan';
 import type { DailyDietResponse, DietMealItem } from '../../../api/types/dietplan';
-import type { DayStatus, WeeklyStatusMap } from '../../../api/types/calendar';
+import type { WeeklyStatusMap } from '../../../api/types/calendar';
+import { formatDateTab } from '../../../utils/format';
 
 /**
  * Props 타입 정의
@@ -24,15 +25,6 @@ interface PlanDietViewPageProps {
   onDataChange?: () => void;
   initialDate?: string;
 }
-
-/**
- * 날짜 포맷 함수 (2026-01-17 → 17(토))
- */
-const formatDateTab = (dateStr: string): string => {
-  const date = new Date(dateStr);
-  const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
-  return `${date.getDate()}(${dayLabels[date.getDay()]})`;
-};
 
 /**
  * PlanDietViewPage 컴포넌트
@@ -134,8 +126,8 @@ export default function PlanDietViewPage({
       });
 
       setWeeklyStatus(statusMap);
-    } catch (error) {
-      console.error('주간 식단 상태 조회 실패:', error);
+    } catch {
+      /* 주간 상태 조회 실패 시 무시 */
     }
   }, [weekDates]);
 
@@ -150,11 +142,11 @@ export default function PlanDietViewPage({
       const data = await getDailyDiet(date);
       setDayCache(prev => ({ ...prev, [date]: data }));
     } catch (error: any) {
+      /* 404는 해당 날짜에 식단 없음 */
       if (error?.response?.status === 404) {
         setDayCache(prev => ({ ...prev, [date]: null }));
-      } else {
-        console.error('식단 조회 실패:', error);
       }
+      /* 그 외 에러는 무시 */
     } finally {
       setIsLoading(false);
     }
@@ -285,8 +277,8 @@ export default function PlanDietViewPage({
       }
 
       onDataChange?.();
-    } catch (error) {
-      console.error('식단 체크 업데이트 실패:', error);
+    } catch {
+      /* 실패 시 롤백 */
       setDayCache(prev => ({
         ...prev,
         [selectedDate]: currentDayData

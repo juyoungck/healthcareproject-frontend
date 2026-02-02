@@ -11,80 +11,17 @@
 
 import { useState, useEffect } from 'react';
 import { Search, Plus, X, Trash2, Eye } from 'lucide-react';
-import type { AdminPost, PostCategory, PostStatus } from '../../../api/types/admin';
+import type { AdminPost, AdminPostListItem, PostCategory, PostStatus } from '../../../api/types/admin';
 import { createNotice, deletePost, restorePost } from '../../../api/admin';
 import apiClient from '../../../api/client';
-
-/**
- * ===========================================
- * 필터 옵션
- * ===========================================
- */
-const categoryFilters: { value: PostCategory | 'ALL'; label: string }[] = [
-  { value: 'ALL', label: '전체' },
-  { value: 'NOTICE', label: '공지' },
-  { value: 'FREE', label: '자유' },
-  { value: 'QUESTION', label: '질문' },
-  { value: 'INFO', label: '정보' },
-];
-
-/**
- * ===========================================
- * 라벨 변환 함수
- * ===========================================
- */
-const getCategoryLabel = (category: string): string => {
-  switch (category) {
-    case 'NOTICE':
-      return '공지';
-    case 'FREE':
-      return '자유';
-    case 'QUESTION':
-      return '질문';
-    case 'INFO':
-      return '정보';
-    default:
-      return category;
-  }
-};
-
-const getStatusLabel = (status: PostStatus): string => {
-  switch (status) {
-    case 'POSTED':
-      return '공개';
-    case 'DELETED':
-      return '비공개';
-    default:
-      return status;
-  }
-};
-
-/**
- * ===========================================
- * HTML 태그 제거 함수
- * ===========================================
- */
-const stripHtml = (html: string): string => {
-  if (!html) return '';
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.body.textContent || '';
-};
-
-/**
- * ===========================================
- * 날짜 포맷
- * ===========================================
- */
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+import { getApiErrorMessage } from '../../../api/apiError';
+import { formatDateTimeAdmin } from '../../../utils/format';
+import { stripHtml } from '../../../utils/html';
+import {
+  POST_CATEGORY_FILTERS,
+  POST_CATEGORY_LABELS,
+  POST_STATUS_LABELS,
+} from '../../../constants/admin';
 
 /**
  * ===========================================
@@ -125,8 +62,8 @@ export default function AdminBoardList() {
       const response = await apiClient.get('/api/admin/board', { params });
       const data = response.data.data;
 
-      // 관리자 API 응답을 AdminPost 형태로 변환
-      const postList: AdminPost[] = data.list.map((post: any) => ({
+      /* 관리자 API 응답을 AdminPost 형태로 변환 */
+      const postList: AdminPost[] = data.list.map((post: AdminPostListItem) => ({
         postId: post.postId,
         category: post.category,
         title: post.title,
@@ -141,8 +78,7 @@ export default function AdminBoardList() {
       setPosts(postList);
       setTotal(data.total);
     } catch (err) {
-      console.error('게시글 목록 조회 실패:', err);
-      setError('게시글 목록을 불러오는데 실패했습니다.');
+      setError(getApiErrorMessage(err, '게시글 목록을 불러오는데 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }
@@ -197,8 +133,8 @@ export default function AdminBoardList() {
       const response = await apiClient.get(`/api/board/posts/${post.postId}`);
       const detail = response.data.data;
       setSelectedPost({ ...post, content: detail.content });
-    } catch (err) {
-      console.error('게시글 상세 조회 실패:', err);
+    } catch {
+      /** 조용히 처리 */
       setSelectedPost({ ...post, content: '(내용을 불러올 수 없습니다)' });
     } finally {
       setIsDetailLoading(false);
@@ -220,8 +156,7 @@ export default function AdminBoardList() {
       fetchPosts();
       alert('공지사항이 등록되었습니다.');
     } catch (err) {
-      console.error('공지사항 등록 실패:', err);
-      alert('공지사항 등록에 실패했습니다.');
+      alert(getApiErrorMessage(err, '공지사항 등록에 실패했습니다.'));
     }
   };
 
@@ -236,8 +171,7 @@ export default function AdminBoardList() {
       fetchPosts();
       alert('게시글이 삭제되었습니다.');
     } catch (err) {
-      console.error('게시글 삭제 실패:', err);
-      alert('게시글 삭제에 실패했습니다.');
+      alert(getApiErrorMessage(err, '게시글 삭제에 실패했습니다.'));
     }
   };
 
@@ -252,8 +186,7 @@ export default function AdminBoardList() {
       fetchPosts();
       alert('게시글이 복구되었습니다.');
     } catch (err) {
-      console.error('게시글 복구 실패:', err);
-      alert('게시글 복구에 실패했습니다.');
+      alert(getApiErrorMessage(err, '게시글 복구에 실패했습니다.'));
     }
   };
 
@@ -305,7 +238,7 @@ export default function AdminBoardList() {
       <div className="admin-filter-bar">
         <div className="admin-filter-group">
           <div className="admin-filter-buttons">
-            {categoryFilters.map((filter) => (
+            {POST_CATEGORY_FILTERS.map((filter) => (
               <button
                 key={filter.value}
                 className={`admin-filter-btn ${filterCategory === filter.value ? 'active' : ''}`}
@@ -355,11 +288,11 @@ export default function AdminBoardList() {
                     </div>
                   </td>
                   <td className="admin-table-title">{post.title}</td>
-                  <td>{formatDate(post.createdAt)}</td>
+                  <td>{formatDateTimeAdmin(post.createdAt)}</td>
                   <td>{post.viewCount}</td>
                   <td>
                     <span className={`admin-category-badge category-${post.category.toLowerCase()}`}>
-                      {getCategoryLabel(post.category)}
+                      {POST_CATEGORY_LABELS[post.category as PostCategory] || post.category}
                     </span>
                   </td>
                   <td>
@@ -367,7 +300,7 @@ export default function AdminBoardList() {
                       <span className="admin-notice-label">공지</span>
                     ) : (
                       <span className={`admin-status-badge status-${post.status.toLowerCase()}`}>
-                        {getStatusLabel(post.status)}
+                        {POST_STATUS_LABELS[post.status]}
                       </span>
                     )}
                   </td>
@@ -559,10 +492,10 @@ function PostDetailModal({ post, isLoading, onClose }: PostDetailModalProps) {
             ) : (
               <>
                 <span className={`admin-category-badge category-${post.category.toLowerCase()}`}>
-                  {getCategoryLabel(post.category)}
+                  {POST_CATEGORY_LABELS[post.category as PostCategory] || post.category}
                 </span>
                 <span className={`admin-status-badge status-${post.status.toLowerCase()}`}>
-                  {getStatusLabel(post.status)}
+                  {POST_STATUS_LABELS[post.status]}
                 </span>
               </>
             )}
@@ -580,7 +513,7 @@ function PostDetailModal({ post, isLoading, onClose }: PostDetailModalProps) {
               <span style={{ marginLeft: '8px' }}>@{post.authorHandle}</span>
             </div>
             <div>
-              <span>{formatDate(post.createdAt)}</span>
+              <span>{formatDateTimeAdmin(post.createdAt)}</span>
               <span style={{ marginLeft: '16px' }}>조회 {post.viewCount}</span>
             </div>
           </div>

@@ -16,6 +16,8 @@ import { Editor } from '@toast-ui/react-editor';
 import { createPost, updatePost, getPostDetail } from '../../../api/board';
 import { PostCategory } from '../../../api/types/board';
 import { uploadImage } from '../../../api/upload';
+import { getApiErrorMessage } from '../../../api/apiError';
+import { POST_TITLE_MAX_LENGTH, MAX_POST_IMAGES } from '../../../constants/validation';
 
 /**
  * Props 타입 정의
@@ -36,10 +38,6 @@ const CATEGORY_OPTIONS: { value: PostCategory; label: string }[] = [
   { value: 'INFO', label: '정보' }
 ];
 
-/**
- * 최대 이미지 수
- */
-const MAX_IMAGES = 5;
 
 /**
  * BoardWrite 컴포넌트
@@ -78,8 +76,7 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
             }
           }, 100);
         } catch (error) {
-          console.error('게시글 로드 실패:', error);
-          alert('게시글을 불러오는데 실패했습니다.');
+          alert(getApiErrorMessage(error, '게시글을 불러오는데 실패했습니다.'));
           onBack();
         } finally {
           setIsLoading(false);
@@ -98,8 +95,8 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
     callback: (url: string, altText: string) => void
   ) => {
     /* 이미지 개수 체크 */
-    if (imageCount >= MAX_IMAGES) {
-      alert(`이미지는 최대 ${MAX_IMAGES}장까지 첨부할 수 있습니다.`);
+    if (imageCount >= MAX_POST_IMAGES) {
+      alert(`이미지는 최대 ${MAX_POST_IMAGES}장까지 첨부할 수 있습니다.`);
       return;
     }
 
@@ -123,9 +120,7 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
       /* 콜백으로 이미지 URL 전달 */
       callback(imageUrl, '첨부 이미지');
     } catch (error) {
-      console.error('이미지 업로드 실패:', error);
-      const errorMessage = error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.';
-      alert(errorMessage);
+      alert(getApiErrorMessage(error, '이미지 업로드에 실패했습니다.'));
     }
   };
 
@@ -169,8 +164,7 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
       }
       onSubmit();
     } catch (error) {
-      console.error('게시글 제출 실패:', error);
-      alert('게시글 등록에 실패했습니다. 다시 시도해주세요.');
+      alert(getApiErrorMessage(error, '게시글 등록에 실패했습니다. 다시 시도해주세요.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -225,7 +219,7 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
           placeholder="제목을 입력하세요"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          maxLength={100}
+          maxLength={POST_TITLE_MAX_LENGTH}
         />
       </div>
 
@@ -234,7 +228,7 @@ export default function BoardWrite({ mode, postId, onBack, onSubmit }: BoardWrit
         <label className="board-write-label">
           내용 
           <span className="board-write-image-info">
-            (이미지 {imageCount}/{MAX_IMAGES}장)
+            (이미지 {imageCount}/{MAX_POST_IMAGES}장)
           </span>
         </label>
         <div className="board-write-editor">

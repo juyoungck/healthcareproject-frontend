@@ -19,56 +19,15 @@ import type {
   BodyPart,
   Difficulty,
 } from '../../../api/types/exercise';
-
-/**
- * ===========================================
- * 필터 옵션
- * ===========================================
- */
-const bodyPartFilters: { value: BodyPart | 'ALL'; label: string }[] = [
-  { value: 'ALL', label: '전체' },
-  { value: 'CHEST', label: '가슴' },
-  { value: 'BACK', label: '등' },
-  { value: 'SHOULDER', label: '어깨' },
-  { value: 'ARM', label: '팔' },
-  { value: 'LEG', label: '하체' },
-  { value: 'CORE', label: '코어' },
-  { value: 'FULL_BODY', label: '전신' },
-];
-
-const difficultyFilters: { value: Difficulty | 'ALL'; label: string }[] = [
-  { value: 'ALL', label: '전체' },
-  { value: 'BEGINNER', label: '초급' },
-  { value: 'INTERMEDIATE', label: '중급' },
-  { value: 'ADVANCED', label: '고급' },
-];
-
-/**
- * ===========================================
- * 라벨 변환 함수
- * ===========================================
- */
-const getBodyPartLabel = (part: BodyPart) => {
-  const labels: Record<BodyPart, string> = {
-    CHEST: '가슴',
-    BACK: '등',
-    SHOULDER: '어깨',
-    ARM: '팔',
-    LEG: '하체',
-    CORE: '코어',
-    FULL_BODY: '전신',
-  };
-  return labels[part] ?? part;
-};
-
-const getDifficultyLabel = (difficulty: Difficulty) => {
-  const labels: Record<Difficulty, string> = {
-    BEGINNER: '초급',
-    INTERMEDIATE: '중급',
-    ADVANCED: '고급',
-  };
-  return labels[difficulty] ?? difficulty;
-};
+import { getApiErrorMessage } from '../../../api/apiError';
+import {
+  BODY_PART_OPTIONS,
+  DIFFICULTY_OPTIONS,
+  BODY_PART_LABELS,
+  DIFFICULTY_LABELS,
+  BODY_PART_SELECT_OPTIONS,
+  DIFFICULTY_SELECT_OPTIONS,
+} from '../../../constants/exercise';
 
 /**
  * ===========================================
@@ -144,8 +103,7 @@ export default function AdminExerciseList() {
       const response = await apiClient.get<{ data: ExerciseListResponse }>('/api/exercises', { params });
       setExercises(response.data.data.items);
     } catch (err) {
-      console.error('운동 목록 조회 실패:', err);
-      setError('운동 목록을 불러오는데 실패했습니다.');
+      setError(getApiErrorMessage(err, '운동 목록을 불러오는데 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }
@@ -195,8 +153,7 @@ export default function AdminExerciseList() {
       fetchExercises();
       alert('운동이 등록되었습니다.');
     } catch (err) {
-      console.error('운동 등록 실패:', err);
-      alert('운동 등록에 실패했습니다.');
+      alert(getApiErrorMessage(err, '운동 등록에 실패했습니다.'));
     }
   };
 
@@ -211,8 +168,7 @@ export default function AdminExerciseList() {
       fetchExercises();
       alert('운동이 삭제되었습니다.');
     } catch (err) {
-      console.error('운동 삭제 실패:', err);
-      alert('운동 삭제에 실패했습니다.');
+      alert(getApiErrorMessage(err, '운동 삭제에 실패했습니다.'));
     }
   };
 
@@ -264,7 +220,7 @@ export default function AdminExerciseList() {
           >
             전체
           </button>
-          {bodyPartFilters.filter(f => f.value !== 'ALL').map((filter) => (
+          {BODY_PART_OPTIONS.filter(f => f.value !== 'ALL').map((filter) => (
             <button
               key={filter.value}
               className={`admin-filter-tab-fixed ${filterBodyParts.includes(filter.value as BodyPart) ? 'active' : ''}`}
@@ -290,7 +246,7 @@ export default function AdminExerciseList() {
           >
             전체
           </button>
-          {difficultyFilters.filter(f => f.value !== 'ALL').map((filter) => (
+          {DIFFICULTY_OPTIONS.filter(f => f.value !== 'ALL').map((filter) => (
             <button
               key={filter.value}
               className={`admin-filter-tab-fixed ${filterDifficulties.includes(filter.value as Difficulty) ? 'active' : ''}`}
@@ -332,12 +288,12 @@ export default function AdminExerciseList() {
                   <td className="admin-table-name">{exercise.name}</td>
                   <td>
                     <span className={`admin-part-badge part-${exercise.bodyPart.toLowerCase()}`}>
-                      {getBodyPartLabel(exercise.bodyPart)}
+                      {BODY_PART_LABELS[exercise.bodyPart]}
                     </span>
                   </td>
                   <td>
                     <span className={`admin-level-badge level-${exercise.difficulty.toLowerCase()}`}>
-                      {getDifficultyLabel(exercise.difficulty)}
+                      {DIFFICULTY_LABELS[exercise.difficulty]}
                     </span>
                   </td>
                   <td>
@@ -428,21 +384,6 @@ export default function AdminExerciseList() {
  * 운동 등록 모달
  * ===========================================
  */
-const bodyPartOptions: { value: BodyPart; label: string }[] = [
-  { value: 'CHEST', label: '가슴' },
-  { value: 'BACK', label: '등' },
-  { value: 'SHOULDER', label: '어깨' },
-  { value: 'ARM', label: '팔' },
-  { value: 'LEG', label: '하체' },
-  { value: 'CORE', label: '코어' },
-  { value: 'FULL_BODY', label: '전신' },
-];
-
-const difficultyOptions: { value: Difficulty; label: string }[] = [
-  { value: 'BEGINNER', label: '초급' },
-  { value: 'INTERMEDIATE', label: '중급' },
-  { value: 'ADVANCED', label: '고급' },
-];
 
 interface ExerciseModalProps {
   onClose: () => void;
@@ -524,7 +465,7 @@ function ExerciseModal({ onClose, onSave }: ExerciseModalProps) {
               value={bodyPart}
               onChange={(e) => setBodyPart(e.target.value as BodyPart)}
             >
-              {bodyPartOptions.map((option) => (
+              {BODY_PART_SELECT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -539,7 +480,7 @@ function ExerciseModal({ onClose, onSave }: ExerciseModalProps) {
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value as Difficulty)}
             >
-              {difficultyOptions.map((option) => (
+              {DIFFICULTY_SELECT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

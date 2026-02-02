@@ -14,6 +14,12 @@ import {
   Plus,
 } from 'lucide-react';
 import type { CreatePTRoomRequest, CreatePTRoomResponse } from '../../../api/types/pt';
+import {
+  PT_ROOM_TITLE_MAX_LENGTH,
+  PT_ROOM_DESCRIPTION_MAX_LENGTH,
+  PT_MAX_PARTICIPANTS,
+  PT_MIN_PARTICIPANTS,
+} from '../../../constants/validation';
 
 /**
  * 방 유형
@@ -84,7 +90,7 @@ export default function PTCreateRoomModal({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [roomType, setRoomType] = useState<RoomType>('LIVE');
-  const [maxParticipants, setMaxParticipants] = useState(6);
+  const [maxParticipants, setMaxParticipants] = useState(PT_MAX_PARTICIPANTS);
   const [isPrivate, setIsPrivate] = useState(false);
   
   /**
@@ -112,7 +118,7 @@ export default function PTCreateRoomModal({
    * 인원 증가
    */
   const increaseParticipants = () => {
-    if (maxParticipants < 6) {
+    if (maxParticipants < PT_MAX_PARTICIPANTS) {
       setMaxParticipants(prev => prev + 1);
     }
   };
@@ -121,7 +127,7 @@ export default function PTCreateRoomModal({
    * 인원 감소
    */
   const decreaseParticipants = () => {
-    if (maxParticipants > 2) {
+    if (maxParticipants > PT_MIN_PARTICIPANTS) {
       setMaxParticipants(prev => prev - 1);
     }
   };
@@ -221,7 +227,7 @@ export default function PTCreateRoomModal({
               placeholder="예: 초보자를 위한 홈트레이닝"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              maxLength={50}
+              maxLength={PT_ROOM_TITLE_MAX_LENGTH}
             />
           </div>
 
@@ -241,7 +247,7 @@ export default function PTCreateRoomModal({
               placeholder="운동 내용이나 준비물 등을 설명해주세요"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              maxLength={200}
+              maxLength={PT_ROOM_DESCRIPTION_MAX_LENGTH}
             />
           </div>
 
@@ -278,7 +284,7 @@ export default function PTCreateRoomModal({
                 type="button"
                 className="pt-capacity-btn"
                 onClick={decreaseParticipants}
-                disabled={maxParticipants <= 2}
+                disabled={maxParticipants <= PT_MIN_PARTICIPANTS}
               >
                 <Minus size={18} />
               </button>
@@ -287,7 +293,7 @@ export default function PTCreateRoomModal({
                 type="button"
                 className="pt-capacity-btn"
                 onClick={increaseParticipants}
-                disabled={maxParticipants >= 6}
+                disabled={maxParticipants >= PT_MAX_PARTICIPANTS}
               >
                 <Plus size={18} />
               </button>

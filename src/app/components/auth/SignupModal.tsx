@@ -9,14 +9,23 @@
 import { useState } from 'react';
 import { X, Mail, Lock, Eye, EyeOff, User, Phone, Check } from 'lucide-react';
 import { signup, checkEmail, saveTokens } from '../../../api/auth';
-import { requestEmailVerification, confirmEmailVerification } from '../../../api/emailVerification';
+import { extractAxiosError, getApiErrorMessage } from '../../../api/apiError';
+import { formatPhoneNumber } from '../../../utils/format';
+import { PASSWORD_REGEX, EMAIL_REGEX, NICKNAME_MAX_LENGTH, PHONE_MAX_LENGTH } from '../../../constants/validation';
+
+/* 공통 컴포넌트 */
+import EmailVerifyForm from './EmailVerifyForm';
+import SignupCompleteStep from './SignupCompleteStep';
+
+/* 커스텀 훅 */
+import { useEmailVerification } from '../../../hooks/auth/useEmailVerification';
 
 /**
- * 컴포넌트 Props 타입 정의
+ * Props 타입 정의
  */
 interface SignupModalProps {
   onClose: () => void;
-  onSignupComplete: () => void;  // 가입 완료 후 자동 로그인 처리
+  onSignupComplete: () => void;
   onSwitchToLogin: () => void;
 }
 
@@ -25,8 +34,6 @@ interface SignupModalProps {
  */
 type SignupStep = 'info' | 'verify' | 'complete';
 
-/* 비밀번호 정규식 (8자 이상, 영문, 숫자, 특수문자 각각 1개 이상) */
-const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
 
 /**
  * SignupModal 컴포넌트
@@ -50,14 +57,12 @@ export default function SignupModal({
   const [nickname, setNickname] = useState('');
   const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
 
   /**
    * 상태 관리
    */
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isEmailSent, setIsEmailSent] = useState(false);
   const [isEmailChecked, setIsEmailChecked] = useState(false);
   const [isEmailAvailable, setIsEmailAvailable] = useState(false);
 
@@ -67,6 +72,11 @@ export default function SignupModal({
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
+
+  /**
+   * 이메일 인증 훅
+   */
+  const emailVerification = useEmailVerification();
 
   /**
    * 전체 동의 핸들러
@@ -92,19 +102,6 @@ export default function SignupModal({
   };
 
   /**
-   * 전화번호 포맷팅 (01012345678 → 010-1234-5678)
-   */
-  const formatPhoneNumber = (phone: string): string => {
-    const digits = phone.replace(/-/g, '');
-    if (digits.length === 11) {
-      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
-    } else if (digits.length === 10) {
-      return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-    }
-    return phone;
-  };
-
-  /**
    * 이메일 중복 체크 핸들러
    */
   const handleCheckEmail = async () => {
@@ -113,9 +110,7 @@ export default function SignupModal({
       return;
     }
 
-    /* 이메일 형식 검증 */
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!EMAIL_REGEX.test(email)) {
       setError('올바른 이메일 형식이 아닙니다.');
       return;
     }
@@ -136,28 +131,13 @@ export default function SignupModal({
         setError('이미 사용 중인 이메일입니다.');
       }
     } catch (err: unknown) {
-      const axiosError = err as {
-        response?: {
-          data?: {
-            error?: { code?: string; message?: string };
-            code?: string;
-            message?: string;
-          }
-        }
-      };
+      const { code, message } = extractAxiosError(err, '이메일 확인에 실패했습니다.');
 
-      /* 에러 코드 추출 (백엔드 응답 구조에 따라 유연하게 처리) */
-      const errorCode = axiosError.response?.data?.error?.code
-        || axiosError.response?.data?.code;
-
-      if (errorCode === 'AUTH-006') {
+      if (code === 'AUTH-006') {
         setIsEmailChecked(true);
         setIsEmailAvailable(false);
-        setError('이미 사용 중인 이메일입니다.');
-      } else {
-        console.error('이메일 중복 체크 에러:', axiosError.response?.data);
-        setError('이메일 확인에 실패했습니다.');
       }
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -173,45 +153,12 @@ export default function SignupModal({
   };
 
   /**
-   * 이메일 인증 발송 핸들러
-   */
-  const handleSendVerification = async () => {
-    if (isLoading) return;
-    setError('');
-
-    /* 바로 코드 입력 화면으로 전환 */
-    setIsEmailSent(true);
-
-    /* 백그라운드에서 이메일 발송 (await 없이) */
-    requestEmailVerification({ email }).catch((err: unknown) => {
-      console.error('이메일 발송 실패:', err);
-      const axiosError = err as {
-        response?: {
-          data?: {
-            error?: { code?: string };
-          };
-          status?: number;
-        };
-      };
-
-      const errorCode = axiosError.response?.data?.error?.code;
-
-      if (errorCode === 'AUTH-008' || axiosError.response?.status === 429) {
-        setError('요청이 너무 많습니다. 잠시 후 다시 시도해주세요.');
-      } else {
-        setError('인증 이메일 발송에 실패했습니다. 재전송을 시도해주세요.');
-      }
-    });
-  };
-
-  /**
    * 기본정보 제출 핸들러
    */
   const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    /* 유효성 검증 */
     if (!email || !password || !passwordConfirm || !nickname) {
       setError('모든 필수 항목을 입력해주세요.');
       return;
@@ -237,14 +184,11 @@ export default function SignupModal({
       return;
     }
 
-
     setIsLoading(true);
 
     try {
-      /* 전화번호 포맷팅 */
       const formattedPhone = phone ? formatPhoneNumber(phone) : undefined;
 
-      /* 회원가입 API 호출 */
       const tokens = await signup({
         email,
         password,
@@ -252,85 +196,14 @@ export default function SignupModal({
         phoneNumber: formattedPhone,
       });
 
-      /* 토큰 저장 */
       saveTokens(tokens);
-
-      /* 이메일 인증 단계로 이동 */
+      emailVerification.resetState();
       setStep('verify');
     } catch (err: unknown) {
-      const axiosError = err as {
-        response?: {
-          data?: {
-            error?: { code?: string; message?: string };
-            code?: string;
-            message?: string;
-          };
-        };
-      };
-
-      const errorCode = axiosError.response?.data?.error?.code
-        || axiosError.response?.data?.code;
-      const errorMessage = axiosError.response?.data?.error?.message
-        || axiosError.response?.data?.message;
-
-      if (errorCode === 'AUTH-006') {
-        setError('이미 사용 중인 이메일입니다.');
-      } else {
-        setError(errorMessage || '회원가입에 실패했습니다.');
-      }
+      setError(getApiErrorMessage(err, '회원가입에 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }
-  };
-
-  /**
-   * 인증 코드 확인 핸들러
-   */
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    try {
-      /* 이메일 인증 코드 확인 API 호출 */
-      await confirmEmailVerification({ email, code: verificationCode });
-
-      setStep('complete');
-    } catch (err: unknown) {
-      const axiosError = err as {
-        response?: {
-          data?: {
-            error?: { code?: string; message?: string };
-            code?: string;
-            message?: string;
-          };
-        };
-      };
-
-      const errorCode = axiosError.response?.data?.error?.code
-        || axiosError.response?.data?.code;
-
-      if (errorCode === 'AUTH-009' || errorCode === 'G001') {
-        setError('인증 코드가 올바르지 않습니다.');
-      } else {
-        setError('인증 확인에 실패했습니다. 다시 시도해주세요.');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-
-  /**
-   * 회원가입 완료 → 자동 로그인 → 온보딩으로 이동
-   */
-  const handleComplete = () => {
-    /* 
-     * TODO: 실제 구현 시
-     * - 토큰이 이미 저장된 상태
-     * - onSignupComplete 호출하여 로그인 상태로 전환 + 온보딩 표시
-     */
-    onSignupComplete();
   };
 
   /**
@@ -339,6 +212,18 @@ export default function SignupModal({
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
+    }
+  };
+
+  /**
+   * 단계별 제목
+   */
+  const getStepTitle = () => {
+    switch (step) {
+      case 'info': return '회원가입';
+      case 'verify': return '이메일 인증';
+      case 'complete': return '가입 완료';
+      default: return '회원가입';
     }
   };
 
@@ -441,6 +326,7 @@ export default function SignupModal({
                   placeholder="닉네임을 입력하세요"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
+                  maxLength={NICKNAME_MAX_LENGTH}
                 />
               </div>
             </div>
@@ -459,6 +345,7 @@ export default function SignupModal({
                   placeholder="전화번호를 입력하세요 (선택)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  maxLength={PHONE_MAX_LENGTH}
                 />
               </div>
             </div>
@@ -505,110 +392,27 @@ export default function SignupModal({
       /* 이메일 인증 단계 */
       case 'verify':
         return (
-          <form className="modal-form" onSubmit={handleVerifyCode}>
-            <div className="verify-info">
-              <p className="verify-email">{email}</p>
-              <p className="verify-desc">
-                위 이메일로 인증 코드를 발송합니다
-              </p>
-            </div>
-
-            {!isEmailSent ? (
-              <button
-                type="button"
-                className="form-submit-btn"
-                onClick={handleSendVerification}
-              >
-                인증 코드 발송
-              </button>
-            ) : (
-              <>
-                {/* 안내 문구 */}
-                <div className="verify-notice-box">
-                  <p className="verify-notice-text">
-                    📧 인증 코드가 발송되었습니다.<br />
-                    이메일 수신까지 <strong>최대 20초</strong> 정도 소요될 수 있습니다.
-                  </p>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" htmlFor="verify-code">
-                    인증 코드
-                  </label>
-                  <input
-                    id="verify-code"
-                    type="text"
-                    className="form-input form-input-center"
-                    placeholder="6자리 코드 입력"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    maxLength={6}
-                  />
-                </div>
-
-                {error && <p className="form-error-bottom">{error}</p>}
-
-                <button
-                  type="submit"
-                  className="form-submit-btn"
-                  disabled={isLoading}
-                >
-                  {isLoading ? '확인 중...' : '인증 확인'}
-                </button>
-
-                <button
-                  type="button"
-                  className="form-link form-link-center"
-                  onClick={handleSendVerification}
-                >
-                  이메일이 안 오셨나요? 재전송
-                </button>
-              </>
-            )}
-            {/* 안내 문구 */}
-            <p className="verify-notice">
-              인증 완료 후 로그인이 가능합니다
-            </p>
-          </form>
+          <EmailVerifyForm
+            email={email}
+            verificationCode={emailVerification.verificationCode}
+            isEmailSent={emailVerification.isEmailSent}
+            isLoading={emailVerification.isLoading}
+            error={emailVerification.error}
+            onCodeChange={emailVerification.setVerificationCode}
+            onSendVerification={() => emailVerification.handleSendVerification(email)}
+            onVerifyCode={(e) => {
+              e.preventDefault();
+              emailVerification.handleVerifyCode(email, () => setStep('complete'));
+            }}
+          />
         );
 
       /* 가입 완료 단계 */
       case 'complete':
-        return (
-          <div className="signup-complete">
-            <div className="signup-complete-icon">
-              <Check size={48} />
-            </div>
-            <h3 className="signup-complete-title">
-              회원가입 완료!
-            </h3>
-            <p className="signup-complete-desc">
-              맞춤 운동과 식단 추천을 위해<br />
-              간단한 정보를 입력해주세요
-            </p>
-            <button
-              className="form-submit-btn"
-              onClick={handleComplete}
-            >
-              시작하기
-            </button>
-          </div>
-        );
+        return <SignupCompleteStep onComplete={onSignupComplete} />;
 
       default:
         return null;
-    }
-  };
-
-  /**
-   * 단계별 제목
-   */
-  const getStepTitle = () => {
-    switch (step) {
-      case 'info': return '회원가입';
-      case 'verify': return '이메일 인증';
-      case 'complete': return '가입 완료';
-      default: return '회원가입';
     }
   };
 

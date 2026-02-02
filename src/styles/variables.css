@@ -73,8 +73,6 @@
    */
   --color-diet: #16a34a;
   --color-diet-light: #dcfce7;
-  --color-diet-hover: #15803d;
-  --color-diet-active: #166534;
   --color-diet-incomplete: #6bbd69;
   /**
    * 화상PT 관련 색상 (보라색)
@@ -96,10 +94,11 @@
   --color-success-light: #dcfce7;
   --color-error: #dc2626;
   --color-error-light: #fee2e2;
+  --color-error-lightest: rgba(220, 38, 38, 0.1);
   --color-warning: #f59e0b;
   --color-warning-light: #fef3c7;
-  --color-info: #0891b2;
-  --color-info-light: #cffafe;
+  --color-caution: #f97316;
+  --color-caution-light: #ffedd5;
   --color-failed: #9ca3af;
   /* 실패 - 회색 */
 
@@ -109,8 +108,6 @@
   --color-live: #dc2626;
   /* 진행중 - 빨간색 */
   --color-live-light: #fee2e2;
-  --color-reserved: #f59e0b;
-  /* 예약중 - 주황색 */
   --color-reserved-light: #fef3c7;
   --color-private: #6b7280;
   /* 비공개 - 회색 */
@@ -198,7 +195,6 @@
    */
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
-  --transition-slow: 300ms ease;
 
   /**
    * ===========================================
@@ -218,8 +214,18 @@
    * ===========================================
    */
   --color-error-hover: #b91c1c;
+  --color-error-dark: #b91c1c;
+  --color-success-hover: #15803d;
+  --color-warning-hover: #d97706;
   --color-kakao-hover: #e6cf00;
   --color-naver-hover: #02b350;
+
+  /**
+   * ===========================================
+   * 오버레이 색상 (Overlay Colors)
+   * ===========================================
+   */
+  --color-overlay-dark: rgba(0, 0, 0, 0.5);
 
   /**
    * ===========================================
@@ -233,6 +239,30 @@
   --color-google: #ffffff;
   --color-google-text: #000000;
   --color-google-border: #dadce0;
+
+  /**
+   * ===========================================
+   * Admin 전용 색상
+   * ===========================================
+   */
+  --color-indigo: #4f46e5;
+  --color-indigo-light: #e0e7ff;
+  --color-indigo-lighter: #c7d2fe;
+  --color-indigo-lightest: #eef2ff;
+  --color-violet: #7c3aed;
+  --color-violet-light: #ede9fe;
+  --color-pink: #be185d;
+  --color-pink-light: #fce7f3;
+  --color-orange: #ea580c;
+  --color-orange-light: #fed7aa;
+  --color-yellow-light: #fef9c3;
+  --color-yellow-lighter: #fefce8;
+  --color-yellow-medium: #fde68a;
+  --color-amber-light: #fef3e2;
+  --color-amber-dark: #92400e;
+  --color-red-light: #fecaca;
+  --color-green-light: #bbf7d0;
+  --color-red-500: #ef4444;
 
 /**
  * ===========================================

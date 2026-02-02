@@ -18,6 +18,7 @@ import {
   joinPTRoom,
   updatePTRoomStatus,
 } from '../../api/pt';
+import { getApiErrorMessage, extractAxiosError } from '../../api/apiError';
 import type {
   PTRoomListItem,
   GetPTRoomDetailResponse,
@@ -86,9 +87,8 @@ export default function VideoPTPage({
       });
       setRooms(response.items);
 
-    } catch (err: any) {
-      console.error('방 목록 조회 실패:', err);
-      setError(err.response?.data?.message || '방 목록을 불러오는데 실패했습니다.');
+    } catch (err) {
+      setError(getApiErrorMessage(err, '방 목록을 불러오는데 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }
@@ -113,8 +113,8 @@ export default function VideoPTPage({
     try {
       const detail = await getPTRoomDetail(room.ptRoomId);
       setRoomDetail(detail);
-    } catch (err: any) {
-      console.error('방 상세 조회 실패:', err);
+    } catch {
+      /** 상세 조회 실패는 조용히 처리 */
     } finally {
       setIsDetailLoading(false);
     }
@@ -133,27 +133,19 @@ export default function VideoPTPage({
    * 방 참여 핸들러
    */
   const handleJoinRoom = async (room: PTRoomListItem, entryCode?: string) => {
-    console.log('handleJoinRoom 시작:', room.ptRoomId, entryCode);
     setIsActionLoading(true);
 
     try {
-      console.log('joinPTRoom 호출 전');
       await joinPTRoom(room.ptRoomId, { entryCode: entryCode || null });
-      console.log('joinPTRoom 성공');
-
-      console.log('getPTRoomDetail 호출 전');
       const roomDetail = await getPTRoomDetail(room.ptRoomId);
-      console.log('getPTRoomDetail 성공:', roomDetail);
       setActiveCallRoom(roomDetail);
-      console.log('setActiveCallRoom 완료');
       setInVideoCall(true);
-      console.log('setInVideoCall 완료');
       closeDetailModal();
-    } catch (err: any) {
-      console.error('방 입장 실패:', err);
-      const errorCode = err.response?.data?.error?.code;
+    } catch (err) {
+      const { code, message } = extractAxiosError(err, '방 입장에 실패했습니다.');
+
       /* 강퇴된 사용자 재입장 시도 */
-      if (errorCode === 'KICKED') {
+      if (code === 'KICKED') {
         alert('강퇴된 방에는 다시 입장할 수 없습니다.');
         return;
       }
@@ -163,7 +155,7 @@ export default function VideoPTPage({
         throw err;
       }
       /* 그 외 에러는 alert으로 표시 */
-      alert(err.response?.data?.error?.message || '방 입장에 실패했습니다.');
+      alert(message);
     } finally {
       setIsActionLoading(false);
     }
@@ -197,9 +189,8 @@ export default function VideoPTPage({
         alert('예약 방이 생성되었습니다!');
         fetchRooms(); /* 목록 새로고침 */
       }
-    } catch (err: any) {
-      console.error('방 생성 실패:', err);
-      alert(err.response?.data?.message || '방 생성에 실패했습니다.');
+    } catch (err) {
+      alert(getApiErrorMessage(err, '방 생성에 실패했습니다.'));
     } finally {
       setIsActionLoading(false);
     }
@@ -220,9 +211,8 @@ export default function VideoPTPage({
       setActiveCallRoom(roomDetail);
       setInVideoCall(true);
       closeDetailModal();
-    } catch (err: any) {
-      console.error('방 시작 실패:', err);
-      alert(err.response?.data?.message || '방 시작에 실패했습니다.');
+    } catch (err) {
+      alert(getApiErrorMessage(err, '방 시작에 실패했습니다.'));
     } finally {
       setIsActionLoading(false);
     }
@@ -243,9 +233,8 @@ export default function VideoPTPage({
       alert('예약이 취소되었습니다.');
       closeDetailModal();
       fetchRooms();
-    } catch (err: any) {
-      console.error('방 취소 실패:', err);
-      alert(err.response?.data?.message || '예약 취소에 실패했습니다.');
+    } catch (err) {
+      alert(getApiErrorMessage(err, '예약 취소에 실패했습니다.'));
     } finally {
       setIsActionLoading(false);
     }

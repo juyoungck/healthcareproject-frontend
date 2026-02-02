@@ -10,7 +10,7 @@
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--color-gray-100);
 }
 
 /* ===========================================
@@ -19,8 +19,8 @@
 
 .admin-sidebar {
   width: 240px;
-  background-color: #fff;
-  border-right: 1px solid #e0e0e0;
+  background-color: var(--color-white);
+  border-right: 1px solid var(--color-gray-200);
   padding: 20px 0;
 }
 
@@ -39,19 +39,19 @@
   background: none;
   cursor: pointer;
   font-size: 14px;
-  color: #666;
+  color: var(--color-gray-500);
   text-align: left;
   transition: all 0.2s;
 }
 
 .admin-sidebar-item:hover {
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-800);
 }
 
 .admin-sidebar-item.active {
-  background-color: #2563eb;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 /* ===========================================
@@ -73,7 +73,7 @@
 .admin-header-title {
   font-size: 24px;
   font-weight: 700;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .admin-back-btn {
@@ -81,22 +81,22 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   border-radius: 8px;
-  background-color: #fff;
+  background-color: var(--color-white);
   cursor: pointer;
   font-size: 14px;
-  color: #666;
+  color: var(--color-gray-500);
   transition: all 0.2s;
 }
 
 .admin-back-btn:hover {
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-800);
 }
 
 .admin-content {
-  background-color: #fff;
+  background-color: var(--color-white);
   border-radius: 12px;
   padding: 24px;
 }
@@ -108,14 +108,14 @@
 .admin-section-title {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-gray-800);
   margin: 0 0 8px 0;
 }
 
 .admin-section-count,
 .admin-section-subtitle {
   font-size: 14px;
-  color: #888;
+  color: var(--color-gray-400);
   margin: 0 0 20px 0;
 }
 
@@ -133,14 +133,14 @@
 .admin-loading {
   text-align: center;
   padding: 60px 0;
-  color: #666;
+  color: var(--color-gray-500);
   font-size: 14px;
 }
 
 .admin-error {
   text-align: center;
   padding: 40px 0;
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .admin-error p {
@@ -159,8 +159,8 @@
 }
 
 .admin-stat-card {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
   border-radius: 12px;
   padding: 20px;
 }
@@ -174,18 +174,18 @@
 
 .admin-stat-label {
   font-size: 14px;
-  color: #666;
+  color: var(--color-gray-500);
 }
 
-.admin-stat-icon.users { color: #2563eb; }
-.admin-stat-icon.posts { color: #16a34a; }
-.admin-stat-icon.trainers { color: #eab308; }
-.admin-stat-icon.pt { color: #9333ea; }
+.admin-stat-icon.users { color: var(--color-primary); }
+.admin-stat-icon.posts { color: var(--color-success); }
+.admin-stat-icon.trainers { color: var(--color-warning); }
+.admin-stat-icon.pt { color: var(--color-pt); }
 
 .admin-stat-value {
   font-size: 32px;
   font-weight: 700;
-  color: #333;
+  color: var(--color-gray-800);
   margin-bottom: 8px;
 }
 
@@ -198,20 +198,20 @@
 .stat-active,
 .stat-visible,
 .stat-live {
-  color: #2563eb;
+  color: var(--color-primary);
 }
 
 .stat-inactive,
 .stat-hidden {
-  color: #ef4444;
+  color: var(--color-red-500);
 }
 
 .stat-pending {
-  color: #eab308;
+  color: var(--color-warning);
 }
 
 .stat-scheduled {
-  color: #9333ea;
+  color: var(--color-pt);
 }
 
 /* 오늘의 활동 (2개 그리드) */
@@ -228,10 +228,10 @@
   text-align: center;
 }
 
-.admin-activity-card.blue { background-color: #dbeafe; }
-.admin-activity-card.yellow { background-color: #fef3c7; }
-.admin-activity-card.orange { background-color: #ffedd5; }
-.admin-activity-card.green { background-color: #dcfce7; }
+.admin-activity-card.blue { background-color: var(--color-workout-light); }
+.admin-activity-card.yellow { background-color: var(--color-warning-light); }
+.admin-activity-card.orange { background-color: var(--color-caution-light); }
+.admin-activity-card.green { background-color: var(--color-success-light); }
 
 .admin-activity-value {
   font-size: 36px;
@@ -239,14 +239,14 @@
   margin-bottom: 8px;
 }
 
-.admin-activity-card.blue .admin-activity-value { color: #2563eb; }
-.admin-activity-card.yellow .admin-activity-value { color: #eab308; }
-.admin-activity-card.orange .admin-activity-value { color: #ea580c; }
-.admin-activity-card.green .admin-activity-value { color: #16a34a; }
+.admin-activity-card.blue .admin-activity-value { color: var(--color-primary); }
+.admin-activity-card.yellow .admin-activity-value { color: var(--color-warning); }
+.admin-activity-card.orange .admin-activity-value { color: var(--color-orange); }
+.admin-activity-card.green .admin-activity-value { color: var(--color-success); }
 
 .admin-activity-label {
   font-size: 14px;
-  color: #666;
+  color: var(--color-gray-500);
 }
 
 /* 시스템 정보 */
@@ -257,8 +257,8 @@
 }
 
 .admin-system-card {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -268,15 +268,15 @@
   align-items: center;
   gap: 10px;
   padding: 16px 20px;
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
   font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .admin-system-header svg {
-  color: #666;
+  color: var(--color-gray-500);
 }
 
 .admin-system-content {
@@ -288,7 +288,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-gray-100);
 }
 
 .admin-system-row:last-child {
@@ -297,13 +297,13 @@
 
 .admin-system-key {
   font-size: 14px;
-  color: #666;
+  color: var(--color-gray-500);
 }
 
 .admin-system-value {
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .admin-system-status {
@@ -315,18 +315,18 @@
 }
 
 .admin-system-status.up {
-  color: #16a34a;
+  color: var(--color-success);
 }
 
 .admin-system-status.down {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 /* 플레이스홀더 */
 .admin-placeholder {
   text-align: center;
   padding: 60px 0;
-  color: #999;
+  color: var(--color-gray-400);
 }
 
 /* ===========================================
@@ -360,12 +360,12 @@
 .admin-filter-tab,
 .admin-filter-btn {
   padding: 8px 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   border-radius: 20px;
-  background-color: #fff;
+  background-color: var(--color-white);
   cursor: pointer;
   font-size: 14px;
-  color: #666;
+  color: var(--color-gray-500);
   transition: all 0.2s;
   min-width: 72px;
   text-align: center;
@@ -374,49 +374,49 @@
 
 .admin-filter-tab:hover,
 .admin-filter-btn:hover {
-  border-color: #2563eb;
-  color: #2563eb;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .admin-filter-tab.active,
 .admin-filter-btn.active {
-  background-color: #2563eb;
-  border-color: #2563eb;
-  color: #fff;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 /* 고정 크기 필터 탭 (다중 선택용) */
 .admin-filter-tab-fixed {
   padding: 8px 0;
   width: 72px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   border-radius: 20px;
-  background-color: #fff;
+  background-color: var(--color-white);
   cursor: pointer;
   font-size: 14px;
-  color: #666;
+  color: var(--color-gray-500);
   transition: all 0.2s;
   text-align: center;
 }
 
 .admin-filter-tab-fixed:hover {
-  border-color: #2563eb;
-  color: #2563eb;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .admin-filter-tab-fixed.active {
-  background-color: #2563eb;
-  border-color: #2563eb;
-  color: #fff;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 .admin-filter-select {
   padding: 8px 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   border-radius: 8px;
-  background-color: #fff;
+  background-color: var(--color-white);
   font-size: 14px;
-  color: #666;
+  color: var(--color-gray-500);
   cursor: pointer;
 }
 
@@ -426,9 +426,9 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   border-radius: 8px;
-  background-color: #fff;
+  background-color: var(--color-white);
 }
 
 .admin-search-box input {
@@ -439,7 +439,7 @@
 }
 
 .admin-search-box svg {
-  color: #999;
+  color: var(--color-gray-400);
 }
 
 /* ===========================================
@@ -459,30 +459,30 @@
 .admin-table td {
   padding: 14px 16px;
   text-align: center;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-gray-100);
 }
 
 .admin-table th {
-  background-color: #f9fafb;
+  background-color: var(--color-gray-50);
   font-weight: 600;
   font-size: 13px;
-  color: #666;
+  color: var(--color-gray-500);
   white-space: nowrap;
 }
 
 .admin-table td {
   font-size: 14px;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .admin-table tbody tr:hover {
-  background-color: #fafafa;
+  background-color: var(--color-gray-50);
 }
 
 .admin-table-empty {
   text-align: center;
   padding: 60px 0 !important;
-  color: #999;
+  color: var(--color-gray-400);
 }
 
 /* 테이블 이미지 */
@@ -502,8 +502,8 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
   border-radius: 6px;
   text-decoration: none;
   transition: background-color 0.2s;
@@ -511,14 +511,14 @@
 }
 
 .admin-video-link:hover {
-  background-color: #fecaca;
+  background-color: var(--color-red-light);
 }
 
 /* 테이블 텍스트 스타일 */
 .admin-table-name,
 .admin-table-title {
   font-weight: 500;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .admin-table-desc,
@@ -528,7 +528,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #666;
+  color: var(--color-gray-500);
 }
 
 /* 작성자 정보 (닉네임 + 핸들) */
@@ -541,12 +541,12 @@
 
 .admin-nickname {
   font-weight: 500;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .admin-handle {
   font-size: 12px;
-  color: #999;
+  color: var(--color-gray-400);
 }
 
 /* 클릭 가능한 행 */
@@ -556,16 +556,16 @@
 }
 
 .admin-clickable-row:hover {
-  background-color: #f5f5f5 !important;
+  background-color: var(--color-gray-100) !important;
 }
 
 /* 고정 행 */
 .pinned-row {
-  background-color: #fefce8;
+  background-color: var(--color-yellow-lighter);
 }
 
 .pinned-row:hover {
-  background-color: #fef9c3 !important;
+  background-color: var(--color-yellow-light) !important;
 }
 
 /* ===========================================
@@ -585,16 +585,16 @@
 /* 대기중/예약 - 노랑 */
 .admin-status-badge.status-pending,
 .admin-status-badge.status-scheduled {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
 }
 
 /* 활성/승인/공개 - 초록 */
 .admin-status-badge.status-active,
 .admin-status-badge.status-approved,
 .admin-status-badge.status-posted {
-  background-color: #dcfce7;
-  color: #16a34a;
+  background-color: var(--color-success-light);
+  color: var(--color-success);
 }
 
 /* 비활성/정지/삭제 - 회색 */
@@ -602,39 +602,39 @@
 .admin-status-badge.status-stop,
 .admin-status-badge.status-suspended,
 .admin-status-badge.status-deleted {
-  background-color: #f3f4f6;
-  color: #6b7280;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
 }
 
 .admin-status-badge.status-rejected {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 /* 휴면/종료 - 회색 */
 .admin-status-badge.status-sleep,
 .admin-status-badge.status-ended,
 .admin-status-badge.status-ignored {
-  background-color: #f3f4f6;
-  color: #6b7280;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
 }
 
 /* 진행중 - 파랑 */
 .admin-status-badge.status-live {
-  background-color: #dbeafe;
-  color: #2563eb;
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
 }
 
 /* 처리완료 - 보라 */
 .admin-status-badge.status-processed {
-  background-color: #e0e7ff;
-  color: #4f46e5;
+  background-color: var(--color-indigo-light);
+  color: var(--color-indigo);
 }
 
 /* 강제종료 - 갈색 */
 .admin-status-badge.status-force-closed {
-  background-color: #fef3e2;
-  color: #92400e;
+  background-color: var(--color-amber-light);
+  color: var(--color-amber-dark);
 }
 
 /* ===========================================
@@ -651,18 +651,18 @@
 }
 
 .admin-role-badge.role-user {
-  background-color: #dbeafe;
-  color: #2563eb;
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
 }
 
 .admin-role-badge.role-trainer {
-  background-color: #f3e8ff;
-  color: #9333ea;
+  background-color: var(--color-pt-light);
+  color: var(--color-pt);
 }
 
 .admin-role-badge.role-admin {
-  background-color: #fce7f3;
-  color: #be185d;
+  background-color: var(--color-pink-light);
+  color: var(--color-pink);
 }
 
 /* ===========================================
@@ -679,23 +679,23 @@
 }
 
 .admin-category-badge.category-notice {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .admin-category-badge.category-free {
-  background-color: #dbeafe;
-  color: #2563eb;
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
 }
 
 .admin-category-badge.category-question {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
 }
 
 .admin-category-badge.category-info {
-  background-color: #dcfce7;
-  color: #16a34a;
+  background-color: var(--color-success-light);
+  color: var(--color-success);
 }
 
 /* 공지 라벨 */
@@ -706,8 +706,8 @@
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 /* ===========================================
@@ -724,13 +724,13 @@
 }
 
 .admin-type-badge.type-post {
-  background-color: #dbeafe;
-  color: #2563eb;
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
 }
 
 .admin-type-badge.type-comment {
-  background-color: #f3e8ff;
-  color: #9333ea;
+  background-color: var(--color-pt-light);
+  color: var(--color-pt);
 }
 
 /* ===========================================
@@ -744,8 +744,8 @@
   border-radius: 10px;
   font-size: 12px;
   font-weight: 500;
-  background-color: #f3f4f6;
-  color: #6b7280;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
 }
 
 .admin-level-badge {
@@ -758,18 +758,18 @@
 }
 
 .admin-level-badge.level-beginner {
-  background-color: #dcfce7;
-  color: #16a34a;
+  background-color: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .admin-level-badge.level-intermediate {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
 }
 
 .admin-level-badge.level-advanced {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 /* ===========================================
@@ -788,13 +788,13 @@
 }
 
 .admin-public-badge {
-  background-color: #dcfce7;
-  color: #16a34a;
+  background-color: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .admin-private-badge {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
 }
 
 /* ===========================================
@@ -806,11 +806,11 @@
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  color: #d97706;
+  color: var(--color-warning-hover);
 }
 
 .admin-allergy-icon {
-  color: #d97706;
+  color: var(--color-warning-hover);
 }
 
 /* ===========================================
@@ -838,91 +838,91 @@
 
 /* 보기 - 보라 */
 .admin-action-btn.view {
-  background-color: #e0e7ff;
-  color: #4f46e5;
+  background-color: var(--color-indigo-light);
+  color: var(--color-indigo);
 }
 
 .admin-action-btn.view:hover {
-  background-color: #c7d2fe;
+  background-color: var(--color-indigo-lighter);
 }
 
 /* 승인 - 초록 */
 .admin-action-btn.approve {
-  background-color: #dcfce7;
-  color: #16a34a;
+  background-color: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .admin-action-btn.approve:hover {
-  background-color: #bbf7d0;
+  background-color: var(--color-green-light);
 }
 
 /* 거절/삭제/위험 - 빨강 */
 .admin-action-btn.reject,
 .admin-action-btn.delete,
 .admin-action-btn.danger {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .admin-action-btn.reject:hover,
 .admin-action-btn.delete:hover,
 .admin-action-btn.danger:hover {
-  background-color: #fecaca;
+  background-color: var(--color-red-light);
 }
 
 /* 차단 - 주황 */
 .admin-action-btn.ban {
-  background-color: #ffedd5;
-  color: #ea580c;
+  background-color: var(--color-caution-light);
+  color: var(--color-orange);
 }
 
 .admin-action-btn.ban:hover {
-  background-color: #fed7aa;
+  background-color: var(--color-orange-light);
 }
 
 /* 차단해제 - 파랑 */
 .admin-action-btn.unban {
-  background-color: #dbeafe;
-  color: #2563eb;
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
 }
 
 .admin-action-btn.unban:hover {
-  background-color: #bfdbfe;
+  background-color: var(--color-workout-light);
 }
 
 /* 경고/수정 - 노랑 */
 .admin-action-btn.warning,
 .admin-action-btn.edit {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
 }
 
 .admin-action-btn.warning:hover,
 .admin-action-btn.edit:hover {
-  background-color: #fde68a;
+  background-color: var(--color-yellow-medium);
 }
 
 /* 무시/보조 - 회색 */
 .admin-action-btn.ignore,
 .admin-action-btn.secondary {
-  background-color: #f3f4f6;
-  color: #6b7280;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
 }
 
 .admin-action-btn.ignore:hover,
 .admin-action-btn.secondary:hover {
-  background-color: #e5e7eb;
+  background-color: var(--color-gray-200);
 }
 
 /* 핀 - 보라 */
 .admin-action-btn.pin {
-  background-color: #e0e7ff;
-  color: #4f46e5;
+  background-color: var(--color-indigo-light);
+  color: var(--color-indigo);
 }
 
 .admin-action-btn.pin:hover,
 .admin-action-btn.pin.active {
-  background-color: #c7d2fe;
+  background-color: var(--color-indigo-lighter);
 }
 
 /* ===========================================
@@ -934,8 +934,8 @@
   align-items: center;
   gap: 6px;
   padding: 10px 16px;
-  background-color: #2563eb;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -945,7 +945,7 @@
 }
 
 .admin-add-btn:hover {
-  background-color: #1d4ed8;
+  background-color: var(--color-primary-dark);
 }
 
 /* ===========================================
@@ -963,30 +963,30 @@
 }
 
 .admin-btn.primary {
-  background-color: #2563eb;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 .admin-btn.primary:hover {
-  background-color: #1d4ed8;
+  background-color: var(--color-primary-dark);
 }
 
 .admin-btn.secondary {
-  background-color: #f3f4f6;
-  color: #666;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
 }
 
 .admin-btn.secondary:hover {
-  background-color: #e5e7eb;
+  background-color: var(--color-gray-200);
 }
 
 .admin-btn.danger {
-  background-color: #dc2626;
-  color: #fff;
+  background-color: var(--color-error);
+  color: var(--color-white);
 }
 
 .admin-btn.danger:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-error-dark);
 }
 
 .admin-btn:disabled {
@@ -1003,8 +1003,8 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background-color: #e0e7ff;
-  color: #4f46e5;
+  background-color: var(--color-indigo-light);
+  color: var(--color-indigo);
   border: none;
   border-radius: 20px;
   cursor: pointer;
@@ -1015,7 +1015,7 @@
 }
 
 .admin-license-btn:hover {
-  background-color: #c7d2fe;
+  background-color: var(--color-indigo-lighter);
 }
 
 /* ===========================================
@@ -1028,7 +1028,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--color-overlay-dark);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1036,7 +1036,7 @@
 }
 
 .admin-modal-container {
-  background-color: #fff;
+  background-color: var(--color-white);
   border-radius: 12px;
   width: 100%;
   max-width: 600px;
@@ -1051,25 +1051,25 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .admin-modal-title {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .admin-modal-close {
   border: none;
   background: none;
   cursor: pointer;
-  color: #999;
+  color: var(--color-gray-400);
   padding: 4px;
 }
 
 .admin-modal-close:hover {
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .admin-modal-content {
@@ -1083,7 +1083,7 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 24px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-gray-200);
 }
 
 /* ===========================================
@@ -1102,7 +1102,7 @@
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-gray-800);
   margin-bottom: 8px;
 }
 
@@ -1110,26 +1110,26 @@
 .admin-form-select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   border-radius: 8px;
   font-size: 14px;
-  color: #333;
+  color: var(--color-gray-800);
   box-sizing: border-box;
 }
 
 .admin-form-input:focus,
 .admin-form-select:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: var(--color-primary);
 }
 
 .admin-form-textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   border-radius: 8px;
   font-size: 14px;
-  color: #333;
+  color: var(--color-gray-800);
   resize: vertical;
   min-height: 100px;
   box-sizing: border-box;
@@ -1137,7 +1137,7 @@
 
 .admin-form-textarea:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: var(--color-primary);
 }
 
 /* ===========================================
@@ -1153,7 +1153,7 @@
 .admin-nutrition-item label {
   display: block;
   font-size: 13px;
-  color: #666;
+  color: var(--color-gray-500);
   margin-bottom: 6px;
 }
 
@@ -1166,14 +1166,14 @@
 .admin-nutrition-input input {
   flex: 1;
   padding: 8px 10px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   border-radius: 6px;
   font-size: 14px;
 }
 
 .admin-nutrition-input span {
   font-size: 13px;
-  color: #666;
+  color: var(--color-gray-500);
   min-width: 30px;
 }
 
@@ -1189,24 +1189,24 @@
 
 .admin-allergy-btn {
   padding: 6px 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   border-radius: 16px;
-  background-color: #fff;
+  background-color: var(--color-white);
   font-size: 13px;
-  color: #666;
+  color: var(--color-gray-500);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .admin-allergy-btn:hover {
-  border-color: #2563eb;
-  color: #2563eb;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .admin-allergy-btn.active {
-  background-color: #2563eb;
-  border-color: #2563eb;
-  color: #fff;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 /* ===========================================
@@ -1224,12 +1224,12 @@
 .admin-detail-label {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-gray-800);
   margin-bottom: 12px;
 }
 
 .admin-pt-info-card {
-  background-color: #f9fafb;
+  background-color: var(--color-gray-50);
   border-radius: 8px;
   padding: 16px;
 }
@@ -1244,7 +1244,7 @@
 .admin-pt-info-title {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-gray-800);
   margin: 0;
 }
 
@@ -1259,21 +1259,21 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #666;
+  color: var(--color-gray-500);
 }
 
 .admin-detail-row svg {
-  color: #999;
+  color: var(--color-gray-400);
   flex-shrink: 0;
 }
 
 .admin-detail-key {
   min-width: 80px;
-  color: #666;
+  color: var(--color-gray-500);
 }
 
 .admin-detail-value {
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 /* ===========================================
@@ -1284,7 +1284,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #666;
+  color: var(--color-gray-500);
 }
 
 .admin-live-warning {
@@ -1292,10 +1292,10 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background-color: #fee2e2;
+  background-color: var(--color-error-light);
   border-radius: 8px;
   font-size: 14px;
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 /* ===========================================
@@ -1317,7 +1317,7 @@
   max-height: 400px;
   object-fit: contain;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   cursor: pointer;
   transition: opacity 0.2s;
 }
@@ -1332,8 +1332,8 @@
   gap: 6px;
   margin-top: 8px;
   padding: 8px 16px;
-  background-color: #2563eb;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -1343,12 +1343,12 @@
 }
 
 .admin-download-btn:hover {
-  background-color: #1d4ed8;
+  background-color: var(--color-primary-dark);
 }
 
 .admin-empty-text {
   text-align: center;
-  color: #999;
+  color: var(--color-gray-400);
   padding: 40px 0;
 }
 
@@ -1370,7 +1370,7 @@
   .admin-sidebar {
     width: 100%;
     border-right: none;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-gray-200);
     padding: 12px 0;
   }
 
@@ -1441,18 +1441,18 @@
   width: 32px;
   height: 32px;
   padding: 0;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-gray-200);
   border-radius: 6px;
-  background-color: #fff;
-  color: #dc2626;
+  background-color: var(--color-white);
+  color: var(--color-error);
   cursor: pointer;
   transition: all 0.2s;
   margin: 0 auto;
 }
 
 .admin-video-btn:hover {
-  background-color: #fee2e2;
-  border-color: #dc2626;
+  background-color: var(--color-error-light);
+  border-color: var(--color-error);
 }
 
 .admin-video-modal {
@@ -1464,7 +1464,7 @@
   position: relative;
   width: 100%;
   padding-bottom: 56.25%; /* 16:9 비율 */
-  background-color: #000;
+  background-color: var(--color-black);
 }
 
 .admin-video-container iframe {
@@ -1479,8 +1479,8 @@
 .admin-entry-code {
   font-weight: 600;
   letter-spacing: 2px;
-  color: #4f46e5;
-  background: #eef2ff;
+  color: var(--color-indigo);
+  background: var(--color-indigo-lightest);
   padding: 4px 8px;
   border-radius: 4px;
 }
@@ -1489,8 +1489,8 @@
 .admin-action-btn.disabled,
 .admin-action-btn.delete.disabled,
 .admin-action-btn.danger.disabled {
-  background: #f3f4f6 !important;
-  color: #9ca3af !important;
+  background: var(--color-gray-100) !important;
+  color: var(--color-gray-400) !important;
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -1498,19 +1498,19 @@
 .admin-action-btn.disabled:hover,
 .admin-action-btn.delete.disabled:hover,
 .admin-action-btn.danger.disabled:hover {
-  background: #f3f4f6 !important;
-  color: #9ca3af !important;
+  background: var(--color-gray-100) !important;
+  color: var(--color-gray-400) !important;
 }
 
 /* 신고관리 반려 버튼 - 진회색 */
 .admin-action-btn.reject-dark {
-  background: #d1d5db;
-  color: #4b5563;
+  background: var(--color-gray-300);
+  color: var(--color-gray-600);
 }
 
 .admin-action-btn.reject-dark:hover {
-  background: #9ca3af;
-  color: #374151;
+  background: var(--color-gray-400);
+  color: var(--color-gray-700);
 }
 
 /* 상세 모달 통일 스타일 */
@@ -1523,7 +1523,7 @@
 
 .admin-detail-content {
   font-size: 14px;
-  color: #666;
+  color: var(--color-gray-500);
   line-height: 1.6;
   margin-bottom: 16px;
   min-height: 40px;
@@ -1543,17 +1543,17 @@
 }
 
 .admin-detail-row svg {
-  color: #9ca3af;
+  color: var(--color-gray-400);
   flex-shrink: 0;
 }
 
 .admin-detail-key {
-  color: #6b7280;
+  color: var(--color-gray-500);
   min-width: 80px;
 }
 
 .admin-detail-value {
-  color: #333;
+  color: var(--color-gray-800);
   font-weight: 500;
 }
 
@@ -1567,34 +1567,34 @@
 }
 
 .admin-type-badge.type-post {
-  background: #dbeafe;
-  color: #2563eb;
+  background: var(--color-workout-light);
+  color: var(--color-primary);
 }
 
 .admin-type-badge.type-comment {
-  background: #fef3c7;
-  color: #d97706;
+  background: var(--color-warning-light);
+  color: var(--color-warning-hover);
 }
 
 .admin-type-badge.type-pt_room {
-  background: #ede9fe;
-  color: #7c3aed;
+  background: var(--color-violet-light);
+  color: var(--color-violet);
 }
 
 /* 신고관리 상태 뱃지 */
 .admin-status-badge.status-pending {
-  background: #dcfce7;
-  color: #16a34a;
+  background: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .admin-status-badge.status-processed {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--color-gray-100);
+  color: var(--color-gray-500);
 }
 
 .admin-status-badge.status-rejected {
-  background: #fee2e2;
-  color: #dc2626;
+  background: var(--color-error-light);
+  color: var(--color-error);
 }
 
 /* 관리자 헤더 레이아웃 */
@@ -1617,7 +1617,7 @@
 
 .admin-header-left .admin-section-count {
   margin: 0;
-  color: #666;
+  color: var(--color-gray-500);
   font-size: 14px;
 }
 
@@ -1660,18 +1660,18 @@
 }
 
 .report-type-icon.post {
-  background-color: #dbeafe;
-  color: #2563eb;
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
 }
 
 .report-type-icon.comment {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
 }
 
 .report-type-icon.pt_room {
-  background-color: #f3e8ff;
-  color: #9333ea;
+  background-color: var(--color-pt-light);
+  color: var(--color-pt);
 }
 
 .report-header-text {
@@ -1682,7 +1682,7 @@
 
 .report-header-subtitle {
   font-size: 13px;
-  color: #999;
+  color: var(--color-gray-400);
 }
 
 /* 프로필 영역 */
@@ -1703,18 +1703,18 @@
 }
 
 .report-avatar.post {
-  background-color: #dbeafe;
-  color: #2563eb;
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
 }
 
 .report-avatar.comment {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
 }
 
 .report-avatar.pt_room {
-  background-color: #f3e8ff;
-  color: #9333ea;
+  background-color: var(--color-pt-light);
+  color: var(--color-pt);
 }
 
 /* 바디 */
@@ -1729,15 +1729,15 @@
   align-items: center;
   justify-content: center;
   padding: 50px 20px;
-  color: #999;
+  color: var(--color-gray-400);
   gap: 12px;
 }
 
 .loading-spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #2563eb;
+  border: 3px solid var(--color-gray-200);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -1753,7 +1753,7 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  background-color: #fef2f2;
+  background-color: var(--color-error-light);
   border-radius: 12px;
   text-align: center;
 }
@@ -1762,25 +1762,25 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background-color: #fee2e2;
+  background-color: var(--color-error-light);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .deleted-title {
   margin: 0 0 6px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .deleted-desc {
   margin: 0;
   font-size: 14px;
-  color: #9ca3af;
+  color: var(--color-gray-400);
 }
 
 /* 제목 */
@@ -1788,7 +1788,7 @@
   margin: 0 0 12px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
 /* 정보 Row */
@@ -1797,13 +1797,13 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-gray-500);
   margin-bottom: 12px;
 }
 
 /* 내용 영역 */
 .report-content-area {
-  background-color: #f9fafb;
+  background-color: var(--color-gray-50);
   border-radius: 10px;
   padding: 16px;
 }
@@ -1811,7 +1811,7 @@
 .report-content-area p {
   margin: 0;
   font-size: 14px;
-  color: #4b5563;
+  color: var(--color-gray-600);
   line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
@@ -1823,13 +1823,13 @@
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  background-color: #fef3c7;
+  background-color: var(--color-warning-light);
   border-radius: 10px;
   font-size: 14px;
-  color: #92400e;
+  color: var(--color-amber-dark);
 }
 
 .report-warning-box svg {
   flex-shrink: 0;
-  color: #d97706;
+  color: var(--color-warning-hover);
 }

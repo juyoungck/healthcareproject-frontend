@@ -11,14 +11,21 @@
 import { useState, useEffect } from 'react';
 import { Search, Eye, XCircle, Users, Video, X, User, Calendar, Lock, Unlock, Key } from 'lucide-react';
 import apiClient from '../../../api/client';
+import { getApiErrorMessage } from '../../../api/apiError';
+import { formatDateTimeAdmin } from '../../../utils/format';
+import {
+  PTRoomStatusValue,
+  PT_ROOM_STATUS_FILTERS,
+  PT_ROOM_STATUS_LABELS,
+  PT_ROOM_STATUS_CLASSES,
+  PT_ROOM_TYPE_LABELS,
+} from '../../../constants/admin';
 
 /**
  * ===========================================
  * 관리자 화상PT 타입 정의
  * ===========================================
  */
-type AdminPTRoomStatus = 'LIVE' | 'SCHEDULED' | 'ENDED' | 'RESERVED' | 'CANCELLED' | 'FORCE_CLOSED';
-
 interface AdminPTRoom {
   ptRoomId: number;
   trainer: {
@@ -29,7 +36,7 @@ interface AdminPTRoom {
   roomType: 'PERSONAL' | 'GROUP' | 'LIVE' | 'RESERVED';
   scheduledStartAt: string;
   maxParticipants: number;
-  status: AdminPTRoomStatus;
+  status: PTRoomStatusValue;
   createdAt: string;
   isPrivate?: boolean;
   entryCode?: string | null;
@@ -43,89 +50,6 @@ interface AdminPTRoomListResponse {
 
 /**
  * ===========================================
- * 필터 옵션
- * ===========================================
- */
-const statusFilters: { value: AdminPTRoomStatus | 'ALL'; label: string }[] = [
-  { value: 'ALL', label: '전체' },
-  { value: 'LIVE', label: '진행중' },
-  { value: 'SCHEDULED', label: '예약' },
-  { value: 'ENDED', label: '종료' },
-];
-
-/**
- * ===========================================
- * 라벨 변환 함수
- * ===========================================
- */
-const getStatusLabel = (status: AdminPTRoomStatus) => {
-  switch (status) {
-    case 'LIVE':
-      return '진행중';
-    case 'SCHEDULED':
-    case 'RESERVED':
-      return '예약';
-    case 'ENDED':
-    case 'CANCELLED':
-      return '종료';
-    case 'FORCE_CLOSED':
-      return '강제종료';
-    default:
-      return status;
-  }
-};
-
-const getStatusClass = (status: AdminPTRoomStatus) => {
-  switch (status) {
-    case 'LIVE':
-      return 'status-live';
-    case 'SCHEDULED':
-    case 'RESERVED':
-      return 'status-scheduled';
-    case 'ENDED':
-    case 'CANCELLED':
-      return 'status-ended';
-    case 'FORCE_CLOSED':
-      return 'status-force-closed';
-    default:
-      return '';
-  }
-};
-
-const getRoomTypeLabel = (roomType: string) => {
-  switch (roomType) {
-    case 'PERSONAL':
-      return '개인';
-    case 'GROUP':
-      return '그룹';
-    case 'LIVE':
-      return '실시간';
-    case 'RESERVED':
-      return '예약';
-    default:
-      return roomType;
-  }
-};
-
-/**
- * ===========================================
- * 날짜 포맷
- * ===========================================
- */
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-/**
- * ===========================================
  * AdminPTList 컴포넌트
  * ===========================================
  */
@@ -135,7 +59,7 @@ export default function AdminPTList() {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<AdminPTRoomStatus | 'ALL'>('ALL');
+  const [filterStatus, setFilterStatus] = useState<PTRoomStatusValue | 'ALL'>('ALL');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedRoom, setSelectedRoom] = useState<AdminPTRoom | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -154,7 +78,7 @@ export default function AdminPTList() {
 
     try {
       const params: {
-        status?: AdminPTRoomStatus;
+        status?: PTRoomStatusValue;
         q?: string;
       } = {};
 
@@ -169,8 +93,7 @@ export default function AdminPTList() {
       setPTRooms(response.data.data.list);
       setTotal(response.data.data.total);
     } catch (err) {
-      console.error('화상PT 목록 조회 실패:', err);
-      setError('화상PT 목록을 불러오는데 실패했습니다.');
+      setError(getApiErrorMessage(err, '화상PT 목록을 불러오는데 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }
@@ -228,8 +151,7 @@ export default function AdminPTList() {
       fetchPTRooms();
       alert('화상PT가 강제 종료되었습니다.');
     } catch (err) {
-      console.error('화상PT 강제 종료 실패:', err);
-      alert('화상PT 강제 종료에 실패했습니다.');
+      alert(getApiErrorMessage(err, '화상PT 강제 종료에 실패했습니다.'));
     }
   };
 
@@ -286,7 +208,7 @@ export default function AdminPTList() {
       <div className="admin-filter-bar">
         <div className="admin-filter-group">
           <div className="admin-filter-tabs">
-            {statusFilters.map((filter) => (
+            {PT_ROOM_STATUS_FILTERS.map((filter) => (
               <button
                 key={filter.value}
                 className={`admin-filter-btn ${filterStatus === filter.value ? 'active' : ''}`}
@@ -343,7 +265,7 @@ export default function AdminPTList() {
                         {room.maxParticipants}명
                       </div>
                     </td>
-                    <td>{formatDate(room.scheduledStartAt)}</td>
+                    <td>{formatDateTimeAdmin(room.scheduledStartAt)}</td>
                     <td>
                       {room.isPrivate ? (
                         <span className="admin-status-badge status-inactive">
@@ -355,10 +277,10 @@ export default function AdminPTList() {
                         </span>
                       )}
                     </td>
-                    <td>{getRoomTypeLabel(room.roomType)}</td>
+                    <td>{PT_ROOM_TYPE_LABELS[room.roomType]}</td>
                     <td>
-                      <span className={`admin-status-badge ${getStatusClass(room.status)}`}>
-                        {getStatusLabel(room.status)}
+                      <span className={`admin-status-badge ${PT_ROOM_STATUS_CLASSES[room.status]}`}>
+                        {PT_ROOM_STATUS_LABELS[room.status]}
                       </span>
                     </td>
                     <td>
@@ -448,8 +370,8 @@ function PTDetailModal({ room, onClose, onForceEnd }: PTDetailModalProps) {
             <div className="admin-pt-info-card">
               <div className="admin-pt-info-header">
                 <h5 className="admin-pt-info-title">{room.title}</h5>
-                <span className={`admin-status-badge ${getStatusClass(room.status)}`}>
-                  {getStatusLabel(room.status)}
+                <span className={`admin-status-badge ${PT_ROOM_STATUS_CLASSES[room.status]}`}>
+                  {PT_ROOM_STATUS_LABELS[room.status]}
                 </span>
               </div>
               
@@ -477,7 +399,7 @@ function PTDetailModal({ room, onClose, onForceEnd }: PTDetailModalProps) {
                 <div className="admin-detail-row">
                   <Video size={16} />
                   <span className="admin-detail-key">타입</span>
-                  <span className="admin-detail-value">{getRoomTypeLabel(room.roomType)}</span>
+                  <span className="admin-detail-value">{PT_ROOM_TYPE_LABELS[room.roomType]}</span>
                 </div>
                 <div className="admin-detail-row">
                   <Users size={16} />
@@ -501,12 +423,12 @@ function PTDetailModal({ room, onClose, onForceEnd }: PTDetailModalProps) {
                 <div className="admin-detail-row">
                   <Calendar size={16} />
                   <span className="admin-detail-key">예약일시</span>
-                  <span className="admin-detail-value">{formatDate(room.scheduledStartAt)}</span>
+                  <span className="admin-detail-value">{formatDateTimeAdmin(room.scheduledStartAt)}</span>
                 </div>
                 <div className="admin-detail-row">
                   <Calendar size={16} />
                   <span className="admin-detail-key">생성일</span>
-                  <span className="admin-detail-value">{formatDate(room.createdAt)}</span>
+                  <span className="admin-detail-value">{formatDateTimeAdmin(room.createdAt)}</span>
                 </div>
               </div>
             </div>

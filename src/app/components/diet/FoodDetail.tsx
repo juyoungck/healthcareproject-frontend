@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react';
 import { X, Loader } from 'lucide-react';
 import { getFoodDetail } from '../../../api/food';
+import { getApiErrorMessage } from '../../../api/apiError';
 import type { FoodDetail as FoodDetailType } from '../../../api/types/food';
 
 /**
@@ -45,8 +46,7 @@ export default function FoodDetail({ foodId, onClose }: FoodDetailProps) {
         const response = await getFoodDetail(foodId);
         setFood(response);
       } catch (err) {
-        console.error('음식 상세 조회 실패:', err);
-        setError('음식 정보를 불러오는데 실패했습니다.');
+        setError(getApiErrorMessage(err, '음식 정보를 불러오는데 실패했습니다.'));
       } finally {
         setIsLoading(false);
       }

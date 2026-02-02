@@ -456,7 +456,7 @@
 }
 
 .videocall-control-btn.danger:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-error-dark);
 }
 
 .videocall-control-icon {
@@ -553,12 +553,6 @@
   border-top-color: var(--color-pt);
   border-radius: var(--border-radius-full);
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /**
@@ -672,7 +666,7 @@
 }
 
 .vc-leave-popup-btn.confirm:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-error-dark);
 }
 
 .vc-leave-popup-icon.ended {

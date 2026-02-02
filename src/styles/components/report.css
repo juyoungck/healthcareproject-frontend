@@ -213,10 +213,42 @@
 }
 
 .report-popup-btn.submit:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-error-dark);
 }
 
 .report-popup-btn.submit:disabled {
   background-color: var(--color-gray-300);
   cursor: not-allowed;
+}
+
+/**
+ * ===========================================
+ * 공통 ReportModal 스타일
+ * ===========================================
+ */
+
+.report-modal-header-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.report-modal-icon {
+  color: var(--color-warning);
+}
+
+.report-modal-target {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-sm);
+}
+
+.report-modal-target strong {
+  color: var(--color-gray-900);
+}
+
+.report-modal-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-lg);
 }

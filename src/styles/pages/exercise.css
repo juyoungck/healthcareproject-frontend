@@ -213,23 +213,6 @@
   text-align: center;
 }
 
-.exercise-scroll-top-btn {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-primary);
-  background-color: var(--color-primary-light);
-  border: none;
-  border-radius: var(--border-radius-full);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.exercise-scroll-top-btn:hover {
-  background-color: var(--color-primary);
-  color: var(--color-white);
-}
-
 /**
  * ===========================================
  * 운동 카드 이미지
@@ -306,13 +289,4 @@
 
 .spinner {
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }

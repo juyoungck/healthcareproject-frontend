@@ -109,7 +109,7 @@
   object-fit: cover;
 }
 
-.diet-card-card:hover .diet-card-image {
+.diet-card:hover .diet-card-image {
   transform: scale(1.05);
 }
 
@@ -335,24 +335,4 @@
 .diet-end-message {
   color: var(--color-gray-500);
   font-size: var(--font-size-sm);
-}
-
-/**
- * 맨 위로 버튼 (식단 - 초록색)
- */
-.diet-scroll-top-btn {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-diet);
-  background-color: var(--color-diet-light);
-  border: none;
-  border-radius: var(--border-radius-full);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.diet-scroll-top-btn:hover {
-  background-color: var(--color-diet);
-  color: var(--color-white);
 }

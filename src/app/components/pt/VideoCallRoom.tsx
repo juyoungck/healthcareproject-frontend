@@ -23,13 +23,18 @@ import {
   Lock,
   Copy,
   Check,
-  Flag,
-  AlertTriangle
+  Flag
 } from 'lucide-react';
-import { useJanus, RoomEndReason } from '../../../hooks/useJanus';
+import { useJanus, RoomEndReason } from '../../../hooks/pt/useJanus';
 import { leavePTRoom, updatePTRoomStatus, getPTRoomParticipants, kickPTParticipant } from '../../../api/pt';
+import { extractAxiosError } from '../../../api/apiError';
 import type { GetPTRoomDetailResponse, PTParticipantUser } from '../../../api/types/pt';
-import { reportContent } from '../../../api/report';
+import ReportModal from '../common/ReportModal';
+import { formatDuration } from '../../../utils/format';
+import {
+  PARTICIPANT_POLL_INTERVAL,
+  CLIPBOARD_FEEDBACK_DURATION
+} from '../../../constants/validation';
 
 /**
  * Props 타입 정의
@@ -68,9 +73,25 @@ export default function VideoCallRoom({
 
   /**
    * Janus 훅 사용
-   * janusRoomKey를 숫자로 변환
+   * janusRoomKey는 LIVE 상태일 때 백엔드에서 할당됨
    */
-  const janusRoomId = room.janusRoomKey ? parseInt(room.janusRoomKey, 10) : 30000 + room.ptRoomId;
+  const janusRoomId = room.janusRoomKey ? parseInt(room.janusRoomKey, 10) : null;
+
+  /**
+   * janusRoomKey가 없으면 입장 불가 (비정상 상태)
+   */
+  if (!janusRoomId) {
+    return (
+      <div className="videocall-container">
+        <div className="videocall-connection-overlay">
+          <span className="videocall-connection-text">화상PT 연결 정보가 없습니다</span>
+          <button className="videocall-connection-retry" onClick={onLeave}>
+            돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const {
     connectionStatus,
@@ -91,11 +112,10 @@ export default function VideoCallRoom({
     roomId: janusRoomId,
     displayName: userName || '사용자',
     trainerName: room.trainer.nickname,
-    onError: (error) => {
-      console.error('Janus 에러:', error);
+    onError: () => {
+      /** WebRTC 에러는 UI에서 connectionStatus로 처리 */
     },
     onRoomDestroyed: (reason) => {
-      console.log('방이 종료되어 퇴장합니다. 사유:', reason);
       if (!isTrainer) {
         setRoomEndReason(reason);
       } else {
@@ -114,8 +134,6 @@ export default function VideoCallRoom({
   const [roomEndReason, setRoomEndReason] = useState<RoomEndReason | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedReportReason, setSelectedReportReason] = useState('');
-  const [isReporting, setIsReporting] = useState(false);
   const [showKickModal, setShowKickModal] = useState(false);
   const [kickTargetUser, setKickTargetUser] = useState<PTParticipantUser | null>(null);
   const [showKickConfirm, setShowKickConfirm] = useState(false);
@@ -131,10 +149,6 @@ export default function VideoCallRoom({
     if (isTrainer) return;
 
     const trainer = participants.find(p => p.isTrainer && !p.isLocal);
-
-    /* 디버깅용 로그 */
-    console.log('참가자 목록:', participants.map(p => ({ id: p.id, name: p.name, isTrainer: p.isTrainer, isLocal: p.isLocal })));
-    console.log('찾은 트레이너:', trainer);
 
     if (trainer) {
       setMainVideoId(trainer.id);
@@ -157,11 +171,10 @@ export default function VideoCallRoom({
     });
 
     setParticipantProfiles(profileMap);
-  } catch (err: any) {
-    console.error('참여자 프로필 조회 실패:', err);
-    
-    /* 403 에러 = 강퇴되었거나 방에서 제외됨 */
-    if (err.response?.status === 403) {
+  } catch (err) {
+    const axiosError = err as { response?: { status?: number } };
+    /** 403 에러 = 강퇴되었거나 방에서 제외됨 */
+    if (axiosError.response?.status === 403) {
       disconnect();
       setRoomEndReason('KICKED');
     }
@@ -171,8 +184,8 @@ export default function VideoCallRoom({
     /* 초기 조회 */
     fetchParticipantProfiles();
 
-    /* 10초마다 갱신 (참여자 변경 감지) */
-    const interval = setInterval(fetchParticipantProfiles, 5000);
+    /* 주기적 갱신 (참여자 변경 감지) */
+    const interval = setInterval(fetchParticipantProfiles, PARTICIPANT_POLL_INTERVAL);
 
     return () => clearInterval(interval);
   }, [connectionStatus, room.ptRoomId]);
@@ -214,20 +227,6 @@ export default function VideoCallRoom({
 
     return () => clearInterval(timer);
   }, [connectionStatus]);
-
-  /**
-   * 시간 포맷팅
-   */
-  const formatDuration = (seconds: number): string => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-
-    if (hrs > 0) {
-      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   /**
    * 참가자의 프로필 이미지 URL 가져오기
@@ -295,56 +294,11 @@ export default function VideoCallRoom({
     try {
       await navigator.clipboard.writeText(room.entryCode);
       setIsCodeCopied(true);
-      setTimeout(() => setIsCodeCopied(false), 2000);
-    } catch (err) {
-      console.error('코드 복사 실패:', err);
+      setTimeout(() => setIsCodeCopied(false), CLIPBOARD_FEEDBACK_DURATION);
+    } catch {
+      /** 클립보드 복사 실패는 조용히 처리 */
     }
   };
-
-  /**
-   * 신고 사유 목록
-   */
-  const REPORT_REASONS = [
-    '스팸/광고',
-    '욕설/비방',
-    '음란물',
-    '개인정보 노출',
-    '사기/허위정보',
-    '기타'
-  ];
-
-  /**
-   * 신고 제출
-   */
-  const handleReport = async () => {
-    if (!selectedReportReason) return;
-
-    setIsReporting(true);
-    try {
-      await reportContent({
-        type: 'PT_ROOM',
-        id: room.ptRoomId,
-        cause: selectedReportReason,
-      });
-      alert('신고가 접수되었습니다.');
-      setShowReportModal(false);
-      setShowMoreMenu(false);
-      setSelectedReportReason('');
-    } catch (error) {
-      const err = error as Error & { code?: string };
-      if (err.code === 'COMMUNITY-006') {
-        alert('본인의 화상PT는 신고할 수 없습니다.');
-      } else if (err.code === 'COMMUNITY-008') {
-        alert('이미 신고한 화상PT입니다.');
-      } else {
-        alert('신고에 실패했습니다.');
-      }
-      console.error('신고 실패:', error);
-    } finally {
-      setIsReporting(false);
-    }
-  };
-
 
   /**
    * 강퇴 모달 열기
@@ -393,16 +347,15 @@ export default function VideoCallRoom({
 
       setShowKickConfirm(false);
       setKickTargetUser(null);
-    } catch (error: any) {
-      const errorCode = error.response?.data?.error?.code;
-      if (errorCode === 'COMMON-001') {
+    } catch (error) {
+      const { code, message } = extractAxiosError(error, '강퇴에 실패했습니다.');
+      if (code === 'COMMON-001') {
         alert('자기 자신은 강퇴할 수 없습니다.');
-      } else if (errorCode === 'P001') {
+      } else if (code === 'P001') {
         alert('해당 사용자는 현재 방에 참여 중이 아닙니다.');
       } else {
-        alert(error.response?.data?.error?.message || '강퇴에 실패했습니다.');
+        alert(message);
       }
-      console.error('강퇴 실패:', error);
     } finally {
       setIsKicking(false);
     }
@@ -428,8 +381,8 @@ export default function VideoCallRoom({
         await updatePTRoomStatus(room.ptRoomId, { status: 'ENDED' });
       }
       await leavePTRoom(room.ptRoomId);
-    } catch (err) {
-      console.error('퇴장 API 호출 실패:', err);
+    } catch {
+      /** 퇴장 API 실패는 조용히 처리 (이미 연결 해제됨) */
     }
 
     onLeave();
@@ -879,57 +832,15 @@ export default function VideoCallRoom({
 
         {/* 신고 모달 */}
         {showReportModal && (
-          <div className="modal-overlay" style={{ zIndex: 'var(--z-modal)' }} onClick={(e) => {
-            if (e.target === e.currentTarget) {
+          <ReportModal
+            type="PT_ROOM"
+            targetId={room.ptRoomId}
+            targetName={room.title}
+            onClose={() => {
               setShowReportModal(false);
-              setSelectedReportReason('');
-            }
-          }}>
-            <div className="report-popup">
-              <div className="report-popup-header">
-                <AlertTriangle size={24} className="report-popup-icon" />
-                <h3 className="report-popup-title">화상PT 신고</h3>
-              </div>
-
-              <p className="report-popup-desc">
-                신고 대상: <strong>{room.title}</strong>
-              </p>
-
-              <div className="report-popup-reasons">
-                {REPORT_REASONS.map((reason) => (
-                  <label key={reason} className="report-popup-reason">
-                    <input
-                      type="radio"
-                      name="reportReason"
-                      value={reason}
-                      checked={selectedReportReason === reason}
-                      onChange={(e) => setSelectedReportReason(e.target.value)}
-                    />
-                    <span>{reason}</span>
-                  </label>
-                ))}
-              </div>
-
-              <div className="report-popup-actions">
-                <button
-                  className="report-popup-btn cancel"
-                  onClick={() => {
-                    setShowReportModal(false);
-                    setSelectedReportReason('');
-                  }}
-                >
-                  취소
-                </button>
-                <button
-                  className="report-popup-btn submit"
-                  onClick={handleReport}
-                  disabled={!selectedReportReason || isReporting}
-                >
-                  {isReporting ? '신고 중...' : '신고하기'}
-                </button>
-              </div>
-            </div>
-          </div>
+              setShowMoreMenu(false);
+            }}
+          />
         )}
 
         {/* 강퇴 참여자 선택 모달 */}

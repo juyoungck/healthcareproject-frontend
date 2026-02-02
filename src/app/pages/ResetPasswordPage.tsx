@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react';
 import { Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 import { resetPassword } from '../../api/auth';
-import { getErrorMessage } from '../../constants/errorCodes';
+import { getApiErrorMessage } from '../../api/apiError';
 
 /**
  * 컴포넌트 Props 타입 정의
@@ -92,11 +92,7 @@ export default function ResetPasswordPage({ onGoToHome }: ResetPasswordPageProps
       /* 성공 상태로 전환 */
       setIsSuccess(true);
     } catch (error: unknown) {
-      console.error('비밀번호 재설정 실패:', error);
-      const axiosError = error as { response?: { data?: { error?: { code?: string } } } };
-      const errorCode = axiosError.response?.data?.error?.code;
-
-      setError(getErrorMessage(errorCode, '비밀번호 재설정에 실패했습니다. 다시 시도해주세요.'));
+      setError(getApiErrorMessage(error, '비밀번호 재설정에 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }

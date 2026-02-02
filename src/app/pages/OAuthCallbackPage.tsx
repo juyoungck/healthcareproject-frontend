@@ -10,7 +10,7 @@ import { Check } from 'lucide-react';
 import { socialLogin, saveTokens, connectSocialAccount } from '../../api/auth';
 import { getOnboardingStatus } from '../../api/me';
 import type { SocialProvider } from '../../api/types/auth';
-import { getErrorMessage } from '../../constants/errorCodes';
+import { getApiErrorMessage } from '../../api/apiError';
 
 /**
  * Props 타입 정의
@@ -141,14 +141,11 @@ export default function OAuthCallbackPage({
       }
 
     } catch (error: unknown) {
-      console.error('OAuth 처리 실패:', error);
-  
-      const axiosError = error as { response?: { data?: { error?: { code?: string } } } };
-      const errorCode = axiosError.response?.data?.error?.code;
-      const errorMessage = errorCode 
-        ? getErrorMessage(errorCode, '소셜 로그인에 실패했습니다.')
-        : (error instanceof Error ? error.message : '소셜 로그인에 실패했습니다.');
-      
+      /* 일반 Error 객체는 그대로 사용, API 에러는 백엔드 메시지 사용 */
+      const errorMessage = error instanceof Error && !('response' in error)
+        ? error.message
+        : getApiErrorMessage(error, '소셜 로그인에 실패했습니다.');
+
       setStatus('error');
       setMessage(errorMessage);
       onError(errorMessage);

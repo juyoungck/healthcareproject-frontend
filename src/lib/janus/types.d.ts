@@ -1,5 +1,5 @@
 /**
- * janus.d.ts
+ * types.d.ts
  * Janus WebRTC 라이브러리 타입 정의
  */
 
@@ -20,7 +20,7 @@ declare class Janus {
   static attachMediaStream(element: HTMLVideoElement, stream: MediaStream): void;
 
   constructor(options: JanusConstructorOptions);
-  
+
   attach(options: JanusPluginOptions): void;
   destroy(options?: { success?: () => void; error?: (error: string) => void }): void;
   getServer(): string;
@@ -115,10 +115,10 @@ interface RemoteFeed extends JanusPluginHandle {
   simulcastStarted?: boolean;
 }
 
-export { 
-  Janus, 
-  JanusPluginHandle, 
-  JanusPluginOptions, 
+export {
+  Janus,
+  JanusPluginHandle,
+  JanusPluginOptions,
   JanusOfferOptions,
-  RemoteFeed 
+  RemoteFeed
 };

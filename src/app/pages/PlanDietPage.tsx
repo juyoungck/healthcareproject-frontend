@@ -10,6 +10,7 @@ import PlanDietCreate, { DietGoal } from '../components/plan/PlanDietCreate';
 import PlanDietLoading from '../components/plan/PlanDietLoading';
 import PlanDietResult from '../components/plan/PlanDietResult';
 import { generateDietPlan } from '../../api/ai';
+import { alertError } from '../../api/apiError';
 import type { DietAiResponse } from '../../api/types/ai';
 
 /**
@@ -75,12 +76,10 @@ export default function PlanDietPage({ onBack, onComplete }: PlanDietPageProps) 
       });
       setPlanData(response);
       setCurrentView('result');
-    } catch (err: any) {
-      console.error('식단 계획 생성 실패:', err);
-      const errorMessage = err.response?.data?.message || '식단 계획 생성에 실패했습니다.';
-      setError(errorMessage);
+    } catch (err) {
+      alertError(err, '식단 계획 생성에 실패했습니다.');
+      setError('식단 계획 생성에 실패했습니다.');
       setCurrentView('create');
-      alert(errorMessage);
     }
   }, [selectedAllergies, note]);
 

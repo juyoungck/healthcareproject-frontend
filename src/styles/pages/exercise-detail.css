@@ -256,10 +256,6 @@
   font-size: var(--font-size-sm);
 }
 
-.exercise-detail-loading .spinner {
-  animation: spin 1s linear infinite;
-}
-
 .exercise-detail-error button {
   padding: var(--spacing-sm) var(--spacing-lg);
   font-size: var(--font-size-sm);
@@ -274,19 +270,4 @@
 
 .exercise-detail-error button:hover {
   background-color: var(--color-workout-dark);
-}
-
-/**
- * ===========================================
- * 스피너 애니메이션
- * ===========================================
- */
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }

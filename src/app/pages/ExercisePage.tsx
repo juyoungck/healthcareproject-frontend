@@ -8,12 +8,13 @@
  * - 운동 카드 클릭 시 상세 페이지 표시
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Loader } from 'lucide-react';
 import ExerciseDetailContent from '../components/exercise/ExerciseDetail';
-import { getExercises } from '../../api/exercise';
-import type { ExerciseListItem, BodyPart, Difficulty } from '../../api/types/exercise';
-import { BODY_PART_OPTIONS, DIFFICULTY_OPTIONS, BODY_PART_LABELS, DIFFICULTY_LABELS} from '../../api/types/exercise';
+import { useExerciseList } from '../../hooks/exercise/useExerciseList';
+import type { BodyPart, Difficulty } from '../../api/types/exercise';
+import { BODY_PART_OPTIONS, DIFFICULTY_OPTIONS, BODY_PART_LABELS, DIFFICULTY_LABELS } from '../../constants/exercise';
+import { scrollToTop } from '../../utils/format';
 
 /**
  * Props 타입 정의
@@ -31,159 +32,29 @@ export default function ExercisePage({
   onExerciseSelect,
 }: ExercisePageProps = {}) {
   /**
-   * 상태 관리
+   * 커스텀 훅 사용
    */
-  const [exercises, setExercises] = useState<ExerciseListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [error, setError] = useState('');
+  const {
+    exercises,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasNext,
+    searchQuery,
+    selectedBodyParts,
+    selectedDifficulties,
+    loadMoreRef,
+    setSearchQuery,
+    handleSearch,
+    handleBodyPartClick,
+    handleDifficultyClick,
+    fetchExercises,
+  } = useExerciseList();
 
-  /* 페이지네이션 */
-  const [nextCursor, setNextCursor] = useState<number | null>(null);
-  const [hasNext, setHasNext] = useState(true);
-
-  /* 필터 (다중 선택) */
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBodyParts, setSelectedBodyParts] = useState<Set<BodyPart>>(new Set());
-  const [selectedDifficulties, setSelectedDifficulties] = useState<Set<Difficulty>>(new Set());
-
-  /* 선택된 운동 ID (상세 페이지) */
+  /**
+   * 선택된 운동 ID (상세 페이지)
+   */
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(initialExerciseId);
-
-  /* 무한 스크롤 옵저버 */
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-
-  /**
-   * 운동 목록 조회 (첫 페이지)
-   */
-  const fetchExercises = useCallback(async (reset = false) => {
-    if (reset) {
-      setIsLoading(true);
-      setExercises([]);
-      setNextCursor(null);
-      setHasNext(true);
-    }
-    setError('');
-
-    try {
-      const response = await getExercises({
-        limit: 10,
-        keyword: searchQuery || undefined,
-        bodyPart: selectedBodyParts.size === 1 ? Array.from(selectedBodyParts)[0] : undefined,
-        difficulty: selectedDifficulties.size === 1 ? Array.from(selectedDifficulties)[0] : undefined,
-      });
-
-      // 다중 필터링 (프론트에서 처리)
-      let filteredItems = response.items;
-      
-      if (selectedBodyParts.size > 1) {
-        filteredItems = filteredItems.filter(item => selectedBodyParts.has(item.bodyPart));
-      }
-      
-      if (selectedDifficulties.size > 1) {
-        filteredItems = filteredItems.filter(item => selectedDifficulties.has(item.difficulty));
-      }
-
-      setExercises(filteredItems);
-      setNextCursor(response.nextCursor);
-      setHasNext(response.hasNext);
-    } catch (err) {
-      console.error('운동 목록 조회 실패:', err);
-      setError('운동 목록을 불러오는데 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [searchQuery, selectedBodyParts, selectedDifficulties]);
-
-  /**
-   * 운동 목록 추가 조회 (무한 스크롤)
-   */
-  const fetchMoreExercises = useCallback(async () => {
-    if (isLoadingMore || !hasNext || nextCursor === null) return;
-
-    setIsLoadingMore(true);
-
-    try {
-      const response = await getExercises({
-        cursor: nextCursor,
-        limit: 10,
-        keyword: searchQuery || undefined,
-        bodyPart: selectedBodyParts.size === 1 ? Array.from(selectedBodyParts)[0] : undefined,
-        difficulty: selectedDifficulties.size === 1 ? Array.from(selectedDifficulties)[0] : undefined,
-      });
-
-      // 다중 필터링 (프론트에서 처리)
-      let filteredItems = response.items;
-      
-      if (selectedBodyParts.size > 1) {
-        filteredItems = filteredItems.filter(item => selectedBodyParts.has(item.bodyPart));
-      }
-      
-      if (selectedDifficulties.size > 1) {
-        filteredItems = filteredItems.filter(item => selectedDifficulties.has(item.difficulty));
-      }
-
-      setExercises(prev => [...prev, ...filteredItems]);
-      setNextCursor(response.nextCursor);
-      setHasNext(response.hasNext);
-    } catch (err) {
-      console.error('운동 목록 추가 조회 실패:', err);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [isLoadingMore, hasNext, nextCursor, searchQuery, selectedBodyParts, selectedDifficulties]);
-
-  /**
-   * 초기 로드 및 필터 변경 시 재조회
-   */
-  useEffect(() => {
-    fetchExercises(true);
-  }, [selectedBodyParts, selectedDifficulties]);
-
-  /**
-   * 검색 실행 (엔터 또는 버튼)
-   */
-  const handleSearch = () => {
-    fetchExercises(true);
-  };
-
-  /**
-   * 검색 입력 엔터 처리
-   */
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
-
-  /**
-   * 무한 스크롤 옵저버 설정
-   */
-  useEffect(() => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNext && !isLoadingMore) {
-          fetchMoreExercises();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current);
-    }
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [fetchMoreExercises, hasNext, isLoadingMore]);
 
   /**
    * initialExerciseId 변경 시 상태 업데이트
@@ -195,40 +66,11 @@ export default function ExercisePage({
   }, [initialExerciseId]);
 
   /**
-   * 부위 필터 클릭 핸들러 (다중 선택)
+   * 검색 입력 엔터 처리
    */
-  const handleBodyPartClick = (bodyPart: BodyPart | 'ALL') => {
-    if (bodyPart === 'ALL') {
-      setSelectedBodyParts(new Set());
-    } else {
-      setSelectedBodyParts(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(bodyPart)) {
-          newSet.delete(bodyPart);
-        } else {
-          newSet.add(bodyPart);
-        }
-        return newSet;
-      });
-    }
-  };
-
-  /**
-   * 난이도 필터 클릭 핸들러 (다중 선택)
-   */
-  const handleDifficultyClick = (difficulty: Difficulty | 'ALL') => {
-    if (difficulty === 'ALL') {
-      setSelectedDifficulties(new Set());
-    } else {
-      setSelectedDifficulties(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(difficulty)) {
-          newSet.delete(difficulty);
-        } else {
-          newSet.add(difficulty);
-        }
-        return newSet;
-      });
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
   };
 
@@ -246,16 +88,6 @@ export default function ExercisePage({
   const handleBackFromDetail = () => {
     setSelectedExerciseId(null);
     onExerciseSelect?.(null);
-  };
-
-  /**
- * 맨 위로 스크롤
- */
-  const handleScrollToTop = () => {
-    const appMain = document.querySelector('.app-main');
-    if (appMain) {
-      appMain.scrollTo({ top: 0, behavior: 'smooth' });
-    }
   };
 
   /**
@@ -297,7 +129,7 @@ export default function ExercisePage({
             <button
               key={option.value}
               className={`filter-btn ${
-                option.value === 'ALL' 
+                option.value === 'ALL'
                   ? selectedBodyParts.size === 0 ? 'active' : ''
                   : selectedBodyParts.has(option.value as BodyPart) ? 'active' : ''
               }`}
@@ -385,8 +217,8 @@ export default function ExercisePage({
                 <div className="exercise-end-section">
                   <p className="exercise-end-message">모든 운동을 확인했습니다.</p>
                   <button
-                    className="exercise-scroll-top-btn"
-                    onClick={handleScrollToTop}
+                    className="scroll-top-btn scroll-top-btn-primary"
+                    onClick={() => scrollToTop()}
                   >
                     맨 위로 올라가기
                   </button>

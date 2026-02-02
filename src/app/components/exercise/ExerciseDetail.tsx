@@ -7,10 +7,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, AlertTriangle, Loader } from 'lucide-react';
+import { ArrowLeft, ArrowUp, AlertTriangle, Loader } from 'lucide-react';
 import { getExerciseDetail } from '../../../api/exercise';
+import { getApiErrorMessage } from '../../../api/apiError';
 import type { ExerciseDetail, AlternativeExercise } from '../../../api/types/exercise';
-import { BODY_PART_LABELS, DIFFICULTY_LABELS } from '../../../api/types/exercise';
+import { BODY_PART_LABELS, DIFFICULTY_LABELS } from '../../../constants/exercise';
+import { scrollToTop } from '../../../utils/format';
 
 /**
  * Props 타입 정의
@@ -41,10 +43,7 @@ export default function ExerciseDetailContent({
    * 운동 상세 조회
    */
   useEffect(() => {
-    const appMain = document.querySelector('.app-main');
-    if (appMain) {
-      appMain.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    scrollToTop();
 
     const fetchExerciseDetail = async () => {
       setIsLoading(true);
@@ -55,8 +54,7 @@ export default function ExerciseDetailContent({
         setExercise(response.exercise);
         setAlternatives(response.alternatives);
       } catch (err) {
-        console.error('운동 상세 조회 실패:', err);
-        setError('운동 정보를 불러오는데 실패했습니다.');
+        setError(getApiErrorMessage(err, '운동 정보를 불러오는데 실패했습니다.'));
       } finally {
         setIsLoading(false);
       }
@@ -201,6 +199,15 @@ export default function ExerciseDetailContent({
           </section>
         )}
       </main>
+
+      {/* 맨 위로 플로팅 버튼 */}
+      <button
+        className="scroll-top-fab"
+        onClick={() => scrollToTop()}
+        aria-label="맨 위로"
+      >
+        <ArrowUp size={24} />
+      </button>
     </div>
   );
 }

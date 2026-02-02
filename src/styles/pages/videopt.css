@@ -148,16 +148,14 @@
   height: var(--size-sm);
   background-color: var(--color-live);
   border-radius: var(--border-radius-full);
-  animation: pulse 1.5s ease-in-out infinite;
+  animation: pulseFade 1.5s ease-in-out infinite;
 }
 
-@keyframes pulse {
-
+@keyframes pulseFade {
   0%,
   100% {
     opacity: 1;
   }
-
   50% {
     opacity: 0.5;
   }

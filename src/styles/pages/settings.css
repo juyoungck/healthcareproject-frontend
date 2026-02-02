@@ -218,7 +218,7 @@
   justify-content: center;
   width: var(--element-size-4xl);
   height: var(--element-size-4xl);
-  background-color: #FEE2E2;
+  background-color: var(--color-error-light);
   border-radius: var(--border-radius-full);
   color: var(--color-error);
 }
@@ -289,7 +289,7 @@
 }
 
 .settings-withdraw-btn.confirm:hover {
-  background-color: #B91C1C;
+  background-color: var(--color-error-dark);
 }
 
 /**

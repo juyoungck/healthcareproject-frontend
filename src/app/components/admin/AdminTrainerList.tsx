@@ -12,22 +12,8 @@ import { useState, useEffect } from 'react';
 import { Eye, Check, X, Download } from 'lucide-react';
 import type { TrainerApplicant } from '../../../api/types/admin';
 import { getTrainerPending, approveTrainer, rejectTrainer } from '../../../api/admin';
-
-/**
- * ===========================================
- * 날짜 포맷
- * ===========================================
- */
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+import { getApiErrorMessage } from '../../../api/apiError';
+import { formatDateTimeAdmin } from '../../../utils/format';
 
 /**
  * ===========================================
@@ -55,8 +41,7 @@ export default function AdminTrainerList() {
       setApplicants(response.applicant);
       setTotalElements(response.totalElements);
     } catch (err) {
-      console.error('트레이너 대기자 목록 조회 실패:', err);
-      setError('트레이너 대기자 목록을 불러오는데 실패했습니다.');
+      setError(getApiErrorMessage(err, '트레이너 대기자 목록을 불러오는데 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }
@@ -90,8 +75,7 @@ export default function AdminTrainerList() {
       setIsDetailModalOpen(false);
       alert('트레이너가 승인되었습니다!');
     } catch (err) {
-      console.error('트레이너 승인 실패:', err);
-      alert('트레이너 승인에 실패했습니다.');
+      alert(getApiErrorMessage(err, '트레이너 승인에 실패했습니다.'));
     }
   };
 
@@ -106,8 +90,7 @@ export default function AdminTrainerList() {
       setIsDetailModalOpen(false);
       alert('트레이너 신청이 거절되었습니다.');
     } catch (err) {
-      console.error('트레이너 거절 실패:', err);
-      alert('트레이너 거절에 실패했습니다.');
+      alert(getApiErrorMessage(err, '트레이너 거절에 실패했습니다.'));
     }
   };
 
@@ -180,7 +163,7 @@ export default function AdminTrainerList() {
                       <span className="admin-handle">@{app.handle}</span>
                     </div>
                   </td>
-                  <td>{formatDate(app.createdAt)}</td>
+                  <td>{formatDateTimeAdmin(app.createdAt)}</td>
                   <td className="admin-bio-cell">{app.bio}</td>
                   <td>
                     <button
@@ -294,8 +277,7 @@ function TrainerDetailModal({
                         document.body.removeChild(link);
                         window.URL.revokeObjectURL(downloadUrl);
                       } catch (err) {
-                        console.error('다운로드 실패:', err);
-                        alert('파일 다운로드에 실패했습니다.');
+                        alert(getApiErrorMessage(err, '파일 다운로드에 실패했습니다.'));
                       }
                     }}
                   >

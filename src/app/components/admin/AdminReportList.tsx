@@ -9,105 +9,19 @@
 
 import { useState, useEffect } from 'react';
 import { AlertTriangle, X, Eye, User, FileText, MessageSquare, Video, Users, AlertCircle } from 'lucide-react';
-import type { Report, ReportStatus, ReportType } from '../../../api/types/admin';
+import type { Report, ReportStatus, ReportType, ReportDetailData } from '../../../api/types/admin';
 import { getAdminReports, processReport, rejectReport, getAdminCommentDetail } from '../../../api/admin';
 import apiClient from '../../../api/client';
-
-/**
- * ===========================================
- * 필터 옵션
- * ===========================================
- */
-const statusFilters: { value: ReportStatus | 'ALL'; label: string }[] = [
-  { value: 'ALL', label: '전체' },
-  { value: 'PENDING', label: '대기중' },
-  { value: 'PROCESSED', label: '처리완료' },
-  { value: 'REJECTED', label: '반려' },
-];
-
-/**
- * ===========================================
- * HTML 태그 제거 함수
- * ===========================================
- */
-const stripHtml = (html: string): string => {
-  if (!html) return '';
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.body.textContent || '';
-};
-
-/**
- * ===========================================
- * 라벨 변환 함수
- * ===========================================
- */
-const getTypeLabel = (type: ReportType) => {
-  switch (type) {
-    case 'POST':
-      return '게시글';
-    case 'COMMENT':
-      return '댓글';
-    case 'PT_ROOM':
-      return '화상PT';
-    default:
-      return type;
-  }
-};
-
-const getTypeClass = (type: ReportType) => {
-  switch (type) {
-    case 'POST':
-      return 'type-post';
-    case 'COMMENT':
-      return 'type-comment';
-    case 'PT_ROOM':
-      return 'type-pt_room';
-    default:
-      return '';
-  }
-};
-
-const getStatusLabel = (status: ReportStatus) => {
-  switch (status) {
-    case 'PENDING':
-      return '대기중';
-    case 'PROCESSED':
-      return '처리완료';
-    case 'REJECTED':
-      return '반려';
-    default:
-      return status;
-  }
-};
-
-const getStatusClass = (status: ReportStatus) => {
-  switch (status) {
-    case 'PENDING':
-      return 'status-pending';
-    case 'PROCESSED':
-      return 'status-processed';
-    case 'REJECTED':
-      return 'status-rejected';
-    default:
-      return '';
-  }
-};
-
-/**
- * ===========================================
- * 날짜 포맷
- * ===========================================
- */
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+import { getApiErrorMessage } from '../../../api/apiError';
+import { formatDateTimeAdmin } from '../../../utils/format';
+import { stripHtml } from '../../../utils/html';
+import {
+  REPORT_STATUS_FILTERS,
+  REPORT_TYPE_LABELS,
+  REPORT_TYPE_CLASSES,
+  REPORT_STATUS_LABELS,
+  REPORT_STATUS_CLASSES,
+} from '../../../constants/admin';
 
 /**
  * ===========================================
@@ -125,7 +39,7 @@ export default function AdminReportList() {
   /** 상세 모달 상태 */
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [detailData, setDetailData] = useState<any>(null);
+  const [detailData, setDetailData] = useState<ReportDetailData>(null);
   const [detailType, setDetailType] = useState<ReportType | null>(null);
 
   /**
@@ -180,8 +94,8 @@ export default function AdminReportList() {
           setDetailData(null);
         }
       }
-    } catch (err) {
-      console.error('상세 조회 실패:', err);
+    } catch {
+      /** 조용히 처리 */
       setDetailData(null);
     } finally {
       setDetailLoading(false);
@@ -208,8 +122,7 @@ export default function AdminReportList() {
       setReportList(response.list);
       setTotal(response.total);
     } catch (err) {
-      console.error('신고 목록 조회 실패:', err);
-      setError('신고 목록을 불러오는데 실패했습니다.');
+      setError(getApiErrorMessage(err, '신고 목록을 불러오는데 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }
@@ -232,8 +145,8 @@ export default function AdminReportList() {
       await processReport(reportId);
       fetchReports();
       alert('제재 처리되었습니다. 콘텐츠가 삭제되었습니다.');
-    } catch (err) {
-      console.error('제재 처리 실패:', err);
+    } catch {
+      /** 조용히 처리 */
       alert(`이미 삭제된 ${typeLabels[type]}입니다.`);
     }
   };
@@ -246,8 +159,7 @@ export default function AdminReportList() {
       fetchReports();
       alert('반려 처리되었습니다.');
     } catch (err) {
-      console.error('반려 처리 실패:', err);
-      alert('반려 처리에 실패했습니다.');
+      alert(getApiErrorMessage(err, '반려 처리에 실패했습니다.'));
     }
   };
 
@@ -281,7 +193,7 @@ export default function AdminReportList() {
       <div className="admin-filter-bar">
         <div className="admin-filter-group">
           <div className="admin-filter-buttons">
-            {statusFilters.map((filter) => (
+            {REPORT_STATUS_FILTERS.map((filter) => (
               <button
                 key={filter.value}
                 className={`admin-filter-btn ${filterStatus === filter.value ? 'active' : ''}`}
@@ -321,16 +233,16 @@ export default function AdminReportList() {
                   <td>{report.reportId}</td>
                   <td>@{report.reporterHandle}</td>
                   <td>@{report.targetAuthorHandle}</td>
-                  <td>{formatDate(report.createdAt)}</td>
+                  <td>{formatDateTimeAdmin(report.createdAt)}</td>
                   <td className="admin-table-reason">{report.reason}</td>
                   <td>
-                    <span className={`admin-type-badge ${getTypeClass(report.type)}`}>
-                      {getTypeLabel(report.type)}
+                    <span className={`admin-type-badge ${REPORT_TYPE_CLASSES[report.type]}`}>
+                      {REPORT_TYPE_LABELS[report.type]}
                     </span>
                   </td>
                   <td>
-                    <span className={`admin-status-badge ${getStatusClass(report.status)}`}>
-                      {getStatusLabel(report.status)}
+                    <span className={`admin-status-badge ${REPORT_STATUS_CLASSES[report.status]}`}>
+                      {REPORT_STATUS_LABELS[report.status]}
                     </span>
                   </td>
                   <td>
@@ -388,7 +300,7 @@ export default function AdminReportList() {
  */
 interface ReportDetailModalProps {
   type: ReportType | null;
-  data: any;
+  data: ReportDetailData;
   loading: boolean;
   onClose: () => void;
 }
@@ -441,7 +353,7 @@ function ReportDetailModal({ type, data, loading, onClose }: ReportDetailModalPr
               <TypeIcon />
             </div>
             <div className="report-header-text">
-              <h3 className="admin-modal-title">신고된 {getTypeLabel(type || 'POST')}</h3>
+              <h3 className="admin-modal-title">신고된 {REPORT_TYPE_LABELS[type || 'POST']}</h3>
               <span className="report-header-subtitle">콘텐츠 상세 정보</span>
             </div>
           </div>

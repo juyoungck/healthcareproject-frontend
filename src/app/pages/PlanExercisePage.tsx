@@ -10,6 +10,7 @@ import PlanExerciseCreate from '../components/plan/PlanExerciseCreate';
 import PlanExerciseLoading from '../components/plan/PlanExerciseLoading';
 import PlanExerciseResult from '../components/plan/PlanExerciseResult';
 import { generateWorkoutPlan } from '../../api/ai';
+import { alertError } from '../../api/apiError';
 import type { WorkoutAiResponse } from '../../api/types/ai';
 
 /**
@@ -75,12 +76,10 @@ export default function PlanExercisePage({ onBack, onComplete }: PlanExercisePag
       });
       setPlanData(response);
       setCurrentView('result');
-    } catch (err: any) {
-      console.error('운동 계획 생성 실패:', err);
-      const errorMessage = err.response?.data?.message || '운동 계획 생성에 실패했습니다.';
-      setError(errorMessage);
+    } catch (err) {
+      alertError(err, '운동 계획 생성에 실패했습니다.');
+      setError('운동 계획 생성에 실패했습니다.');
       setCurrentView('create');
-      alert(errorMessage);
     }
   }, [selectedDates, additionalRequest]);
 

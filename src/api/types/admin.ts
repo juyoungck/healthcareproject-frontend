@@ -3,6 +3,12 @@
  * 관리자 패널 관련 타입 정의 (API 명세 기준)
  */
 
+import type { PostStatus } from './board';
+import type { ReportType } from './report';
+
+/** board.ts, report.ts에서 타입 재내보내기 */
+export type { PostStatus, ReportType };
+
 /**
  * ===========================================
  * 공통 응답 타입
@@ -45,9 +51,6 @@ export interface AdminUser {
  * ===========================================
  */
 
-/** 트레이너 신청 상태 */
-export type TrainerApplicationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
-
 /** 트레이너 신청자 데이터 (GET /api/admin/trainer/pending) */
 export interface TrainerApplicant {
   handle: string;
@@ -74,9 +77,6 @@ export interface TrainerPendingResponse {
  * ===========================================
  */
 
-/** 게시글 상태 */
-export type PostStatus = 'POSTED' | 'DELETED';
-
 /** 게시글 카테고리 */
 export type PostCategory = 'FREE' | 'QUESTION' | 'INFO' | 'NOTICE';
 
@@ -84,6 +84,18 @@ export type PostCategory = 'FREE' | 'QUESTION' | 'INFO' | 'NOTICE';
 export interface PostAuthor {
   nickname: string;
   handle: string;
+}
+
+/** 게시글 API 응답 항목 (raw) */
+export interface AdminPostListItem {
+  postId: number;
+  author: PostAuthor;
+  category: string;
+  title: string;
+  viewCount: number;
+  isNotice: boolean;
+  status?: PostStatus;
+  createdAt: string;
 }
 
 /** 게시글 데이터 (관리자용) */
@@ -105,11 +117,11 @@ export interface AdminPost {
  * ===========================================
  */
 
+/** 댓글 상태 */
+export type CommentStatus = 'PUBLIC' | 'HIDDEN' | 'DELETED';
+
 /** 신고 상태 */
 export type ReportStatus = 'PENDING' | 'PROCESSED' | 'REJECTED';
-
-/** 신고 타입 */
-export type ReportType = 'POST' | 'COMMENT' | 'PT_ROOM';
 
 /** 신고 데이터 */
 export interface Report {
@@ -123,8 +135,42 @@ export interface Report {
   createdAt: string;
 }
 
-/** 댓글 상태 */
-export type CommentStatus = 'PUBLIC' | 'HIDDEN' | 'DELETED';
+/** 신고 상세 - 게시글 */
+export interface ReportDetailPost {
+  title: string;
+  authorNickname: string;
+  authorHandle: string;
+  content: string;
+}
+
+/** 신고 상세 - 화상PT 트레이너 정보 */
+export interface ReportDetailTrainer {
+  nickname: string;
+  handle: string;
+}
+
+/** 신고 상세 - 화상PT */
+export interface ReportDetailPTRoom {
+  title: string;
+  trainer: ReportDetailTrainer | null;
+  description: string;
+  maxParticipants: number;
+}
+
+/** 신고 상세 - 댓글 */
+export interface ReportDetailComment {
+  postId: number;
+  postTitle: string;
+  authorNickname: string;
+  authorHandle: string;
+  content: string;
+  status: CommentStatus;
+  createdAt: string;
+  isLimited?: boolean;
+}
+
+/** 신고 상세 데이터 유니온 타입 */
+export type ReportDetailData = ReportDetailPost | ReportDetailPTRoom | ReportDetailComment | null;
 
 /** 관리자 댓글 상세 응답 */
 export interface AdminCommentDetail {

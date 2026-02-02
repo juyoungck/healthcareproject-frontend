@@ -8,7 +8,8 @@
 
 import { useState } from 'react';
 import { X, Dumbbell, Utensils, Video, FileText } from 'lucide-react';
-import { DailyStatus } from '../../../types/calendar';
+import { DailyStatus } from '../../../api/types/calendar';
+import { formatDateKoreanFull } from '../../../utils/format';
 
 /**
  * 탭 타입 정의
@@ -66,23 +67,11 @@ export default function DayDetailModal({
   };
 
   /**
-   * 날짜 포맷팅
-   */
-  const formatDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const weekday = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
-    return `${year}년 ${month}월 ${day}일 (${weekday})`;
-  };
-
-  /**
    * 메모 저장 핸들러
    * TODO: API 연동 시 실제 저장 로직 추가
    */
   const handleSaveMemo = () => {
-    console.log('메모 저장:', memo);
-    // TODO: API 호출
+    /** TODO: API 연동 시 실제 저장 로직 추가 */
   };
 
   /**
@@ -115,7 +104,7 @@ export default function DayDetailModal({
       <div className="modal-container">
         {/* 모달 헤더 */}
         <div className="modal-header">
-          <h2 className="modal-title">{formatDate(date)}</h2>
+          <h2 className="modal-title">{formatDateKoreanFull(date)}</h2>
           <button className="modal-close-btn" onClick={onClose}>
             <X size={24} />
           </button>

@@ -10,91 +10,14 @@ import { useState, useEffect } from 'react';
 import { Search, X, Mail, Calendar, Shield, AtSign } from 'lucide-react';
 import type { AdminUser, UserRole, UserStatus } from '../../../api/types/admin';
 import { getAdminUsers, banUser, unbanUser } from '../../../api/admin';
-
-/**
- * ===========================================
- * 필터 옵션
- * ===========================================
- */
-const roleFilters: { value: UserRole | 'ALL'; label: string }[] = [
-  { value: 'ALL', label: '전체' },
-  { value: 'USER', label: '일반회원' },
-  { value: 'TRAINER', label: '트레이너' },
-  { value: 'ADMIN', label: '관리자' },
-];
-
-/**
- * ===========================================
- * 라벨 변환 함수
- * ===========================================
- */
-const getRoleLabel = (role: UserRole): string => {
-  switch (role) {
-    case 'USER':
-      return '일반회원';
-    case 'TRAINER':
-      return '트레이너';
-    case 'ADMIN':
-      return '관리자';
-    default:
-      return role;
-  }
-};
-
-const getStatusLabel = (status: UserStatus): string => {
-  switch (status) {
-    case 'ACTIVE':
-      return '활성';
-    case 'STOP':
-    case 'SUSPENDED':
-      return '비활성';
-    case 'SLEEP':
-      return '휴면';
-    default:
-      return status;
-  }
-};
-
-const getStatusClass = (status: UserStatus): string => {
-  switch (status) {
-    case 'ACTIVE':
-      return 'status-active';
-    case 'STOP':
-    case 'SUSPENDED':
-      return 'status-inactive';
-    case 'SLEEP':
-      return 'status-sleep';
-    default:
-      return '';
-  }
-};
-
-/**
- * ===========================================
- * 날짜 포맷 함수
- * ===========================================
- */
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-const formatDateTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+import { getApiErrorMessage } from '../../../api/apiError';
+import { formatDateTimeAdmin } from '../../../utils/format';
+import {
+  USER_ROLE_FILTERS,
+  USER_ROLE_LABELS,
+  USER_STATUS_LABELS,
+  USER_STATUS_CLASSES,
+} from '../../../constants/admin';
 
 /**
  * ===========================================
@@ -128,8 +51,7 @@ export default function AdminMemberList() {
       setMembers(response.list);
       setTotal(response.total);
     } catch (err) {
-      console.error('회원 목록 조회 실패:', err);
-      setError('회원 목록을 불러오는데 실패했습니다.');
+      setError(getApiErrorMessage(err, '회원 목록을 불러오는데 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }
@@ -173,8 +95,7 @@ export default function AdminMemberList() {
       );
       alert('회원이 차단되었습니다.');
     } catch (err) {
-      console.error('회원 차단 실패:', err);
-      alert('회원 차단에 실패했습니다.');
+      alert(getApiErrorMessage(err, '회원 차단에 실패했습니다.'));
     }
   };
 
@@ -193,8 +114,7 @@ export default function AdminMemberList() {
       );
       alert('차단이 해제되었습니다.');
     } catch (err) {
-      console.error('차단 해제 실패:', err);
-      alert('차단 해제에 실패했습니다.');
+      alert(getApiErrorMessage(err, '차단 해제에 실패했습니다.'));
     }
   };
 
@@ -252,7 +172,7 @@ export default function AdminMemberList() {
         <div className="admin-filter-group">
           {/* 역할 필터 */}
           <div className="admin-filter-tabs">
-            {roleFilters.map((filter) => (
+            {USER_ROLE_FILTERS.map((filter) => (
               <button
                 key={filter.value}
                 className={`admin-filter-tab-fixed ${filterRole === filter.value ? 'active' : ''}`}
@@ -297,15 +217,15 @@ export default function AdminMemberList() {
                     </div>
                   </td>
                   <td>{member.email}</td>
-                  <td>{formatDate(member.createdAt)}</td>
+                  <td>{formatDateTimeAdmin(member.createdAt)}</td>
                   <td>
                     <span className={`admin-role-badge role-${member.role.toLowerCase()}`}>
-                      {getRoleLabel(member.role)}
+                      {USER_ROLE_LABELS[member.role]}
                     </span>
                   </td>
                   <td>
-                    <span className={`admin-status-badge ${getStatusClass(member.status)}`}>
-                      {getStatusLabel(member.status)}
+                    <span className={`admin-status-badge ${USER_STATUS_CLASSES[member.status]}`}>
+                      {USER_STATUS_LABELS[member.status]}
                     </span>
                   </td>
                   <td>

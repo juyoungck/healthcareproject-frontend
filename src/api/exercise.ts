@@ -21,6 +21,7 @@ export const getExercises = async (params?: ExerciseListParams): Promise<Exercis
   if (params?.limit !== undefined) queryParams.append('limit', String(params.limit));
   if (params?.keyword) queryParams.append('keyword', params.keyword);
   if (params?.bodyPart) queryParams.append('bodyPart', params.bodyPart);
+  if (params?.difficulty) queryParams.append('difficulty', params.difficulty);
 
   const queryString = queryParams.toString();
   const url = queryString ? `/api/exercises?${queryString}` : '/api/exercises';

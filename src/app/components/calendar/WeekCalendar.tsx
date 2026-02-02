@@ -115,8 +115,8 @@ export default function WeekCalendar({
         });
 
         setCalendarStatus(statusMap);
-      } catch (error) {
-        console.error('주간 캘린더 상태 조회 실패:', error);
+      } catch {
+        /** 주간 캘린더 상태 조회 실패는 조용히 처리 */
       } finally {
         setIsLoading(false);
       }

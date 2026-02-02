@@ -15,6 +15,7 @@ import {
     UpdateCommentResponse,
     DeleteCommentResponse,
 } from './types/board';
+import { createFetchError } from './apiError';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -39,7 +40,7 @@ export const getPosts = async (params: GetPostsParams): Promise<GetPostsResponse
         },
     });
 
-    if (!response.ok) throw new Error('게시글 목록 조회 실패');
+    if (!response.ok) throw await createFetchError(response, '게시글 목록을 불러오는데 실패했습니다.');
     const result = await response.json();
     return result.data;
 };
@@ -57,7 +58,7 @@ export const getPostDetail = async (postId: number): Promise<PostDetailResponse>
         },
     });
 
-    if (!response.ok) throw new Error('게시글 상세 조회 실패');
+    if (!response.ok) throw await createFetchError(response, '게시글을 불러오는데 실패했습니다.');
     const result = await response.json();
     return result.data;
 };
@@ -76,7 +77,7 @@ export const createPost = async (params: CreatePostRequest): Promise<PostDetailR
         body: JSON.stringify(params),
     });
 
-    if (!response.ok) throw new Error('게시글 작성 실패');
+    if (!response.ok) throw await createFetchError(response, '게시글 작성에 실패했습니다.');
     const result = await response.json();
     return result.data;
 };
@@ -98,7 +99,7 @@ export const updatePost = async (
         body: JSON.stringify(params),
     });
 
-    if (!response.ok) throw new Error('게시글 수정 실패');
+    if (!response.ok) throw await createFetchError(response, '게시글 수정에 실패했습니다.');
     const result = await response.json();
     return result.data;
 };
@@ -115,7 +116,7 @@ export const deletePost = async (postId: number): Promise<DeletePostResponse> =>
         },
     });
 
-    if (!response.ok) throw new Error('게시글 삭제 실패');
+    if (!response.ok) throw await createFetchError(response, '게시글 삭제에 실패했습니다.');
     const result = await response.json();
     return result.data;
 };
@@ -137,7 +138,7 @@ export const createComment = async (
         body: JSON.stringify(params),
     });
 
-    if (!response.ok) throw new Error('댓글 작성 실패');
+    if (!response.ok) throw await createFetchError(response, '댓글 작성에 실패했습니다.');
     const result = await response.json();
     return result.data;
 };
@@ -159,7 +160,7 @@ export const updateComment = async (
         body: JSON.stringify(params),
     });
 
-    if (!response.ok) throw new Error('댓글 수정 실패');
+    if (!response.ok) throw await createFetchError(response, '댓글 수정에 실패했습니다.');
     const result = await response.json();
     return result.data;
 };
@@ -179,7 +180,7 @@ export const deleteComment = async (
         },
     });
 
-    if (!response.ok) throw new Error('댓글 삭제 실패');
+    if (!response.ok) throw await createFetchError(response, '댓글 삭제에 실패했습니다.');
     const result = await response.json();
     return result.data;
 };

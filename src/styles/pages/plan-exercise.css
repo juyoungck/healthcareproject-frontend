@@ -390,11 +390,6 @@
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 /**
  * TIP 안내
  */
@@ -717,7 +712,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--color-overlay-dark);
   z-index: var(--z-modal);
   padding: var(--spacing-lg);
 }
@@ -1425,6 +1420,7 @@
 .exercise-view-item-center {
   flex: 1;
   min-width: 0;
+  display: flex;
   flex-direction: column;
   gap: var(--spacing-2xs);
 }
@@ -1563,8 +1559,8 @@
  * =========================================== */
 
 .exercise-plan-injury-info {
-  background-color: var(--bg-warning-light, #fff8e6);
-  border: 1px solid var(--border-warning, #ffd666);
+  background-color: var(--color-warning-light);
+  border: 1px solid var(--color-warning);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
@@ -1609,18 +1605,18 @@
 }
 
 .exercise-plan-injury-level.mild {
-  background-color: var(--color-success-light, #e6f7e6);
-  color: var(--color-success, #52c41a);
+  background-color: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .exercise-plan-injury-level.caution {
-  background-color: var(--color-warning-light, #fff7e6);
-  color: var(--color-warning, #faad14);
+  background-color: var(--color-warning-light);
+  color: var(--color-warning);
 }
 
 .exercise-plan-injury-level.severe {
-  background-color: var(--color-error-light, #fff2f0);
-  color: var(--color-error, #ff4d4f);
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .exercise-plan-injury-note {

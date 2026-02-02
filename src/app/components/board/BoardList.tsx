@@ -14,9 +14,10 @@ import {
   SearchType,
   CATEGORY_LABELS,
   CATEGORY_MAP
-} from '../../../data/boards';
+} from '../../../constants/board';
 import { getPosts } from '../../../api/board';
 import { PostListItem } from '../../../api/types/board';
+import { formatDateWithTime, scrollToTop } from '../../../utils/format';
 
 /**
  * Props 타입 정의
@@ -42,6 +43,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>('all');
   const [searchType, setSearchType] = useState<SearchType>('title');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [displayedPosts, setDisplayedPosts] = useState<PostListItem[]>([]);
   const [notices, setNotices] = useState<PostListItem[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -72,8 +74,8 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
     try {
       const response = await getPosts({
         category: CATEGORY_MAP.toBackend[selectedCategory],
-        q: searchQuery || undefined,
-        searchBy: searchQuery ? getSearchBy(searchType) : undefined,
+        q: debouncedSearchQuery || undefined,
+        searchBy: debouncedSearchQuery ? getSearchBy(searchType) : undefined,
         cursorId: cursor || undefined,
         size: POSTS_PER_LOAD,
       });
@@ -87,12 +89,12 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
 
       setHasMore(response.pageInfo.hasNext);
       setCursorId(response.pageInfo.nextCursorId);
-    } catch (error) {
-      console.error('게시글 목록 조회 실패:', error);
+    } catch {
+      /** 게시글 목록 조회 실패는 조용히 처리 */
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategory, searchType, searchQuery, isLoading]);
+  }, [selectedCategory, searchType, debouncedSearchQuery, isLoading]);
 
   /**
    * 다음 페이지 불러오기
@@ -103,7 +105,18 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
   }, [isLoading, hasMore, cursorId, fetchPosts]);
 
   /**
-   * 카테고리 변경 시 목록 초기화 및 재조회
+   * 실시간 검색 (debounce 300ms)
+   */
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  /**
+   * 카테고리 또는 검색어 변경 시 목록 초기화 및 재조회
    */
   useEffect(() => {
     setDisplayedPosts([]);
@@ -111,7 +124,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
     setHasMore(true);
     setCursorId(null);
     fetchPosts(null, true);
-  }, [selectedCategory]);
+  }, [selectedCategory, debouncedSearchQuery]);
 
   /**
    * Intersection Observer 설정
@@ -142,20 +155,16 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
   }, [hasMore, isLoading, loadMorePosts]);
 
   /**
-   * 검색 실행
+   * 검색 실행 (즉시)
    */
   const handleSearch = () => {
-    setDisplayedPosts([]);
-    setNotices([]);
-    setHasMore(true);
-    setCursorId(null);
-    fetchPosts(null, true);
+    setDebouncedSearchQuery(searchQuery);
   };
 
   /**
-   * 엔터키 검색
+   * 엔터키 검색 (즉시)
    */
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
@@ -166,30 +175,6 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
    */
   const handleCategoryChange = (category: CategoryType) => {
     setSelectedCategory(category);
-  };
-
-  /**
- * 맨 위로 스크롤
- */
-  const handleScrollToTop = () => {
-    const appMain = document.querySelector('.app-main');
-    if (appMain) {
-      appMain.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  /**
-   * 날짜 포맷 (YYYY.MM.DD HH:mm:ss)
-   */
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
   };
 
   return (
@@ -223,7 +208,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
           placeholder={searchType === 'title' ? '제목으로 검색' : '작성자로 검색'}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyDown}
         />
         <button className="board-search-btn" onClick={handleSearch}>
           <Search size={18} />
@@ -267,7 +252,7 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
                     <div className="board-item-meta">
                       <span>{post.nickname}</span>
                       <span className="board-item-divider">|</span>
-                      <span>{formatDate(post.createdAt)}</span>
+                      <span>{formatDateWithTime(post.createdAt)}</span>
                       <span className="board-item-divider">|</span>
                       <span>조회 {post.viewCount}</span>
                     </div>
@@ -286,8 +271,8 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
                 <div className="board-end-section">
                   <p className="board-end-message">모든 게시글을 불러왔습니다.</p>
                   <button
-                    className="board-scroll-top-btn"
-                    onClick={handleScrollToTop}
+                    className="scroll-top-btn scroll-top-btn-primary"
+                    onClick={() => scrollToTop()}
                   >
                     맨 위로 올라가기
                   </button>

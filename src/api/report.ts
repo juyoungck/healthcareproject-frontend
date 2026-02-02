@@ -4,6 +4,7 @@
  */
 
 import { ReportRequest, ReportResponse } from './types/report';
+import { createFetchError } from './apiError';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -22,10 +23,7 @@ export const reportContent = async (params: ReportRequest): Promise<ReportRespon
     });
 
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const error = new Error('신고 실패') as Error & { code?: string };
-        error.code = errorData.code;
-        throw error;
+        throw await createFetchError(response, '신고에 실패했습니다.');
     }
 
     const result = await response.json();
