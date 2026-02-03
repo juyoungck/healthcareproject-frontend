@@ -408,19 +408,9 @@ function ReportDetailModal({ type, data, loading, onClose }: ReportDetailModalPr
 
               {/* 댓글 */}
               {type === 'COMMENT' && (
-                <>
-                  <h4 className="report-content-title">댓글</h4>
-                  {data.isLimited ? (
-                    <div className="report-warning-box">
-                      <AlertCircle size={18} />
-                      <span>댓글 조회 API가 필요합니다</span>
-                    </div>
-                  ) : (
-                    <div className="report-content-area">
-                      <p>{getCleanContent(data.content) || '(내용 없음)'}</p>
-                    </div>
-                  )}
-                </>
+                <div className="report-content-area">
+                  <p>{getCleanContent(data.content) || '(내용 없음)'}</p>
+                </div>
               )}
 
               {/* 화상PT */}

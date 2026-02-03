@@ -123,17 +123,6 @@ export default function AdminDashboard() {
 
         <div className="admin-stat-card">
           <div className="admin-stat-header">
-            <span className="admin-stat-label">미처리 신고</span>
-            <AlertTriangle size={24} className="admin-stat-icon reports" />
-          </div>
-          <div className="admin-stat-value">{stats?.waitReport ?? 0}</div>
-          <div className="admin-stat-sub">
-            <span className="stat-pending">대기중</span>
-          </div>
-        </div>
-
-        <div className="admin-stat-card">
-          <div className="admin-stat-header">
             <span className="admin-stat-label">화상PT</span>
             <Video size={24} className="admin-stat-icon pt" />
           </div>
@@ -141,6 +130,17 @@ export default function AdminDashboard() {
           <div className="admin-stat-sub">
             <span className="stat-live">진행중: {stats?.livePt ?? 0}</span>
             <span className="stat-scheduled">예약: {stats?.reservedPt ?? 0}</span>
+          </div>
+        </div>
+
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
+            <span className="admin-stat-label">미처리 신고</span>
+            <AlertTriangle size={24} className="admin-stat-icon reports" />
+          </div>
+          <div className="admin-stat-value">{stats?.waitReport ?? 0}</div>
+          <div className="admin-stat-sub">
+            <span className="stat-pending">대기중</span>
           </div>
         </div>
       </div>
