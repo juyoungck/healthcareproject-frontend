@@ -172,15 +172,36 @@ export default function VideoCallRoom({
     if (connectionStatus !== 'connected') return;
 
     const fetchParticipantProfiles = async () => {
-  try {
-    const response = await getPTRoomParticipants(room.ptRoomId);
-    const profileMap = new Map<string, PTParticipantUser>();
+  /* 이미 방 종료 처리된 경우 무시 */
+  if (roomEndedRef.current) return;
 
-    response.users.forEach(user => {
+  try {
+    /* 방 상태와 참여자 정보를 함께 조회 */
+    const [roomDetail, participantsResponse] = await Promise.all([
+      getPTRoomDetail(room.ptRoomId),
+      getPTRoomParticipants(room.ptRoomId)
+    ]);
+
+    /* 방 상태 확인 - ENDED 또는 FORCE_CLOSED면 퇴장 처리 */
+    if (roomDetail.status === 'ENDED' || roomDetail.status === 'FORCE_CLOSED') {
+      roomEndedRef.current = true;
+      disconnect();
+
+      if (roomDetail.status === 'FORCE_CLOSED') {
+        setRoomEndReason('ADMIN_CLOSED');
+      } else {
+        setRoomEndReason('TRAINER_LEFT');
+      }
+      return;
+    }
+
+    /* 참여자 프로필 업데이트 */
+    const profileMap = new Map<string, PTParticipantUser>();
+    participantsResponse.users.forEach(user => {
       profileMap.set(user.handle, user);
     });
-
     setParticipantProfiles(profileMap);
+
   } catch (err) {
     const axiosError = err as { response?: { status?: number } };
     /** 403 에러 처리 */
