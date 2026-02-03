@@ -68,7 +68,7 @@
 .btn-secondary {
   background-color: var(--color-white);
   color: var(--color-gray-700);
-  border: 1px solid var(--color-gray-300);
+  border: var(--border-width-sm) solid var(--color-gray-300);
 }
 
 .btn-secondary:hover {
@@ -86,7 +86,7 @@
 .btn-outline {
   background-color: transparent;
   color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  border: var(--border-width-sm) solid var(--color-primary);
 }
 
 .btn-outline:hover {
@@ -136,7 +136,7 @@
 }
 
 .btn-danger:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-error-hover);
 }
 
 /**
@@ -187,21 +187,21 @@
  */
 .btn-icon {
   padding: var(--spacing-sm);
-  width: 40px;
-  height: 40px;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
   border-radius: var(--border-radius-md);
 }
 
 .btn-icon-sm {
   padding: var(--spacing-xs);
-  width: 32px;
-  height: 32px;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
 }
 
 .btn-icon-lg {
   padding: var(--spacing-md);
-  width: 48px;
-  height: 48px;
+  width: var(--element-size-xl);
+  height: var(--element-size-xl);
 }
 
 /**
@@ -209,4 +209,95 @@
  */
 .btn-icon-circle {
   border-radius: var(--border-radius-full);
+}
+
+/**
+ * ===========================================
+ * 스크롤 탑 버튼
+ * ===========================================
+ */
+
+/**
+ * 스크롤 탑 버튼 기본 스타일
+ */
+.scroll-top-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+/**
+ * 프라이머리 색상 변형 (운동, 게시판)
+ */
+.scroll-top-btn-primary {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.scroll-top-btn-primary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+/**
+ * 식단 색상 변형
+ */
+.scroll-top-btn-diet {
+  color: var(--color-diet);
+  background-color: var(--color-diet-light);
+}
+
+.scroll-top-btn-diet:hover {
+  background-color: var(--color-diet);
+  color: var(--color-white);
+}
+
+/**
+ * ===========================================
+ * 스크롤 탑 플로팅 버튼 (FAB 스타일)
+ * ===========================================
+ */
+
+/**
+ * 플로팅 스크롤 탑 버튼
+ */
+.scroll-top-fab {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-height) + var(--spacing-lg));
+  right: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-3xl);
+  height: var(--element-size-3xl);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--border-radius-full);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  z-index: var(--z-fab);
+}
+
+.scroll-top-fab:hover {
+  background-color: var(--color-primary-hover);
+  transform: scale(1.05);
+}
+
+.scroll-top-fab:active {
+  transform: scale(0.95);
+}
+
+/**
+ * 데스크탑에서 앱 컨테이너 안에 위치
+ */
+@media (min-width: 520px) {
+  .scroll-top-fab {
+    right: calc(50% - var(--app-max-width) / 2 + var(--spacing-lg));
+  }
 }

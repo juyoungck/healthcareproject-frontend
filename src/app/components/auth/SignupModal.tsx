@@ -1,48 +1,52 @@
 /**
  * SignupModal.tsx
  * 회원가입 모달 컴포넌트
- * - 회원유형 선택 (일반회원/트레이너)
- * - 기본정보 입력 (프로필, 비밀번호, 닉네임, 전화번호)
+ * - 기본정보 입력 (이메일, 비밀번호, 닉네임, 전화번호)
  * - 이메일 인증
- * - 트레이너 증빙자료 제출
+ * - 가입 완료 → 자동 로그인 → 온보딩으로 이동
  */
 
 import { useState } from 'react';
 import { X, Mail, Lock, Eye, EyeOff, User, Phone, Check } from 'lucide-react';
+import { signup, checkEmail, saveTokens } from '../../../api/auth';
+import { extractAxiosError, getApiErrorMessage } from '../../../api/apiError';
+import { formatPhoneNumber } from '../../../utils/format';
+import { PASSWORD_REGEX, EMAIL_REGEX, NICKNAME_MAX_LENGTH, PHONE_MAX_LENGTH } from '../../../constants/validation';
+
+/* 공통 컴포넌트 */
+import EmailVerifyForm from './EmailVerifyForm';
+import SignupCompleteStep from './SignupCompleteStep';
+
+/* 커스텀 훅 */
+import { useEmailVerification } from '../../../hooks/auth/useEmailVerification';
 
 /**
- * 컴포넌트 Props 타입 정의
+ * Props 타입 정의
  */
 interface SignupModalProps {
   onClose: () => void;
-  onSignupSuccess: () => void;
+  onSignupComplete: () => void;
   onSwitchToLogin: () => void;
 }
 
 /**
- * 회원 유형
- */
-type UserType = 'general' | 'trainer' | null;
-
-/**
  * 회원가입 단계
  */
-type SignupStep = 'type' | 'info' | 'verify' | 'complete';
+type SignupStep = 'info' | 'verify' | 'complete';
+
 
 /**
  * SignupModal 컴포넌트
- * 회원가입 단계별 UI 및 로직 처리
  */
-export default function SignupModal({ 
-  onClose, 
-  onSignupSuccess,
-  onSwitchToLogin 
+export default function SignupModal({
+  onClose,
+  onSignupComplete,
+  onSwitchToLogin
 }: SignupModalProps) {
   /**
-   * 단계 및 유형 상태
+   * 단계 상태
    */
-  const [step, setStep] = useState<SignupStep>('type');
-  const [userType, setUserType] = useState<UserType>(null);
+  const [step, setStep] = useState<SignupStep>('info');
 
   /**
    * 폼 데이터 상태
@@ -53,14 +57,14 @@ export default function SignupModal({
   const [nickname, setNickname] = useState('');
   const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
 
   /**
    * 상태 관리
    */
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [isEmailChecked, setIsEmailChecked] = useState(false);
+  const [isEmailAvailable, setIsEmailAvailable] = useState(false);
 
   /**
    * 약관 동의 상태
@@ -68,6 +72,11 @@ export default function SignupModal({
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
+
+  /**
+   * 이메일 인증 훅
+   */
+  const emailVerification = useEmailVerification();
 
   /**
    * 전체 동의 핸들러
@@ -80,41 +89,83 @@ export default function SignupModal({
   };
 
   /**
-   * 회원유형 선택 핸들러
+   * 개별 약관 체크 시 전체 동의 상태 업데이트
    */
-  const handleTypeSelect = (type: UserType) => {
-    setUserType(type);
-    setStep('info');
+  const handleTermsChange = (checked: boolean) => {
+    setAgreeTerms(checked);
+    setAgreeAll(checked && agreePrivacy);
+  };
+
+  const handlePrivacyChange = (checked: boolean) => {
+    setAgreePrivacy(checked);
+    setAgreeAll(checked && agreeTerms);
   };
 
   /**
-   * 이메일 인증 발송 핸들러
+   * 이메일 중복 체크 핸들러
    */
-  const handleSendVerification = async () => {
+  const handleCheckEmail = async () => {
+    if (!email) {
+      setError('이메일을 입력해주세요.');
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      setError('올바른 이메일 형식이 아닙니다.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
     try {
-      /* TODO: 실제 이메일 인증 API 호출 */
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setIsEmailSent(true);
-    } catch {
-      setError('인증 이메일 발송에 실패했습니다.');
+      const result = await checkEmail({ email });
+
+      if (result.available) {
+        setIsEmailChecked(true);
+        setIsEmailAvailable(true);
+        setError('');
+      } else {
+        setIsEmailChecked(true);
+        setIsEmailAvailable(false);
+        setError('이미 사용 중인 이메일입니다.');
+      }
+    } catch (err: unknown) {
+      const { code, message } = extractAxiosError(err, '이메일 확인에 실패했습니다.');
+
+      if (code === 'AUTH-006') {
+        setIsEmailChecked(true);
+        setIsEmailAvailable(false);
+      }
+      setError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
   /**
+   * 이메일 변경 시 중복 체크 상태 초기화
+   */
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    setIsEmailChecked(false);
+    setIsEmailAvailable(false);
+  };
+
+  /**
    * 기본정보 제출 핸들러
    */
-  const handleInfoSubmit = (e: React.FormEvent) => {
+  const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    /* 유효성 검증 */
     if (!email || !password || !passwordConfirm || !nickname) {
       setError('모든 필수 항목을 입력해주세요.');
+      return;
+    }
+
+    if (!isEmailChecked || !isEmailAvailable) {
+      setError('이메일 중복 확인을 해주세요.');
       return;
     }
 
@@ -123,8 +174,8 @@ export default function SignupModal({
       return;
     }
 
-    if (password.length < 8) {
-      setError('비밀번호는 8자 이상이어야 합니다.');
+    if (!PASSWORD_REGEX.test(password)) {
+      setError('비밀번호는 8자 이상, 영문, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.');
       return;
     }
 
@@ -133,33 +184,26 @@ export default function SignupModal({
       return;
     }
 
-    setStep('verify');
-  };
-
-  /**
-   * 인증 코드 확인 핸들러
-   */
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
     setIsLoading(true);
-    setError('');
 
     try {
-      /* TODO: 실제 인증 코드 검증 API 호출 */
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setStep('complete');
-    } catch {
-      setError('인증 코드가 올바르지 않습니다.');
+      const formattedPhone = phone ? formatPhoneNumber(phone) : undefined;
+
+      const tokens = await signup({
+        email,
+        password,
+        nickname,
+        phoneNumber: formattedPhone,
+      });
+
+      saveTokens(tokens);
+      emailVerification.resetState();
+      setStep('verify');
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, '회원가입에 실패했습니다.'));
     } finally {
       setIsLoading(false);
     }
-  };
-
-  /**
-   * 회원가입 완료 핸들러
-   */
-  const handleComplete = () => {
-    onSignupSuccess();
   };
 
   /**
@@ -172,56 +216,38 @@ export default function SignupModal({
   };
 
   /**
+   * 단계별 제목
+   */
+  const getStepTitle = () => {
+    switch (step) {
+      case 'info': return '회원가입';
+      case 'verify': return '이메일 인증';
+      case 'complete': return '가입 완료';
+      default: return '회원가입';
+    }
+  };
+
+  /**
    * 단계별 렌더링
    */
   const renderStep = () => {
     switch (step) {
-      /* 회원유형 선택 단계 */
-      case 'type':
-        return (
-          <div className="signup-type-step">
-            <p className="signup-type-desc">
-              회원 유형을 선택해주세요
-            </p>
-            <div className="signup-type-buttons">
-              <button 
-                className="signup-type-btn"
-                onClick={() => handleTypeSelect('general')}
-              >
-                <User size={32} />
-                <span className="signup-type-btn-title">일반 회원</span>
-                <span className="signup-type-btn-desc">
-                  AI 운동/식단 추천을 받고 싶어요
-                </span>
-              </button>
-              <button 
-                className="signup-type-btn"
-                onClick={() => handleTypeSelect('trainer')}
-              >
-                <User size={32} />
-                <span className="signup-type-btn-title">트레이너</span>
-                <span className="signup-type-btn-desc">
-                  화상 PT를 진행하고 싶어요
-                </span>
-              </button>
-            </div>
-            {userType === 'trainer' && (
-              <p className="signup-trainer-notice">
-                * 트레이너 가입 시 자격증 등 증빙자료가 필요합니다
-              </p>
-            )}
-          </div>
-        );
-
       /* 기본정보 입력 단계 */
       case 'info':
         return (
           <form className="modal-form" onSubmit={handleInfoSubmit}>
             {/* 이메일 */}
             <div className="form-group">
-              <label className="form-label" htmlFor="signup-email">
-                이메일 *
-              </label>
+              <div className="form-label-row">
+                <label className="form-label" htmlFor="signup-email">
+                  이메일 *
+                </label>
+                {isEmailChecked && (
+                  <span className={`form-label-status ${isEmailAvailable ? 'success' : 'error'}`}>
+                    {isEmailAvailable ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.'}
+                  </span>
+                )}
+              </div>
               <div className="form-input-wrapper">
                 <Mail className="form-input-icon" size={20} />
                 <input
@@ -230,8 +256,16 @@ export default function SignupModal({
                   className="form-input"
                   placeholder="이메일을 입력하세요"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => handleEmailChange(e.target.value)}
                 />
+                <button
+                  type="button"
+                  className="form-input-btn"
+                  onClick={handleCheckEmail}
+                  disabled={isLoading || !email}
+                >
+                  {isEmailChecked && isEmailAvailable ? '확인완료' : '중복확인'}
+                </button>
               </div>
             </div>
 
@@ -246,7 +280,7 @@ export default function SignupModal({
                   id="signup-password"
                   type={showPassword ? 'text' : 'password'}
                   className="form-input"
-                  placeholder="8자 이상 입력하세요"
+                  placeholder="영문, 숫자, 특수문자 포함 8자 이상"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -292,6 +326,7 @@ export default function SignupModal({
                   placeholder="닉네임을 입력하세요"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
+                  maxLength={NICKNAME_MAX_LENGTH}
                 />
               </div>
             </div>
@@ -310,6 +345,7 @@ export default function SignupModal({
                   placeholder="전화번호를 입력하세요 (선택)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  maxLength={PHONE_MAX_LENGTH}
                 />
               </div>
             </div>
@@ -329,7 +365,7 @@ export default function SignupModal({
                 <input
                   type="checkbox"
                   checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  onChange={(e) => handleTermsChange(e.target.checked)}
                 />
                 <Check size={16} className={agreeTerms ? 'checked' : ''} />
                 <span>[필수] 서비스 이용약관</span>
@@ -338,7 +374,7 @@ export default function SignupModal({
                 <input
                   type="checkbox"
                   checked={agreePrivacy}
-                  onChange={(e) => setAgreePrivacy(e.target.checked)}
+                  onChange={(e) => handlePrivacyChange(e.target.checked)}
                 />
                 <Check size={16} className={agreePrivacy ? 'checked' : ''} />
                 <span>[필수] 개인정보 처리방침</span>
@@ -356,101 +392,27 @@ export default function SignupModal({
       /* 이메일 인증 단계 */
       case 'verify':
         return (
-          <form className="modal-form" onSubmit={handleVerifyCode}>
-            <div className="verify-info">
-              <p className="verify-email">{email}</p>
-              <p className="verify-desc">
-                위 이메일로 인증 코드를 발송합니다
-              </p>
-            </div>
-
-            {!isEmailSent ? (
-              <button 
-                type="button"
-                className="form-submit-btn"
-                onClick={handleSendVerification}
-                disabled={isLoading}
-              >
-                {isLoading ? '발송 중...' : '인증 코드 발송'}
-              </button>
-            ) : (
-              <>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="verify-code">
-                    인증 코드
-                  </label>
-                  <input
-                    id="verify-code"
-                    type="text"
-                    className="form-input form-input-center"
-                    placeholder="6자리 코드 입력"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    maxLength={6}
-                  />
-                </div>
-
-                {error && <p className="form-error">{error}</p>}
-
-                <button 
-                  type="submit" 
-                  className="form-submit-btn"
-                  disabled={isLoading}
-                >
-                  {isLoading ? '확인 중...' : '인증 확인'}
-                </button>
-
-                <button 
-                  type="button"
-                  className="form-link form-link-center"
-                  onClick={handleSendVerification}
-                >
-                  인증 코드 재발송
-                </button>
-              </>
-            )}
-          </form>
+          <EmailVerifyForm
+            email={email}
+            verificationCode={emailVerification.verificationCode}
+            isEmailSent={emailVerification.isEmailSent}
+            isLoading={emailVerification.isLoading}
+            error={emailVerification.error}
+            onCodeChange={emailVerification.setVerificationCode}
+            onSendVerification={() => emailVerification.handleSendVerification(email)}
+            onVerifyCode={(e) => {
+              e.preventDefault();
+              emailVerification.handleVerifyCode(email, () => setStep('complete'));
+            }}
+          />
         );
 
       /* 가입 완료 단계 */
       case 'complete':
-        return (
-          <div className="signup-complete">
-            <div className="signup-complete-icon">
-              <Check size={48} />
-            </div>
-            <h3 className="signup-complete-title">
-              회원가입 완료!
-            </h3>
-            <p className="signup-complete-desc">
-              {userType === 'trainer' 
-                ? '트레이너 승인 후 화상 PT를 진행할 수 있습니다.'
-                : '지금 바로 AI 맞춤 운동과 식단을 시작하세요!'}
-            </p>
-            <button 
-              className="form-submit-btn"
-              onClick={handleComplete}
-            >
-              로그인하러 가기
-            </button>
-          </div>
-        );
+        return <SignupCompleteStep onComplete={onSignupComplete} />;
 
       default:
         return null;
-    }
-  };
-
-  /**
-   * 단계별 제목
-   */
-  const getStepTitle = () => {
-    switch (step) {
-      case 'type': return '회원가입';
-      case 'info': return '기본정보 입력';
-      case 'verify': return '이메일 인증';
-      case 'complete': return '가입 완료';
-      default: return '회원가입';
     }
   };
 
@@ -472,7 +434,7 @@ export default function SignupModal({
         {step !== 'complete' && (
           <div className="modal-footer">
             <span className="modal-footer-text">이미 계정이 있으신가요?</span>
-            <button 
+            <button
               className="modal-footer-link"
               onClick={onSwitchToLogin}
             >

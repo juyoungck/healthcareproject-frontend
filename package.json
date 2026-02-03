@@ -5,19 +5,26 @@
   "description": "AI 맞춤 운동 & 식단 추천 웹 애플리케이션",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite --mode dev",
+    "build": "vite build --mode prod",
+    "build:dev": "vite build --mode dev",
+    "build:prod": "vite build --mode prod",
     "preview": "vite preview"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.6",
     "@radix-ui/react-label": "2.1.2",
     "@radix-ui/react-slot": "1.1.2",
+    "@toast-ui/react-editor": "^3.2.3",
+    "axios": "^1.13.2",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "0.487.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "tailwind-merge": "3.2.0",
-    "tw-animate-css": "1.3.8"
+    "tw-animate-css": "1.3.8",
+    "webrtc-adapter": "^9.0.3"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
@@ -27,9 +34,5 @@
     "tailwindcss": "4.1.12",
     "typescript": "^5.4.0",
     "vite": "6.3.5"
-  },
-  "peerDependencies": {
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
   }
 }

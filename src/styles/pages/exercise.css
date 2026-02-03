@@ -1,0 +1,292 @@
+/**
+ * exercise.css
+ * 운동 탭 페이지 스타일
+ * - 검색 바
+ * - 필터 칩
+ * - 운동 카드 그리드
+ */
+
+/**
+ * ===========================================
+ * 운동 페이지 컨테이너
+ * ===========================================
+ */
+
+.exercise-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/**
+ * ===========================================
+ * 운동 페이지 검색 및 필터 색상
+ * ===========================================
+ */
+
+/**
+ * 검색 입력 포커스
+ */
+.exercise-page .search-input:focus {
+  border-color: var(--color-workout);
+  box-shadow: 0 0 0 var(--border-width-lg) var(--color-workout-light);
+}
+
+/**
+ * 필터 버튼 호버
+ */
+.exercise-page .filter-btn:hover {
+  border-color: var(--color-workout);
+  color: var(--color-workout);
+}
+
+/**
+ * 필터 버튼 활성화
+ */
+.exercise-page .filter-btn.active {
+  background-color: var(--color-workout);
+  border-color: var(--color-workout);
+  color: var(--color-white);
+}
+
+/**
+ * ===========================================
+ * 운동 목록
+ * ===========================================
+ */
+
+/**
+ * 운동 목록 컨테이너
+ */
+.exercise-list {
+  flex: 1;
+}
+
+/**
+ * 운동 카드 그리드 (2열)
+ */
+.exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+/**
+ * 운동 카드
+ */
+.exercise-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(calc(var(--spacing-2xs) * -1));
+}
+
+.exercise-card:active {
+  transform: scale(0.98);
+}
+
+/**
+ * 운동 카드 썸네일 영역
+ */
+.exercise-card-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--element-size-7xl);
+  background-color: var(--color-gray-50);
+}
+
+/**
+ * 운동 카드 이모지 (임시 썸네일)
+ */
+.exercise-card-emoji {
+  font-size: var(--element-size-base);
+}
+
+/**
+ * 운동 카드 정보 영역
+ */
+.exercise-card-info {
+  padding: var(--spacing-md);
+}
+
+/**
+ * 운동 카드 이름
+ */
+.exercise-card-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-sm);
+  text-align: left;
+}
+
+/**
+ * 운동 카드 태그 컨테이너
+ */
+.exercise-card-tags {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+/**
+ * 운동 카드 태그
+ */
+.exercise-card-tag {
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  border-radius: var(--border-radius-xs);
+}
+
+/**
+ * 부위 태그 스타일
+ */
+.exercise-card-tag.bodypart {
+  background-color: var(--color-workout-light);
+  color: var(--color-workout);
+}
+
+/**
+ * 난이도 태그 스타일
+ */
+.exercise-card-tag.difficulty {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-600);
+}
+
+
+/**
+ * 검색 결과 없음
+ */
+.exercise-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+}
+
+.exercise-empty-text {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/* ===========================================
+   무한 스크롤 하단 영역
+   =========================================== */
+
+.exercise-load-more {
+  padding: var(--spacing-lg) 0;
+  min-height: var(--spacing-3xl);
+}
+
+.exercise-loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+}
+
+.exercise-end-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl) 0;
+}
+
+.exercise-end-message {
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+/**
+ * ===========================================
+ * 운동 카드 이미지
+ * ===========================================
+ */
+
+.exercise-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/**
+ * ===========================================
+ * 로딩 상태
+ * ===========================================
+ */
+
+.exercise-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-3xl) var(--spacing-lg);
+  color: var(--color-gray-500);
+}
+
+.exercise-loading p {
+  font-size: var(--font-size-sm);
+}
+
+/**
+ * ===========================================
+ * 에러 상태
+ * ===========================================
+ */
+
+.exercise-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-3xl) var(--spacing-lg);
+}
+
+.exercise-error p {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.exercise-error button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-white);
+  background-color: var(--color-workout);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.exercise-error button:hover {
+  background-color: var(--color-workout-dark);
+}
+
+/**
+ * ===========================================
+ * 스피너 애니메이션
+ * ===========================================
+ */
+
+.spinner {
+  animation: spin 1s linear infinite;
+}

@@ -17,6 +17,8 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+.env.dev
+.env.prod
 
 # Logs
 *.log
@@ -25,3 +27,14 @@ npm-debug.log*
 # Cache
 .cache/
 .parcel-cache/
+
+#delete
+.claude/
+CLAUDE.md
+CODE-ANALYSIS.md
+CODE-REVIEW-CHECKLIST.md
+CODING_GUIDE.md
+REFACTORING-GUIDE.md
+TODO.md
+api.csv
+requirement.csv

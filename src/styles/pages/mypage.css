@@ -1,0 +1,1107 @@
+/**
+ * mypage.css
+ * 마이페이지 스타일 (세로형 UI)
+ */
+
+/**
+ * ===========================================
+ * 마이페이지 컨테이너
+ * ===========================================
+ */
+
+.mypage {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  background-color: var(--color-gray-50);
+  position: relative;
+  overflow-y: auto;
+}
+
+/**
+ * ===========================================
+ * 헤더
+ * ===========================================
+ */
+
+.mypage-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-max-width);
+  height: var(--header-height);
+  background-color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+  z-index: var(--z-fixed);
+}
+
+/**
+ * 헤더 내부 콘텐츠
+ * 좌측: 뒤로가기 버튼, 중앙: 타이틀
+ */
+.mypage-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  height: 100%;
+}
+
+.mypage-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: var(--app-max-width);
+  height: var(--header-height);
+  background: none;
+  border: none;
+  color: var(--color-gray-700);
+  cursor: pointer;
+}
+
+.mypage-title {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+  color: var(--color-gray-900);
+}
+
+.mypage-set-btn {
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
+  background-color: var(--color-gray-200);
+  border-radius: var(--border-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+/**
+ * ===========================================
+ * 프로필 섹션 (세로 중앙 정렬)
+ * ===========================================
+ */
+
+.mypage-profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  background-color: var(--color-white);
+  margin-top: var(--spacing-3xl);
+  margin-bottom: var(--spacing-md);
+}
+
+.mypage-profile-image-wrapper {
+  position: relative;
+  width: var(--element-size-7xl);
+  height: var(--element-size-7xl);
+  border-radius: var(--border-radius-full);
+  background-color: var(--color-gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-width-md) solid var(--color-gray-300);
+}
+
+.mypage-profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--border-radius-full);
+}
+
+.mypage-profile-placeholder {
+  color: var(--color-gray-400);
+}
+
+.mypage-profile-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: var(--border-width-md) solid var(--color-gray-300);
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+}
+
+.mypage-profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.mypage-nickname-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.mypage-nickname {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.mypage-handle {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-xs);
+}
+
+.mypage-edit-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.mypage-edit-btn:hover {
+  color: var(--color-primary);
+}
+
+.mypage-user-type {
+  display: inline-block;
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-full);
+}
+
+/**
+ * 회원 유형 - 관리자
+ */
+.mypage-user-type.admin {
+  color: var(--color-error);
+  background-color: var(--color-error-light);
+}
+
+/**
+ * 회원 유형 - 트레이너
+ */
+.mypage-user-type.trainer {
+  color: var(--color-pt);
+  background-color: var(--color-pt-light);
+}
+/**
+ * 회원 유형 - 일반회원
+ */
+.mypage-user-type.general {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+/**
+ * ===========================================
+ * 섹션 공통
+ * ===========================================
+ */
+
+.mypage-section {
+  background-color: var(--color-white);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.mypage-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+}
+
+.mypage-section-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-lg);
+}
+
+.mypage-section-header .mypage-section-title {
+  margin-bottom: 0;
+}
+
+.mypage-section-edit {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/**
+ * ===========================================
+ * 정보 목록
+ * ===========================================
+ */
+
+.mypage-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.mypage-info-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
+}
+
+.mypage-info-item:last-child {
+  border-bottom: none;
+}
+
+.mypage-info-icon {
+  color: var(--color-gray-400);
+  flex-shrink: 0;
+}
+
+.mypage-info-label {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.mypage-info-value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-900);
+}
+
+/**
+ * ===========================================
+ * 신체 정보 그리드 (2x2)
+ * ===========================================
+ */
+
+.mypage-body-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.mypage-body-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-lg);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+}
+
+.mypage-body-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}
+
+.mypage-body-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.mypage-body-unit {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-gray-500);
+  margin-left: var(--spacing-2xs);
+}
+
+/**
+ * ===========================================
+ * 부상 이력 정보
+ * ===========================================
+ */
+
+.mypage-injury-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+}
+
+.mypage-injury-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
+  border-bottom: var(--border-width-sm) solid var(--color-gray-200);
+}
+
+.mypage-injury-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mypage-injury-item:first-child {
+  padding-top: 0;
+}
+
+.mypage-injury-part {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+}
+
+.mypage-injury-severity {
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--border-radius-full);
+}
+
+/* 경미 */
+.mypage-injury-severity.mild {
+  color: var(--color-success);
+  background-color: var(--color-success-light);
+}
+
+/* 주의 요함 */
+.mypage-injury-severity.caution {
+  color: var(--color-warning);
+  background-color: var(--color-warning-light);
+}
+
+/* 심각 */
+.mypage-injury-severity.severe {
+  color: var(--color-error);
+  background-color: var(--color-error-light);
+}
+
+/**
+ * ===========================================
+ * 알레르기 정보
+ * ===========================================
+ */
+
+.mypage-allergy-section {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
+}
+
+.mypage-allergy-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-sm);
+}
+
+.mypage-allergy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.mypage-allergy-tag {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-error);
+  background-color: var(--color-error-lightest);
+  border-radius: var(--border-radius-full);
+}
+
+.mypage-allergy-none {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-400);
+}
+
+/**
+ * ===========================================
+ * 온보딩 정보 없음 상태
+ * ===========================================
+ */
+
+.mypage-no-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xl);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+  text-align: center;
+}
+
+.mypage-no-profile p {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.mypage-register-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.mypage-register-btn:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/**
+ * ===========================================
+ * 소셜 계정 연동
+ * ===========================================
+ */
+
+.mypage-social-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.mypage-social-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+}
+
+.mypage-social-icon {
+  width: var(--element-size-base);
+  height: var(--element-size-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-white);
+  border-radius: var(--border-radius-md);
+}
+
+.mypage-social-icon.kakao {
+  background-color: var(--color-kakao);
+  color: var(--color-kakao-text);
+}
+
+.mypage-social-icon.naver {
+  background-color: var(--color-naver);
+}
+
+.mypage-social-icon.google {
+  background-color: var(--color-gray-700);
+}
+
+.mypage-social-name {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+}
+
+.mypage-social-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-primary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mypage-social-btn:hover {
+  background-color: var(--color-primary-light);
+}
+
+.mypage-social-btn.connected {
+  color: var(--color-gray-500);
+  background-color: var(--color-gray-100);
+  border-color: transparent;
+}
+
+/**
+ * ===========================================
+ * 계정 관리 버튼
+ * ===========================================
+ */
+
+.mypage-account-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.mypage-account-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  height: var(--element-size-2xl);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mypage-account-btn.logout {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+
+.mypage-account-btn.logout:hover {
+  background-color: var(--color-gray-200);
+}
+
+.mypage-account-btn.withdraw {
+  background-color: var(--color-white);
+  color: var(--color-error);
+  border: var(--border-width-sm) solid var(--color-error);
+}
+
+.mypage-account-btn.withdraw:hover {
+  background-color: var(--color-error-lightest);
+}
+
+/**
+ * ===========================================
+ * 닉네임 수정 모달
+ * ===========================================
+ */
+
+.mypage-edit-modal-content {
+  padding: var(--spacing-xl);
+}
+
+.mypage-edit-modal-content .form-group {
+  margin-bottom: var(--spacing-xl);
+}
+
+.mypage-edit-modal-content .form-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+
+/**
+ * ===========================================
+ * 회원 유형 뱃지 (트레이너/일반회원)
+ * ===========================================
+ */
+
+.mypage-user-type.general {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.mypage-user-type.trainer {
+  color: var(--color-pt);
+  background-color: var(--color-pt-light);
+}
+
+/**
+ * ===========================================
+ * 트레이너 등록/상태 섹션
+ * ===========================================
+ */
+
+.mypage-trainer-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.mypage-trainer-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-lg);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mypage-trainer-btn span {
+  flex: 1;
+  text-align: left;
+}
+
+/**
+ * 트레이너로 등록하기 버튼
+ */
+.mypage-trainer-btn.apply {
+  background-color: var(--color-pt);
+  color: var(--color-white);
+}
+
+.mypage-trainer-btn.apply:hover {
+  background-color: var(--color-pt-dark);
+}
+
+/**
+ * 트레이너 승인 대기중 버튼
+ */
+.mypage-trainer-btn.pending {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+}
+
+/**
+ * 트레이너 해제하기 버튼
+ */
+.mypage-trainer-btn.release {
+  background-color: var(--color-white);
+  color: var(--color-error);
+  border: var(--border-width-sm) solid var(--color-error);
+}
+
+.mypage-trainer-btn.release:hover {
+  background-color: var(--color-error-light);
+}
+
+/**
+ * 트레이너 등록 재신청 버튼 (거절됨)
+ */
+.mypage-trainer-btn.rejected {
+  background-color: var(--color-white);
+  color: var(--color-pt);
+  border: var(--border-width-sm) solid var(--color-pt);
+}
+
+.mypage-trainer-btn.rejected:hover {
+  background-color: var(--color-pt-light);
+}
+
+/**
+ * ===========================================
+ * 트레이너 등록 모달
+ * ===========================================
+ */
+
+.trainer-apply-modal {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.trainer-apply-modal .modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.trainer-apply-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.trainer-apply-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-700);
+  margin-bottom: var(--spacing-sm);
+}
+
+.trainer-apply-label-sub {
+  font-weight: var(--font-weight-normal);
+  color: var(--color-gray-500);
+  margin-left: var(--spacing-xs);
+}
+
+.trainer-apply-upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  background-color: var(--color-white);
+  border: var(--border-width-sm) dashed var(--color-primary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.trainer-apply-upload-btn:hover:not(:disabled) {
+  background-color: var(--color-primary-light);
+}
+
+.trainer-apply-upload-btn:disabled {
+  color: var(--color-gray-400);
+  border-color: var(--color-gray-300);
+  cursor: not-allowed;
+}
+
+.trainer-apply-file-list {
+  list-style: none;
+  margin-top: var(--spacing-md);
+  padding: 0;
+}
+
+.trainer-apply-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+.trainer-apply-file-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex: 1;
+  min-width: 0;
+}
+
+.trainer-apply-file-icon {
+  color: var(--color-gray-500);
+  flex-shrink: 0;
+}
+
+.trainer-apply-file-name {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trainer-apply-file-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size-xl);
+  height: var(--icon-size-xl);
+  color: var(--color-gray-400);
+  background: none;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.trainer-apply-file-remove:hover {
+  color: var(--color-error);
+  background-color: var(--color-error-light);
+}
+
+.trainer-apply-textarea {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  color: var(--color-gray-900);
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  resize: vertical;
+  transition: border-color var(--transition-fast);
+}
+
+.trainer-apply-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.trainer-apply-textarea::placeholder {
+  color: var(--color-gray-400);
+}
+
+.trainer-apply-footer {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
+}
+
+.trainer-apply-footer .btn-secondary,
+.trainer-apply-footer .btn-primary {
+  flex: 1;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.trainer-apply-footer .btn-secondary {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border: none;
+}
+
+.trainer-apply-footer .btn-secondary:hover {
+  background-color: var(--color-gray-200);
+}
+
+.trainer-apply-footer .btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+}
+
+.trainer-apply-footer .btn-primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/**
+ * ===========================================
+ * 이미지 업로드 스피너
+ * ===========================================
+ */
+
+.mypage-image-spinner {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  border: var(--border-width-md) solid var(--color-gray-300);
+  border-top-color: var(--color-primary);
+  border-radius: var(--border-radius-full);
+  animation: spin 0.8s linear infinite;
+}
+
+/**
+ * ===========================================
+ * 프로필 이미지 바텀 시트
+ * ===========================================
+ */
+
+.profile-bottom-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-overlay-dark);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.profile-bottom-sheet {
+  width: 100%;
+  max-width: var(--app-max-width);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  animation: slideUpSheet 0.3s ease-out;
+}
+
+@keyframes slideUpSheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.profile-bottom-sheet-handle {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-md);
+}
+
+.profile-bottom-sheet-handle::before {
+  content: '';
+  width: 36px;
+  height: 4px;
+  background-color: var(--color-gray-300);
+  border-radius: var(--border-radius-full);
+}
+
+.profile-bottom-sheet-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-bottom-sheet-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-900);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.profile-bottom-sheet-item:hover {
+  background-color: var(--color-gray-50);
+}
+
+.profile-bottom-sheet-item.danger {
+  color: var(--color-error);
+}
+
+.profile-bottom-sheet-divider {
+  height: var(--spacing-sm);
+  background-color: var(--color-gray-100);
+}
+
+.profile-bottom-sheet-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--spacing-lg);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.profile-bottom-sheet-cancel:hover {
+  background-color: var(--color-gray-50);
+}
+
+/**
+ * ===========================================
+ * 소셜 연동 버튼 상태
+ * ===========================================
+ */
+
+.mypage-social-btn.connected {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+  border: var(--border-width-sm) solid var(--color-gray-200);
+}
+
+.mypage-social-btn.connected:hover {
+  background-color: var(--color-gray-200);
+}
+
+.mypage-social-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mypage-social-loading {
+  padding: var(--spacing-lg);
+  text-align: center;
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+}
+
+/**
+ * ===========================================
+ * 트레이너 소개문구
+ * ===========================================
+ */
+
+.mypage-trainer-bio {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/**
+ * ===========================================
+ * 트레이너 거절 사유
+ * ===========================================
+ */
+
+.mypage-trainer-rejected-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  background-color: var(--color-error-light);
+  border-radius: var(--border-radius-md);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.mypage-trainer-rejected-reason span {
+  flex: 1;
+  line-height: 1.5;
+}
+
+/**
+ * ===========================================
+ * 소개문구 텍스트영역
+ * ===========================================
+ */
+
+.form-textarea {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  color: var(--color-gray-900);
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  resize: vertical;
+  transition: border-color var(--transition-fast);
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 var(--border-width-lg) var(--color-primary-light);
+}
+
+.form-textarea::placeholder {
+  color: var(--color-gray-400);
+}

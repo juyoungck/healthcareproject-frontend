@@ -30,23 +30,62 @@
 
 .videocall-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 10;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-gray-900);
+}
+
+.videocall-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
 }
 
 .videocall-info {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2xs);
+  align-items: center;
+  gap: var(--spacing-md);
 }
 
 .videocall-title {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
   color: var(--color-white);
+  margin: 0;
+}
+
+.videocall-entry-code {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white);
+}
+
+.videocall-entry-code-value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.1em;
+}
+
+.videocall-entry-code-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  background: transparent;
+  border: none;
+  color: var(--color-white);
+  cursor: pointer;
+  border-radius: var(--border-radius-xs);
+  transition: background-color 0.2s;
+}
+
+.videocall-entry-code-copy:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .videocall-status {
@@ -58,8 +97,8 @@
 }
 
 .videocall-status-dot {
-  width: 8px;
-  height: 8px;
+  width: var(--size-md);
+  height: var(--size-md);
   border-radius: var(--border-radius-full);
   background-color: var(--color-success);
 }
@@ -77,8 +116,8 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-white);
-  padding: var(--spacing-xs) var(--spacing-sm);
   background-color: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
   border-radius: var(--border-radius-sm);
 }
 
@@ -109,15 +148,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+  min-height: 18.75rem;
 }
 
 .vc-video-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 120px;
-  height: 120px;
+  width: var(--element-size-8xl);
+  height: var(--element-size-8xl);
   background-color: var(--color-gray-700);
   border-radius: var(--border-radius-full);
   color: var(--color-gray-400);
@@ -134,6 +173,31 @@
   border-radius: var(--border-radius-sm);
 }
 
+/* 프로필 이미지 스타일 */
+.vc-video-profile-img {
+  width: var(--element-size-8xl);
+  height: var(--element-size-8xl);
+  border-radius: var(--border-radius-full);
+  object-fit: cover;
+}
+
+.vc-sub-video-profile-img {
+  width: var(--element-size-xl);
+  height: var(--element-size-xl);
+  border-radius: var(--border-radius-full);
+  object-fit: cover;
+}
+
+.vc-sub-video-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-gray-700);
+  color: var(--color-gray-400);
+}
+
 /**
  * 서브 비디오 목록
  */
@@ -141,13 +205,22 @@
   display: flex;
   gap: var(--spacing-sm);
   overflow-x: auto;
-  padding-bottom: var(--spacing-xs);
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.vc-sub-videos::-webkit-scrollbar {
+  display: none;
 }
 
 .vc-sub-video {
   flex-shrink: 0;
-  width: 100px;
-  height: 80px;
+  width: var(--element-size-7xl);
+  height: var(--element-size-6xl);
   position: relative;
   background-color: var(--color-gray-800);
   border-radius: var(--border-radius-md);
@@ -156,8 +229,22 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: 2px solid transparent;
+  border: var(--border-width-md) solid transparent;
   transition: all var(--transition-fast);
+  scroll-snap-align: center;
+}
+
+/* 모바일에서 서브 비디오 크기 조정 */
+@media (max-width: 480px) {
+  .vc-sub-video {
+    width: 5rem;
+    height: 4rem;
+  }
+  
+  .vc-sub-video-profile-img {
+    width: var(--element-size-lg);
+    height: var(--element-size-lg);
+  }
 }
 
 .vc-sub-video:hover {
@@ -168,8 +255,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
   background-color: var(--color-gray-700);
   border-radius: var(--border-radius-full);
   color: var(--color-gray-400);
@@ -180,7 +267,7 @@
   bottom: var(--spacing-xs);
   left: var(--spacing-xs);
   right: var(--spacing-xs);
-  padding: 2px var(--spacing-xs);
+  padding: var(--spacing-2xs) var(--spacing-xs);
   background-color: rgba(0, 0, 0, 0.6);
   color: var(--color-white);
   font-size: var(--font-size-xs);
@@ -223,8 +310,8 @@
 }
 
 .videocall-avatar {
-  width: 64px;
-  height: 64px;
+  width: var(--element-size-4xl);
+  height: var(--element-size-4xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,8 +320,8 @@
 }
 
 .videocall-avatar-icon {
-  width: 32px;
-  height: 32px;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
   color: var(--color-pt);
 }
 
@@ -260,8 +347,8 @@
 }
 
 .videocall-mic-status {
-  width: 14px;
-  height: 14px;
+  width: var(--icon-size-xs);
+  height: var(--icon-size-xs);
 }
 
 .videocall-mic-status.muted {
@@ -340,8 +427,8 @@
 }
 
 .videocall-control-btn {
-  width: 52px;
-  height: 52px;
+  width: var(--element-size-2xl);
+  height: var(--element-size-2xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -369,12 +456,12 @@
 }
 
 .videocall-control-btn.danger:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-error-dark);
 }
 
 .videocall-control-icon {
-  width: 24px;
-  height: 24px;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
   color: var(--color-white);
 }
 
@@ -382,8 +469,8 @@
  * 카메라 전환 버튼
  */
 .videocall-switch-camera {
-  width: 40px;
-  height: 40px;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
 }
 
 /**
@@ -395,7 +482,7 @@
   right: 0;
   display: flex;
   flex-direction: column;
-  min-width: 160px;
+  min-width: var(--element-size-10xl);
   background-color: var(--color-gray-800);
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -420,8 +507,8 @@
 }
 
 .videocall-more-icon {
-  width: 18px;
-  height: 18px;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
 }
 
 /**
@@ -442,8 +529,8 @@
 }
 
 .videocall-waiting-icon {
-  width: 80px;
-  height: 80px;
+  width: var(--element-size-6xl);
+  height: var(--element-size-6xl);
   color: var(--color-pt);
 }
 
@@ -456,22 +543,16 @@
 .videocall-waiting-desc {
   font-size: var(--font-size-sm);
   color: var(--color-gray-400);
-  max-width: 280px;
+  max-width: var(--container-xs);
 }
 
 .videocall-waiting-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--color-gray-700);
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
+  border: var(--border-width-lg) solid var(--color-gray-700);
   border-top-color: var(--color-pt);
   border-radius: var(--border-radius-full);
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /**
@@ -519,7 +600,7 @@
 
 .vc-leave-popup {
   width: 100%;
-  max-width: 300px;
+  max-width: var(--container-md);
   background-color: var(--color-white);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-xl);
@@ -531,8 +612,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: var(--element-size-4xl);
+  height: var(--element-size-4xl);
   margin: 0 auto var(--spacing-lg);
   background-color: var(--color-error);
   color: var(--color-white);
@@ -560,7 +641,7 @@
 
 .vc-leave-popup-btn {
   flex: 1;
-  height: 44px;
+  height: var(--element-size-lg);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   border-radius: var(--border-radius-md);
@@ -585,5 +666,240 @@
 }
 
 .vc-leave-popup-btn.confirm:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-error-dark);
+}
+
+.vc-leave-popup-icon.ended {
+  background: var(--color-warning);
+  color: white;
+}
+
+.vc-leave-popup-icon.admin {
+  background: var(--color-error);
+  color: white;
+}
+
+/**
+ * ===========================================
+ * 더보기 메뉴 (헤더)
+ * ===========================================
+ */
+
+.videocall-more-menu-container {
+  position: relative;
+}
+
+.videocall-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.videocall-more-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.videocall-more-dropdown {
+  position: absolute;
+  top: calc(100% + var(--spacing-xs));
+  right: 0;
+  min-width: 120px;
+  background-color: var(--color-gray-800);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  z-index: 10;
+  animation: fadeIn 0.2s ease;
+}
+
+.videocall-more-dropdown .videocall-more-item {
+  width: 100%;
+  text-align: left;
+}
+
+.videocall-more-dropdown .videocall-more-item.report {
+  color: var(--color-error);
+}
+
+.videocall-more-dropdown .videocall-more-item.report:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+/**
+ * ===========================================
+ * 강퇴 기능 스타일
+ * ===========================================
+ */
+
+/**
+ * 강퇴 메뉴 아이템
+ */
+.videocall-more-item.kick {
+  color: var(--color-error);
+}
+
+.videocall-more-item.kick:hover {
+  background-color: var(--color-error-light, #fef2f2);
+}
+
+/**
+ * 강퇴 모달
+ */
+.kick-modal {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  width: 90%;
+  max-width: 360px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.kick-modal-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.kick-modal-icon {
+  color: var(--color-error);
+}
+
+.kick-modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.kick-modal-desc {
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-lg);
+}
+
+/**
+ * 강퇴 사용자 목록
+ */
+.kick-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: var(--spacing-lg);
+}
+
+.kick-user-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+}
+
+.kick-user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.kick-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.kick-user-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-500);
+}
+
+.kick-user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.kick-user-nickname {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-gray-900);
+}
+
+.kick-user-handle {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+}
+
+.kick-user-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-white);
+  background-color: var(--color-error);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.kick-user-btn:hover {
+  background-color: var(--color-error-dark, #dc2626);
+}
+
+.kick-empty {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-gray-500);
+  font-size: 0.875rem;
+}
+
+.kick-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.kick-modal-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.kick-modal-btn.cancel {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+
+.kick-modal-btn.cancel:hover {
+  background-color: var(--color-gray-200);
+}
+
+/**
+ * 강퇴 확인 팝업 아이콘
+ */
+.vc-leave-popup-icon.kick {
+  background-color: var(--color-error-light, #fef2f2);
+  color: var(--color-error);
 }

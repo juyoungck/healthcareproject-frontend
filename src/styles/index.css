@@ -22,10 +22,23 @@
 
 /* 페이지별 스타일 */
 @import './pages/landing.css';
+@import './pages/oauth.css';
+@import './pages/onboarding.css';
+@import './pages/exercise.css';
+@import './pages/exercise-detail.css';
+@import './pages/diet.css';
 @import './pages/videopt.css';
+@import './pages/board.css';
+@import './pages/plan-exercise.css';
+@import './pages/plan-diet.css';
+@import './pages/calendar.css';
+@import './pages/mypage.css';
+@import './pages/settings.css';
+@import './pages/admin.css';
+@import './pages/resetpassword.css';
 
 /* 컴포넌트별 스타일 */
 @import './components/card.css';
-@import './components/calendar.css';
 @import './components/navigation.css';
 @import './components/videocall.css';
+@import './components/report.css';

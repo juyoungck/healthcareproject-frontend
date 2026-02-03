@@ -1,0 +1,580 @@
+/**
+ * BoardDetail.tsx
+ * 게시글 상세 컴포넌트
+ * - 게시글 내용 표시 (제목, 본문, 이미지)
+ * - 조회수 증가
+ * - 댓글/대댓글 CRUD
+ * - 수정/삭제 (본인 글만)
+ * - 신고 기능
+ */
+
+import { useState, useEffect } from 'react';
+import {
+  ArrowLeft,
+  Eye,
+  MessageSquare,
+  Edit2,
+  Trash2,
+  Flag,
+  Send,
+  CornerDownRight,
+  X,
+  AlertTriangle
+} from 'lucide-react';
+import {
+  CATEGORY_LABELS,
+  CATEGORY_MAP
+} from '../../../constants/board';
+import { getPostDetail, deletePost, createComment, updateComment, deleteComment } from '../../../api/board';
+import { PostDetailResponse, CommentResponse } from '../../../api/types/board';
+import { getMe } from '../../../api/me';
+import { getApiErrorMessage } from '../../../api/apiError';
+import { formatDateWithTime } from '../../../utils/format';
+import ReportModal from '../common/ReportModal';
+
+/**
+ * Props 타입 정의
+ */
+interface BoardDetailProps {
+  postId: number;
+  currentUserId: number;
+  onBack: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+/**
+ * BoardDetail 컴포넌트
+ */
+export default function BoardDetail({
+  postId,
+  currentUserId,
+  onBack,
+  onEdit,
+  onDelete
+}: BoardDetailProps) {
+  /**
+   * 상태 관리
+   */
+  const [post, setPost] = useState<PostDetailResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUserHandle, setCurrentUserHandle] = useState<string | null>(null);
+  const [newComment, setNewComment] = useState('');
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: 'post' | 'comment' | 'reply'; id: number } | null>(null);
+  const [reportTarget, setReportTarget] = useState<{ type: 'POST' | 'COMMENT'; id: number; name: string } | null>(null);
+  /**
+   * 본인 글 여부 확인
+   */
+  const isAuthor = post?.author?.handle === currentUserHandle;
+
+  /**
+   * 게시글 상세 데이터 로드
+   */
+  useEffect(() => {
+    const fetchPost = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getPostDetail(postId);
+        setPost(data);
+      } catch (error) {
+        alert(getApiErrorMessage(error, '게시글을 불러오는데 실패했습니다.'));
+        onBack();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPost();
+  }, [postId]);
+
+  /**
+   * 현재 로그인한 사용자 정보 조회
+   */
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const me = await getMe();
+        setCurrentUserHandle(me.handle);
+      } catch {
+        /** 사용자 정보 조회 실패는 조용히 처리 */
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+  /**
+   * 댓글 작성
+   */
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !post) return;
+
+    try {
+      await createComment(postId, {
+        parentId: null,
+        content: newComment.trim(),
+      });
+
+      const data = await getPostDetail(postId);
+      setPost(data);
+      setNewComment('');
+    } catch (error) {
+      alert(getApiErrorMessage(error, '댓글 작성에 실패했습니다.'));
+    }
+  };
+
+  /**
+   * 대댓글 작성
+   */
+  const handleAddReply = async (commentId: number) => {
+    if (!replyContent.trim() || !post) return;
+
+    try {
+      await createComment(postId, {
+        parentId: commentId,
+        content: replyContent.trim(),
+      });
+
+      const data = await getPostDetail(postId);
+      setPost(data);
+      setReplyContent('');
+      setReplyingTo(null);
+    } catch (error) {
+      alert(getApiErrorMessage(error, '답글 작성에 실패했습니다.'));
+    }
+  };
+
+  /**
+   * 댓글 수정 시작
+   */
+  const handleEditStart = (commentId: number, currentContent: string) => {
+    setEditingCommentId(commentId);
+    setEditContent(currentContent);
+  };
+
+  /**
+   * 댓글 수정 취소
+   */
+  const handleEditCancel = () => {
+    setEditingCommentId(null);
+    setEditContent('');
+  };
+
+  /**
+   * 댓글 수정 저장
+   */
+  const handleEditSave = async (commentId: number) => {
+    if (!editContent.trim() || !post) return;
+
+    try {
+      await updateComment(postId, { commentId, content: editContent.trim() });
+      const data = await getPostDetail(postId);
+      setPost(data);
+      setEditingCommentId(null);
+      setEditContent('');
+    } catch (error) {
+      alert(getApiErrorMessage(error, '댓글 수정에 실패했습니다.'));
+    }
+  };
+
+  /**
+   * 삭제 확인 모달 열기
+   */
+  const handleDeleteClick = (type: 'post' | 'comment' | 'reply', id: number) => {
+    setDeleteTarget({ type, id });
+    setShowDeleteModal(true);
+  };
+
+  /**
+   * 삭제 확인
+   */
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget || !post) return;
+
+    try {
+      if (deleteTarget.type === 'post') {
+        await deletePost(postId);
+        onDelete();
+      } else {
+        await deleteComment(postId, deleteTarget.id);
+        const data = await getPostDetail(postId);
+        setPost(data);
+      }
+    } catch (error) {
+      alert(getApiErrorMessage(error, '삭제에 실패했습니다.'));
+    }
+
+    setShowDeleteModal(false);
+    setDeleteTarget(null);
+  };
+
+  /**
+   * 신고 모달 열기
+   */
+  const handleReportClick = (type: 'POST' | 'COMMENT', id: number, name: string) => {
+    setReportTarget({ type, id, name });
+    setShowReportModal(true);
+  };
+
+  /**
+   * 총 댓글 수 계산 (대댓글 포함)
+   */
+  const getTotalCommentCount = (comments: CommentResponse[]): number => {
+    return comments.reduce((acc, comment) => {
+      return acc + 1 + (comment.children?.length || 0);
+    }, 0);
+  };
+
+  /**
+   * 댓글 작성자가 글 작성자인지 확인
+   */
+  const isPostAuthor = (commentAuthorHandle: string): boolean => {
+    return post?.author?.handle === commentAuthorHandle;
+  };
+
+  /**
+   * 현재 사용자가 댓글 작성자인지 확인
+   */
+  const isCommentAuthor = (commentAuthorHandle: string): boolean => {
+    return currentUserHandle === commentAuthorHandle;
+  };
+
+  /* 로딩 중 */
+  if (isLoading) {
+    return (
+      <div className="board-detail">
+        <div className="board-loading">
+          <div className="board-loading-spinner"></div>
+          <span>불러오는 중...</span>
+        </div>
+      </div>
+    );
+  }
+
+  /* 게시글 없음 */
+  if (!post) {
+    return (
+      <div className="board-detail">
+        <p>게시글을 찾을 수 없습니다.</p>
+        <button onClick={onBack}>목록으로</button>
+      </div>
+    );
+  }
+
+  const totalCommentCount = getTotalCommentCount(post.comments);
+
+  return (
+    <div className="board-detail">
+      {/* 뒤로가기 버튼 */}
+      <button className="board-back-btn" onClick={onBack}>
+        <ArrowLeft size={18} />
+        <span>목록으로</span>
+      </button>
+
+      {/* 게시글 헤더 */}
+      <div className="board-detail-header">
+        <div className="board-detail-category">
+          <span className={`board-category-badge ${CATEGORY_MAP.toFrontend[post.category]}`}>
+            {CATEGORY_LABELS[CATEGORY_MAP.toFrontend[post.category]]}
+          </span>
+        </div>
+        <h1 className="board-detail-title">{post.title}</h1>
+        <div className="board-detail-meta">
+          <span className="board-detail-author">{post.author.nickname}</span>
+          <div className="board-detail-stats">
+            <span>{formatDateWithTime(post.createdAt)}</span>
+            <span className="board-detail-stat">
+              <Eye size={14} />
+              {post.viewCount}
+            </span>
+            <span className="board-detail-stat">
+              <MessageSquare size={14} />
+              {totalCommentCount}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 게시글 본문 */}
+      <div
+        className="board-detail-content"
+        dangerouslySetInnerHTML={{ __html: post.content }}
+      />
+
+      {/* 액션 버튼 */}
+      <div className="board-detail-actions">
+        {isAuthor ? (
+          <>
+            <button className="board-action-btn edit" onClick={onEdit}>
+              <Edit2 size={14} />
+              수정
+            </button>
+            <button
+              className="board-action-btn delete"
+              onClick={() => handleDeleteClick('post', post.postId)}
+            >
+              <Trash2 size={14} />
+              삭제
+            </button>
+          </>
+        ) : (
+          <button
+            className="board-action-btn report"
+            onClick={() => handleReportClick('POST', post.postId, post.title)}
+          >
+            <Flag size={14} />
+            신고
+          </button>
+        )}
+      </div>
+
+      {/* 댓글 섹션 */}
+      <div className="board-comments">
+        <div className="board-comments-header">
+          <MessageSquare size={18} />
+          <span>댓글</span>
+          <span className="board-comments-count">{totalCommentCount}</span>
+        </div>
+
+        {/* 댓글 입력 */}
+        <div className="board-comment-form">
+          <textarea
+            className="board-comment-input"
+            placeholder="댓글을 입력하세요"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            rows={2}
+          />
+          <button
+            className="board-comment-submit"
+            onClick={handleAddComment}
+            disabled={!newComment.trim()}
+          >
+            <Send size={16} />
+          </button>
+        </div>
+
+        {/* 댓글 목록 */}
+        <div className="board-comment-list">
+          {post.comments.map((comment) => (
+            <div key={comment.commentId}>
+              {/* 댓글 */}
+              <div className="board-comment-item">
+                <div className="board-comment-header">
+                  <span className={`board-comment-author ${isPostAuthor(comment.author.handle) ? 'is-writer' : ''}`}>
+                    {comment.author.nickname}
+                  </span>
+                  <span className="board-comment-date">{formatDateWithTime(comment.createdAt)}</span>
+                </div>
+
+                {/* 댓글 내용 또는 수정 폼 */}
+                {editingCommentId === comment.commentId ? (
+                  <div className="board-edit-form">
+                    <input
+                      type="text"
+                      className="board-edit-input"
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleEditSave(comment.commentId);
+                      }}
+                    />
+                    <button className="board-edit-save" onClick={() => handleEditSave(comment.commentId)}>
+                      저장
+                    </button>
+                    <button className="board-edit-cancel" onClick={handleEditCancel}>
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <p className="board-comment-content">{comment.content}</p>
+                )}
+
+                <div className="board-comment-actions">
+                  <button
+                    className="board-comment-action"
+                    onClick={() => setReplyingTo(replyingTo === comment.commentId ? null : comment.commentId)}
+                  >
+                    <CornerDownRight size={12} />
+                    답글
+                  </button>
+                  <div className="board-comment-actions-right">
+                    {isCommentAuthor(comment.author.handle) && editingCommentId !== comment.commentId ? (
+                      <>
+                        <button
+                          className="board-comment-action edit"
+                          onClick={() => handleEditStart(comment.commentId, comment.content)}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="board-comment-action delete"
+                          onClick={() => handleDeleteClick('comment', comment.commentId)}
+                        >
+                          삭제
+                        </button>
+                      </>
+                    ) : !isCommentAuthor(comment.author.handle) && (
+                      <button
+                        className="board-comment-action report"
+                        onClick={() => handleReportClick('COMMENT', comment.commentId, '댓글')}
+                      >
+                        신고
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 대댓글 입력 폼 */}
+                {replyingTo === comment.commentId && (
+                  <div className="board-reply-form">
+                    <input
+                      type="text"
+                      className="board-reply-input"
+                      placeholder="답글을 입력하세요"
+                      value={replyContent}
+                      onChange={(e) => setReplyContent(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddReply(comment.commentId);
+                      }}
+                    />
+                    <button
+                      className="board-reply-submit"
+                      onClick={() => handleAddReply(comment.commentId)}
+                    >
+                      등록
+                    </button>
+                    <button
+                      className="board-reply-cancel"
+                      onClick={() => {
+                        setReplyingTo(null);
+                        setReplyContent('');
+                      }}
+                    >
+                      취소
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* 대댓글 목록 */}
+              {comment.children?.map((reply) => (
+                <div key={reply.commentId} className="board-comment-item reply">
+                  <div className="board-comment-header">
+                    <span className={`board-comment-author ${isPostAuthor(reply.author.handle) ? 'is-writer' : ''}`}>
+                      {reply.author.nickname}
+                    </span>
+                    <span className="board-comment-date">{formatDateWithTime(reply.createdAt)}</span>
+                  </div>
+
+                  {/* 대댓글 내용 또는 수정 폼 */}
+                  {editingCommentId === reply.commentId ? (
+                    <div className="board-edit-form">
+                      <input
+                        type="text"
+                        className="board-edit-input"
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleEditSave(reply.commentId);
+                        }}
+                      />
+                      <button className="board-edit-save" onClick={() => handleEditSave(reply.commentId)}>
+                        저장
+                      </button>
+                      <button className="board-edit-cancel" onClick={handleEditCancel}>
+                        취소
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="board-comment-content">{reply.content}</p>
+                  )}
+
+                  <div className="board-comment-actions">
+                    <div className="board-comment-actions-right">
+                      {isCommentAuthor(reply.author.handle) && editingCommentId !== reply.commentId ? (
+                        <>
+                          <button
+                            className="board-comment-action edit"
+                            onClick={() => handleEditStart(reply.commentId, reply.content)}
+                          >
+                            수정
+                          </button>
+                          <button
+                            className="board-comment-action delete"
+                            onClick={() => handleDeleteClick('reply', reply.commentId)}
+                          >
+                            삭제
+                          </button>
+                        </>
+                      ) : !isCommentAuthor(reply.author.handle) && (
+                        <button
+                          className="board-comment-action report"
+                          onClick={() => handleReportClick('COMMENT', reply.commentId, '댓글')}
+                        >
+                          신고
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="board-delete-modal-content">
+              <AlertTriangle className="board-delete-modal-icon" />
+              <h2 className="board-delete-modal-title">
+                {deleteTarget?.type === 'post' ? '게시글 삭제' : '댓글 삭제'}
+              </h2>
+              <p className="board-delete-modal-desc">
+                {deleteTarget?.type === 'post'
+                  ? '게시글을 삭제하시겠습니까? 삭제된 글은 복구할 수 없습니다.'
+                  : '댓글을 삭제하시겠습니까?'
+                }
+              </p>
+              <div className="board-delete-modal-actions">
+                <button
+                  className="board-delete-modal-cancel"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  취소
+                </button>
+                <button
+                  className="board-delete-modal-confirm"
+                  onClick={handleConfirmDelete}
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 신고 모달 */}
+      {showReportModal && reportTarget && (
+        <ReportModal
+          type={reportTarget.type}
+          targetId={reportTarget.id}
+          targetName={reportTarget.name}
+          onClose={() => {
+            setShowReportModal(false);
+            setReportTarget(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}

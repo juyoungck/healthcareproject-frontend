@@ -1,0 +1,319 @@
+/**
+ * diet.css
+ * 식단 페이지 스타일
+ * - 검색바
+ * - 음식 카드 그리드
+ * - 음식 상세 모달
+ */
+
+/**
+ * ===========================================
+ * 식단 페이지 컨테이너
+ * ===========================================
+ */
+
+.diet-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/**
+ * 페이지 헤더 (필터/검색 영역)
+ */
+.diet-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/**
+ * ===========================================
+ * 식단 페이지 검색 색상
+ * ===========================================
+ */
+
+/**
+ * 검색 입력 포커스
+ */
+.diet-page .search-input:focus {
+  border-color: var(--color-diet);
+  box-shadow: 0 0 0 var(--border-width-lg) var(--color-diet-light);
+}
+
+/**
+ * ===========================================
+ * 음식 목록
+ * ===========================================
+ */
+
+ /**
+ * 음식 목록 컨테이너
+ */
+.diet-list {
+  flex: 1;
+}
+
+/**
+ * 음식 카드 그리드 (2열)
+ */
+.diet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+/**
+ * 음식 카드
+ */
+.diet-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diet-card:hover {
+  border-color: var(--color-diet);
+  box-shadow: var(--shadow-md);
+  transform: translateY(calc(var(--spacing-2xs) * -1));
+}
+
+.diet-card:active {
+  transform: translateY(0.98);
+}
+
+/**
+ * 음식 이미지 래퍼
+ */
+.diet-card-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--element-size-7xl);
+  background-color: var(--color-gray-50);
+  overflow: hidden;
+}
+
+/**
+ * 음식 이미지
+ */
+.diet-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.diet-card:hover .diet-card-image {
+  transform: scale(1.05);
+}
+
+/**
+ * 음식 정보 영역
+ */
+.diet-card-info {
+  padding: var(--spacing-md);
+}
+
+.diet-card-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-sm);
+  text-align: left;
+}
+
+.diet-card-tags {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.diet-card-tag {
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  background-color: var(--color-diet-light);
+  color: var(--color-diet);
+  border-radius: var(--border-radius-xs);
+}
+
+/**
+ * ===========================================
+ * 빈 상태
+ * ===========================================
+ */
+
+.diet-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+}
+
+.diet-empty-text {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/**
+ * ===========================================
+ * 음식 상세 모달 콘텐츠
+ * ===========================================
+ */
+
+/**
+ * 모달 콘텐츠 영역
+ */
+.food-detail-content {
+  padding: var(--spacing-xl);
+}
+
+/**
+ * 음식 이미지 래퍼
+ */
+.food-detail-image-wrapper {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  margin-bottom: var(--spacing-xl);
+  background-color: var(--color-gray-100);
+}
+
+/**
+ * 음식 이미지
+ */
+.food-detail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/**
+ * 영양소 영역
+ */
+.food-detail-nutrients {
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+/**
+ * 영양소 헤더
+ */
+.food-detail-nutrients-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-gray-100);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  text-align: center;
+}
+
+/**
+ * 영양소 행 (가로 정렬)
+ */
+.food-detail-nutrient-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
+}
+
+.food-detail-nutrient-row:last-child {
+  border-bottom: none;
+}
+
+/**
+ * 영양소 라벨
+ */
+.food-detail-nutrient-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+/**
+ * 영양소 값
+ */
+.food-detail-nutrient-value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
+}
+
+/**
+ * ===========================================
+ * 알레르기 정보 영역
+ * ===========================================
+ */
+
+.food-detail-allergy {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
+}
+
+.food-detail-allergy-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-sm);
+}
+
+.food-detail-allergy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.food-detail-allergy-tag {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-error);
+  background-color: var(--color-error-lightest);
+  border-radius: var(--border-radius-full);
+}
+
+/**
+ * ===========================================
+ * 무한스크롤 하단 영역
+ * ===========================================
+ */
+
+/**
+ * 추가 로딩 표시
+ */
+.diet-loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+}
+
+/**
+ * 마지막 섹션
+ */
+.diet-end-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+/**
+ * 마지막 메시지
+ */
+.diet-end-message {
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+}

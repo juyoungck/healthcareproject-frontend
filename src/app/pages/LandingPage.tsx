@@ -17,6 +17,7 @@ import SignupModal from '../components/auth/SignupModal';
  */
 interface LandingPageProps {
   onLogin: () => void;
+  onSignupComplete: () => void;
 }
 
 /**
@@ -54,7 +55,7 @@ const FEATURES = [
  * LandingPage 컴포넌트
  * 메인 랜딩 페이지 UI 렌더링
  */
-export default function LandingPage({ onLogin }: LandingPageProps) {
+export default function LandingPage({ onLogin, onSignupComplete }: LandingPageProps) {
   /**
    * 모달 상태 관리
    */
@@ -196,6 +197,7 @@ export default function LandingPage({ onLogin }: LandingPageProps) {
       {showLoginModal && (
         <LoginModal 
           onClose={closeAllModals}
+          onSignupComplete={onSignupComplete}
           onLoginSuccess={handleLoginSuccess}
           onSwitchToSignup={openSignupModal}
         />
@@ -204,8 +206,8 @@ export default function LandingPage({ onLogin }: LandingPageProps) {
       {/* 회원가입 모달 */}
       {showSignupModal && (
         <SignupModal 
-          onClose={closeAllModals}
-          onSignupSuccess={openLoginModal}
+          onClose={() => setShowSignupModal(false)}
+          onSignupComplete={onSignupComplete}
           onSwitchToLogin={openLoginModal}
         />
       )}

@@ -4,15 +4,17 @@
  * 방 목록에서 각 방을 표시하는 카드
  */
 
+import { useState } from 'react';
 import { User, Clock, Users, Lock } from 'lucide-react';
-import { PTRoom } from './ptDummyData';
+import type { PTRoomListItem } from '../../../api/types/pt';
+import TrainerProfileModal from './TrainerProfileModal';
 
 /**
  * Props 타입 정의
  */
 interface PTRoomCardProps {
-  room: PTRoom;
-  onClick: (room: PTRoom) => void;
+  room: PTRoomListItem;
+  onClick: (room: PTRoomListItem) => void;
 }
 
 /**
@@ -20,6 +22,9 @@ interface PTRoomCardProps {
  */
 const formatDateTime = (dateString: string): string => {
   const date = new Date(dateString);
+  
+  /* 로컬 시간(한국시간) 기준으로 표시 */
+  const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
   const hours = date.getHours();
@@ -27,7 +32,7 @@ const formatDateTime = (dateString: string): string => {
   const ampm = hours >= 12 ? '오후' : '오전';
   const hour12 = hours % 12 || 12;
   
-  return `${month}/${day} ${ampm} ${hour12}:${minutes}`;
+  return `${year}년 ${month}월 ${day}일 ${ampm} ${hour12}:${minutes}`;
 };
 
 /**
@@ -35,10 +40,15 @@ const formatDateTime = (dateString: string): string => {
  */
 export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
   /**
+   * 트레이너 프로필
+   */
+  const [showTrainerProfile, setShowTrainerProfile] = useState(false);
+
+  /**
    * 상태 뱃지 렌더링
    */
   const renderStatusBadge = () => {
-    if (room.status === 'live') {
+    if (room.status === 'LIVE') {
       return (
         <span className="pt-status-badge live">
           <span className="pt-live-dot" />
@@ -46,15 +56,39 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
         </span>
       );
     }
-    
-    if (room.status === 'reserved') {
+
+    if (room.status === 'SCHEDULED') {
       return (
         <span className="pt-status-badge reserved">
           예약중
         </span>
       );
     }
-    
+
+    if (room.status === 'ENDED') {
+      return (
+        <span className="pt-status-badge ended">
+          종료
+        </span>
+      );
+    }
+
+    if (room.status === 'CANCELLED') {
+      return (
+        <span className="pt-status-badge cancelled">
+          취소됨
+        </span>
+      );
+    }
+
+    if (room.status === 'FORCE_CLOSED') {
+      return (
+        <span className="pt-status-badge force-closed">
+          강제종료
+        </span>
+      );
+    }
+
     return null;
   };
 
@@ -62,7 +96,7 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
    * 비공개 뱃지 렌더링
    */
   const renderPrivateBadge = () => {
-    if (room.visibility === 'private') {
+    if (room.isPrivate) {
       return (
         <span className="pt-status-badge private">
           <Lock size={10} />
@@ -74,6 +108,7 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
   };
 
   return (
+    <>
     <div className="pt-room-card" onClick={() => onClick(room)}>
       {/* 카드 헤더 */}
       <div className="pt-room-card-header">
@@ -85,11 +120,25 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
       </div>
 
       {/* 트레이너 정보 */}
-      <div className="pt-room-trainer">
-        <div className="pt-trainer-avatar">
-          <User className="pt-trainer-avatar-icon" />
+      <div className="pt-room-trainer"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowTrainerProfile(true);
+        }}
+        style={{ cursor: 'pointer' }}
+      >
+        <div className="pt-trainer-profile">
+          {room.trainer.profileImageUrl ? (
+            <img 
+              src={room.trainer.profileImageUrl} 
+              alt={room.trainer.nickname}
+              className="pt-trainer-profile-img"
+            />
+          ) : (
+            <User className="pt-trainer-profile-icon" />
+          )}
         </div>
-        <span className="pt-trainer-name">{room.trainerName} 트레이너</span>
+        <span className="pt-trainer-name">{room.trainer.nickname} 트레이너</span>
       </div>
 
       {/* 메타 정보 */}
@@ -98,7 +147,7 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
         <div className="pt-meta-item">
           <Clock className="pt-meta-icon" />
           <span>
-            {room.status === 'live' 
+            {room.status === 'LIVE' 
               ? '진행중' 
               : room.scheduledAt 
                 ? formatDateTime(room.scheduledAt)
@@ -111,10 +160,22 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
         <div className="pt-meta-item">
           <Users className="pt-meta-icon" />
           <span>
-            {room.currentParticipants}/{room.maxParticipants}명
+            {room.status === 'LIVE' 
+              ? `${room.participants.current}/${room.participants.max ?? '∞'}명`
+              : `최대 ${room.participants.max ?? '∞'}명`
+            }
           </span>
         </div>
       </div>
     </div>
+
+    {/* 트레이너 프로필 모달 */}
+    {showTrainerProfile && (
+      <TrainerProfileModal 
+        trainer={room.trainer}
+        onClose={() => setShowTrainerProfile(false)}
+      />
+    )}
+    </>
   );
 }

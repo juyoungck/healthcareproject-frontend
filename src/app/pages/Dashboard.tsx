@@ -2,214 +2,209 @@
  * Dashboard.tsx
  * 대시보드 페이지 컴포넌트
  * 로그인한 사용자에게 표시되는 메인 서비스 화면
- * - 오늘의 운동/식단 요약 카드
- * - 화상PT 알림
- * - 주간 미니 캘린더
- * - 하단 탭 네비게이션
  */
 
-import { useState } from 'react';
-import { 
-  Dumbbell, 
-  User, 
-  Video, 
-  Utensils, 
-  Home, 
-  MessageSquare,
-  Calendar
-} from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import ExercisePage from './ExercisePage';
+import DietPage from './DietPage';
 import VideoPTPage from './VideoPTPage';
+import BoardPage from './BoardPage';
+import PlanExercisePage from './PlanExercisePage';
+import PlanExerciseViewPage from '../components/plan/PlanExerciseViewPage';
+import PlanDietPage from './PlanDietPage';
+import PlanDietViewPage from '../components/plan/PlanDietViewPage';
+import WeekCalendar from '../components/calendar/WeekCalendar';
+import CalendarPage from './CalendarPage';
+import CalendarStatsPage from './CalendarStatsPage';
+import MyPage from './MyPage';
+
+/* 커스텀 훅 */
+import { useTodayPlan } from '../../hooks/dashboard/useTodayPlan';
+import { useDashboardNavigation } from '../../hooks/dashboard/useDashboardNavigation';
+import { useLivePTCount } from '../../hooks/dashboard/useLivePTCount';
+
+/* 서브 컴포넌트 */
+import DashboardHeader from '../components/dashboard/DashboardHeader';
+import TodayWorkoutCard from '../components/dashboard/TodayWorkoutCard';
+import TodayDietCard from '../components/dashboard/TodayDietCard';
+import RestDayCard from '../components/dashboard/RestDayCard';
+import PlanCreateCard from '../components/dashboard/PlanCreateCard';
+import VideoPTBar from '../components/dashboard/VideoPTBar';
+import BottomNavigation from '../components/dashboard/BottomNavigation';
 
 /**
- * 컴포넌트 Props 타입 정의
+ * Props 타입 정의
  */
 interface DashboardProps {
   onLogout: () => void;
+  onEditOnboarding: () => void;
+  initialShowMyPage?: boolean;
+  onMyPageShown?: () => void;
+  onOpenAdminPage?: () => void;
 }
 
 /**
- * 요일 데이터
- */
-const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
-
-/**
- * 탭 타입 정의
- */
-type TabType = 'home' | 'exercise' | 'diet' | 'pt' | 'board';
-
-/**
  * Dashboard 컴포넌트
- * 메인 대시보드 UI 렌더링
  */
-export default function Dashboard({ onLogout }: DashboardProps) {
-  /**
-   * 현재 활성 탭 상태
-   */
-  const [activeTab, setActiveTab] = useState<TabType>('home');
-  
-  /**
-   * 오늘 날짜 인덱스 (0: 일요일 ~ 6: 토요일)
-   */
-  const today = new Date().getDay();
+export default function Dashboard({
+  onLogout,
+  onEditOnboarding,
+  initialShowMyPage = false,
+  onMyPageShown,
+  onOpenAdminPage
+}: DashboardProps) {
+  const { user: userInfo } = useAuth();
+
+  /** 네비게이션 훅 */
+  const {
+    activeTab,
+    subPage,
+    showMyPage,
+    videoPTFilter,
+    selectedExerciseId,
+    selectedFoodId,
+    viewPageInitialDate,
+    selectedMealIndex,
+    setActiveTab,
+    setSubPage,
+    setShowMyPage,
+    setSelectedExerciseId,
+    setSelectedFoodId,
+    setViewPageInitialDate,
+    setSelectedMealIndex,
+    handleNavigateToPT,
+    getHeaderTitle,
+  } = useDashboardNavigation({ initialShowMyPage, onMyPageShown });
+
+  /** 오늘 계획 훅 */
+  const {
+    todayWorkout,
+    todayDiet,
+    isLoadingToday,
+    calendarRefreshKey,
+    loadTodayData,
+    handleToggleWorkoutItem,
+    handleToggleMeal,
+    hasWeeklyWorkoutPlan,
+    hasWeeklyDietPlan,
+  } = useTodayPlan();
+
+  /** 실시간 PT 개수 훅 */
+  const { livePTCount } = useLivePTCount();
 
   /**
-   * 예시 주간 활동 데이터
-   * TODO: 실제 구현 시 API에서 가져오기
+   * AI 계획 생성 완료 핸들러 (운동)
    */
-  const dailyStatus = [
-    { workout: false, diet: false, pt: false },
-    { workout: true, diet: true, pt: false },
-    { workout: true, diet: false, pt: true },
-    { workout: false, diet: false, pt: false },
-    { workout: false, diet: false, pt: false },
-    { workout: false, diet: false, pt: false },
-    { workout: false, diet: false, pt: false },
-  ];
-
-  /**
-   * 탭별 헤더 타이틀
-   */
-  const getHeaderTitle = (): string => {
-    switch (activeTab) {
-      case 'home':
-        return '운동운동';
-      case 'exercise':
-        return '운동';
-      case 'diet':
-        return '식단';
-      case 'pt':
-        return '화상PT';
-      case 'board':
-        return '게시판';
-      default:
-        return '운동운동';
-    }
+  const handleExercisePlanComplete = () => {
+    setSubPage('none');
+    loadTodayData();
   };
-  
+
+  /**
+   * AI 계획 생성 완료 핸들러 (식단)
+   */
+  const handleDietPlanComplete = () => {
+    setSubPage('none');
+    loadTodayData();
+  };
+
   /**
    * 홈 탭 콘텐츠 렌더링
    */
-  const renderHomeContent = () => (
-    <>
-      {/* 운동/식단 계획 생성 박스 */}
-      <div className="plan-grid">
-        {/* 운동 계획 생성 카드 */}
-        <button className="plan-card" onClick={() => setActiveTab('exercise')}>
-          <div className="plan-card-content">
-            <Dumbbell className="plan-card-icon workout" />
-            <p className="plan-card-title">운동 계획 생성</p>
-          </div>
-        </button>
-        
-        {/* 식단 계획 생성 카드 */}
-        <button className="plan-card" onClick={() => setActiveTab('diet')}>
-          <div className="plan-card-content">
-            <Utensils className="plan-card-icon diet" />
-            <p className="plan-card-title">식단 계획 생성</p>
-          </div>
-        </button>
-      </div>
-
-      {/* 화상회의 예약 확인 바 */}
-      <div className="video-call-bar" onClick={() => setActiveTab('pt')}>
-        <div className="video-call-content">
-          <div className="video-call-left">
-            <Video className="video-call-icon" />
-            <div>
-              <p className="video-call-title">화상 PT 예약</p>
-              <p className="video-call-subtitle">예약된 일정을 확인하세요</p>
-            </div>
-          </div>
-          <span className="video-call-count">0건</span>
-        </div>
-      </div>
-
-      {/* 주간 캘린더 */}
-      <div className="calendar-container">
-        <div className="calendar-header">
-          <h2 className="calendar-title">주간 활동</h2>
-          <button className="calendar-more-btn">
-            <Calendar size={16} />
-            <span>전체보기</span>
-          </button>
-        </div>
-        
-        <div className="calendar-grid">
-          {WEEK_DAYS.map((day, index) => (
-            <div key={index} className="calendar-day-column">
-              {/* 요일 라벨 */}
-              <span className={`calendar-day-label ${index === today ? 'today' : ''}`}>
-                {day}
-              </span>
-              
-              {/* 날짜 셀 */}
-              <div className={`calendar-day-cell ${index === today ? 'today' : ''}`}>
-                <div className="calendar-status-dots">
-                  {/* 운동 완료 상태 도트 */}
-                  <div className={`calendar-status-dot ${dailyStatus[index].workout ? 'workout' : ''}`} />
-                  
-                  {/* 식단 완료 상태 도트 */}
-                  <div className={`calendar-status-dot ${dailyStatus[index].diet ? 'diet' : ''}`} />
-                  
-                  {/* PT 완료 상태 도트 */}
-                  <div className={`calendar-status-dot ${dailyStatus[index].pt ? 'pt' : ''}`} />
-                </div>
+  const renderHomeContent = () => {
+    return (
+      <>
+        {/* 계획 생성/오늘의 계획 카드 그리드 */}
+        <div className="plan-grid">
+          {/* 운동 카드 */}
+          {todayWorkout ? (
+            <TodayWorkoutCard
+              workout={todayWorkout}
+              onToggleItem={handleToggleWorkoutItem}
+              onViewAll={() => {
+                setViewPageInitialDate(undefined);
+                setActiveTab('exerciseView');
+              }}
+              onExerciseClick={(id) => {
+                setSelectedExerciseId(id);
+                setActiveTab('exercise');
+              }}
+            />
+          ) : isLoadingToday ? (
+            <div className="plan-card loading">
+              <div className="plan-card-content">
+                <p className="plan-card-title">로딩 중...</p>
               </div>
             </div>
-          ))}
-        </div>
-        
-        {/* 범례 */}
-        <div className="calendar-legend">
-          <div className="calendar-legend-item">
-            <div className="calendar-legend-dot workout" />
-            <span className="calendar-legend-label">운동</span>
-          </div>
-          <div className="calendar-legend-item">
-            <div className="calendar-legend-dot diet" />
-            <span className="calendar-legend-label">식단</span>
-          </div>
-          <div className="calendar-legend-item">
-            <div className="calendar-legend-dot pt" />
-            <span className="calendar-legend-label">화상PT</span>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-  
-  /**
-   * 운동 탭 콘텐츠 렌더링
-   */
-  const renderExerciseContent = () => (
-    <div className="pt-empty-state">
-      <Dumbbell className="pt-empty-icon" style={{ color: 'var(--color-workout)' }} />
-      <h3 className="pt-empty-title">운동 페이지</h3>
-      <p className="pt-empty-desc">운동 기능은 준비 중입니다</p>
-    </div>
-  );
+          ) : hasWeeklyWorkoutPlan() ? (
+            <RestDayCard
+              type="workout"
+              onViewWeekly={() => {
+                setViewPageInitialDate(undefined);
+                setActiveTab('exerciseView');
+              }}
+            />
+          ) : (
+            <PlanCreateCard
+              type="workout"
+              onClick={() => setSubPage('exercisePlan')}
+            />
+          )}
 
-  /**
-   * 식단 탭 콘텐츠 렌더링
-   */
-  const renderDietContent = () => (
-    <div className="pt-empty-state">
-      <Utensils className="pt-empty-icon" style={{ color: 'var(--color-diet)' }} />
-      <h3 className="pt-empty-title">식단 페이지</h3>
-      <p className="pt-empty-desc">식단 기능은 준비 중입니다</p>
-    </div>
-  );
+          {/* 식단 카드 */}
+          {todayDiet ? (
+            <TodayDietCard
+              diet={todayDiet}
+              onToggleMeal={handleToggleMeal}
+              onViewAll={() => {
+                setViewPageInitialDate(undefined);
+                setActiveTab('dietView');
+              }}
+              onMealClick={(index) => {
+                setSelectedMealIndex(index);
+                setViewPageInitialDate(undefined);
+                setActiveTab('dietView');
+              }}
+            />
+          ) : hasWeeklyDietPlan() ? (
+            <RestDayCard
+              type="diet"
+              onViewWeekly={() => {
+                setViewPageInitialDate(undefined);
+                setActiveTab('dietView');
+              }}
+            />
+          ) : (
+            <PlanCreateCard
+              type="diet"
+              onClick={() => setSubPage('dietPlan')}
+            />
+          )}
+        </div>
 
-  /**
-   * 게시판 탭 콘텐츠 렌더링
-   */
-  const renderBoardContent = () => (
-    <div className="pt-empty-state">
-      <MessageSquare className="pt-empty-icon" style={{ color: 'var(--color-gray-500)' }} />
-      <h3 className="pt-empty-title">게시판 페이지</h3>
-      <p className="pt-empty-desc">게시판 기능은 준비 중입니다</p>
-    </div>
-  );
+        {/* 화상PT 바 - 진행중 탭으로 이동 */}
+        <VideoPTBar
+          livePTCount={livePTCount}
+          onClick={() => handleNavigateToPT('live')}
+        />
+
+        {/* 주간 캘린더 */}
+        <WeekCalendar
+          key={calendarRefreshKey}
+          onNavigateToMonth={() => setActiveTab('calendar')}
+          onNavigateToWorkout={(dateStr) => {
+            setViewPageInitialDate(dateStr);
+            setActiveTab('exerciseView');
+          }}
+          onNavigateToDiet={(dateStr) => {
+            setViewPageInitialDate(dateStr);
+            setActiveTab('dietView');
+          }}
+          onNavigateToPT={() => handleNavigateToPT('live')}
+        />
+      </>
+    );
+  };
 
   /**
    * 탭별 콘텐츠 렌더링
@@ -219,90 +214,146 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       case 'home':
         return renderHomeContent();
       case 'exercise':
-        return renderExerciseContent();
+        return (
+          <ExercisePage
+            initialExerciseId={selectedExerciseId}
+            onExerciseSelect={(id) => setSelectedExerciseId(id)}
+          />
+        );
+      case 'exerciseView':
+        return (
+          <PlanExerciseViewPage
+            onBack={() => {
+              setViewPageInitialDate(undefined);
+              setActiveTab('home');
+            }}
+            onExerciseClick={(id) => {
+              setSelectedExerciseId(id);
+              setActiveTab('exercise');
+            }}
+            onRegenerate={() => setSubPage('exercisePlan')}
+            onDataChange={loadTodayData}
+            initialDate={viewPageInitialDate}
+          />
+        );
       case 'diet':
-        return renderDietContent();
+        return (
+          <DietPage
+            initialFoodId={selectedFoodId}
+            onFoodSelect={(id) => setSelectedFoodId(id)}
+          />
+        );
+      case 'dietView':
+        return (
+          <PlanDietViewPage
+            onBack={() => {
+              setViewPageInitialDate(undefined);
+              setActiveTab('home');
+            }}
+            onFoodClick={(id) => {
+              setSelectedFoodId(id);
+              setActiveTab('diet');
+            }}
+            onRegenerate={() => setSubPage('dietPlan')}
+            initialMealIndex={selectedMealIndex}
+            onDataChange={loadTodayData}
+            initialDate={viewPageInitialDate}
+          />
+        );
       case 'pt':
-        return <VideoPTPage />;
+        return <VideoPTPage initialFilter={videoPTFilter} />;
       case 'board':
-        return renderBoardContent();
+        return <BoardPage />;
+      case 'calendar':
+        return (
+          <CalendarPage
+            onNavigateBack={() => setActiveTab('home')}
+            onNavigateToWorkout={(dateStr) => {
+              setViewPageInitialDate(dateStr);
+              setActiveTab('exerciseView');
+            }}
+            onNavigateToDiet={(dateStr) => {
+              setViewPageInitialDate(dateStr);
+              setActiveTab('dietView');
+            }}
+            onNavigateToPT={() => handleNavigateToPT('live')}
+            onNavigateToStats={() => setActiveTab('calendarStats')}
+          />
+        );
+      case 'calendarStats':
+        return (
+          <CalendarStatsPage
+            onNavigateBack={() => setActiveTab('calendar')}
+          />
+        );
       default:
         return renderHomeContent();
     }
   };
 
+  /**
+   * 서브페이지 렌더링
+   */
+  if (subPage === 'exercisePlan') {
+    return (
+      <PlanExercisePage
+        onBack={() => setSubPage('none')}
+        onComplete={handleExercisePlanComplete}
+      />
+    );
+  }
+
+  if (subPage === 'dietPlan') {
+    return (
+      <PlanDietPage
+        onBack={() => setSubPage('none')}
+        onComplete={handleDietPlanComplete}
+      />
+    );
+  }
+
+  if (showMyPage) {
+    return (
+      <MyPage
+        onBack={() => setShowMyPage(false)}
+        onLogout={onLogout}
+        onEditOnboarding={onEditOnboarding}
+        onOpenAdminPage={() => {
+          setShowMyPage(false);
+          onOpenAdminPage?.();
+        }}
+      />
+    );
+  }
+
   return (
     <div className="app-container">
-      {/* 상단 헤더 (고정) */}
-      <header className="app-header">
-        <div className="app-header-content">
-          {/* 좌측 로고 아이콘 */}
-          <Dumbbell className="app-logo-icon" />
-          
-          {/* 중앙 타이틀 */}
-          <h1 className="app-title">{getHeaderTitle()}</h1>
-          
-          {/* 우측 마이페이지 버튼 */}
-          <button className="app-profile-btn" onClick={onLogout}>
-            <User className="app-profile-icon" />
-          </button>
-        </div>
-      </header>
+      {/* 상단 헤더 */}
+      <DashboardHeader
+        title={getHeaderTitle()}
+        profileImageUrl={userInfo?.profileImageUrl}
+        onProfileClick={() => setShowMyPage(true)}
+      />
 
       {/* 메인 콘텐츠 영역 */}
       <main className="app-main">
         {renderTabContent()}
       </main>
 
-      {/* 하단 네비게이션 바 (고정) */}
-      <nav className="app-bottom-nav">
-        <div className="app-bottom-nav-grid">
-          {/* 운동 탭 */}
-          <button 
-            className={`nav-button ${activeTab === 'exercise' ? 'active' : ''}`}
-            onClick={() => setActiveTab('exercise')}
-          >
-            <Dumbbell className="nav-button-icon" />
-            <span className="nav-button-label">운동</span>
-          </button>
-          
-          {/* 식단 탭 */}
-          <button 
-            className={`nav-button ${activeTab === 'diet' ? 'active' : ''}`}
-            onClick={() => setActiveTab('diet')}
-          >
-            <Utensils className="nav-button-icon" />
-            <span className="nav-button-label">식단</span>
-          </button>
-          
-          {/* 메인(홈) 탭 */}
-          <button 
-            className={`nav-button ${activeTab === 'home' ? 'active' : ''}`}
-            onClick={() => setActiveTab('home')}
-          >
-            <Home className="nav-button-icon" />
-            <span className="nav-button-label">홈</span>
-          </button>
-          
-          {/* 화상PT 탭 */}
-          <button 
-            className={`nav-button ${activeTab === 'pt' ? 'active' : ''}`}
-            onClick={() => setActiveTab('pt')}
-          >
-            <Video className="nav-button-icon" />
-            <span className="nav-button-label">화상PT</span>
-          </button>
-          
-          {/* 게시판 탭 */}
-          <button 
-            className={`nav-button ${activeTab === 'board' ? 'active' : ''}`}
-            onClick={() => setActiveTab('board')}
-          >
-            <MessageSquare className="nav-button-icon" />
-            <span className="nav-button-label">게시판</span>
-          </button>
-        </div>
-      </nav>
+      {/* 하단 네비게이션 바 */}
+      <BottomNavigation
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onExerciseClick={() => {
+          setSelectedExerciseId(null);
+          setActiveTab('exercise');
+        }}
+        onDietClick={() => {
+          setSelectedFoodId(null);
+          setActiveTab('diet');
+        }}
+        onPTClick={() => handleNavigateToPT('all')}
+      />
     </div>
   );
 }

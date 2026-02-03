@@ -10,19 +10,19 @@
    * 레이아웃 관련 변수
    * ===========================================
    */
-  
+
   /**
    * 앱 최대 너비
    * 모바일 앱처럼 세로형 UI 유지
    * 데스크탑에서도 동일한 비율 적용
    */
-  --app-max-width: 520px;
+  --app-max-width: 32.5rem;
   
   /**
    * 헤더 및 네비게이션 높이
    */
-  --header-height: 56px;
-  --bottom-nav-height: 64px;
+  --header-height: var(--element-size-3xl);
+  --bottom-nav-height: var(--element-size-4xl);
   
   /**
    * ===========================================
@@ -36,6 +36,7 @@
   --spacing-sm: 0.5rem;     /* 8px */
   --spacing-md: 0.75rem;    /* 12px */
   --spacing-lg: 1rem;       /* 16px */
+  --spacing-lg-plus: 1.25rem; /* 20px */
   --spacing-xl: 1.5rem;     /* 24px */
   --spacing-2xl: 2rem;      /* 32px */
   --spacing-3xl: 3rem;      /* 48px */
@@ -45,7 +46,7 @@
    * 브랜드 색상 (Brand Colors)
    * ===========================================
    */
-  
+
   /**
    * 프라이머리 색상 (파란색 계열)
    */
@@ -53,26 +54,39 @@
   --color-primary-light: #eff6ff;
   --color-primary-dark: #1d4ed8;
   --color-primary-hover: #3b82f6;
-  
+
   /**
    * ===========================================
    * 기능별 색상 (Functional Colors)
    * ===========================================
    */
-  
-  /* 운동 관련 색상 (파란색) */
+
+  /**
+   * 운동 관련 색상 (파란색)
+   */
   --color-workout: #2563eb;
   --color-workout-light: #dbeafe;
-  
-  /* 식단 관련 색상 (초록색) */
+  --color-workout-incomplete: #93c5fd;
+  /* 미흡 - 하늘색 */
+  /**
+   * 식단 관련 색상 (초록색)
+   */
   --color-diet: #16a34a;
   --color-diet-light: #dcfce7;
-  
-  /* 화상PT 관련 색상 (보라색) */
+  --color-diet-incomplete: #6bbd69;
+  /**
+   * 화상PT 관련 색상 (보라색)
+   */
   --color-pt: #9333ea;
   --color-pt-light: #f3e8ff;
   --color-pt-dark: #7c22ce;
-  
+  --color-pt-incomplete: #E6E6FA;
+  /* 미흡 - 라벤더 */
+  /**
+ * 메모 관련 색상 (연노랑)
+ */
+  --color-memo: #fbdd64;
+
   /**
    * 상태 색상
    */
@@ -80,21 +94,25 @@
   --color-success-light: #dcfce7;
   --color-error: #dc2626;
   --color-error-light: #fee2e2;
+  --color-error-lightest: rgba(220, 38, 38, 0.1);
   --color-warning: #f59e0b;
   --color-warning-light: #fef3c7;
-  --color-info: #0891b2;
-  --color-info-light: #cffafe;
-  
+  --color-caution: #f97316;
+  --color-caution-light: #ffedd5;
+  --color-failed: #9ca3af;
+  /* 실패 - 회색 */
+
   /**
    * 화상PT 상태별 색상
    */
-  --color-live: #dc2626;        /* 진행중 - 빨간색 */
+  --color-live: #dc2626;
+  /* 진행중 - 빨간색 */
   --color-live-light: #fee2e2;
-  --color-reserved: #f59e0b;    /* 예약중 - 주황색 */
   --color-reserved-light: #fef3c7;
-  --color-private: #6b7280;     /* 비공개 - 회색 */
+  --color-private: #6b7280;
+  /* 비공개 - 회색 */
   --color-private-light: #f3f4f6;
-  
+
   /**
    * ===========================================
    * 그레이스케일 (Grayscale)
@@ -112,7 +130,7 @@
   --color-gray-800: #1f2937;
   --color-gray-900: #111827;
   --color-black: #000000;
-  
+
   /**
    * ===========================================
    * 테두리 둥글기 (Border Radius)
@@ -123,7 +141,7 @@
   --border-radius-md: 0.75rem;   /* 12px */
   --border-radius-lg: 1rem;      /* 16px */
   --border-radius-xl: 1.5rem;    /* 24px */
-  --border-radius-full: 9999px;  /* 완전 원형 */
+  --border-radius-full: 624.9375rem;  /* 완전 원형 */
   
   /**
    * ===========================================
@@ -135,33 +153,41 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  
+
   /**
    * ===========================================
    * 폰트 설정 (Typography)
    * ===========================================
    */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
-                 'Helvetica Neue', Arial, 'Noto Sans KR', sans-serif;
-  
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
-  
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans KR', sans-serif;
+
+  --font-size-xs: 0.75rem;
+  /* 12px */
+  --font-size-sm: 0.875rem;
+  /* 14px */
+  --font-size-base: 1rem;
+  /* 16px */
+  --font-size-lg: 1.125rem;
+  /* 18px */
+  --font-size-xl: 1.25rem;
+  /* 20px */
+  --font-size-2xl: 1.5rem;
+  /* 24px */
+  --font-size-3xl: 1.875rem;
+  /* 30px */
+  --font-size-4xl: 2.25rem;
+  /* 36px */
+
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
+
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
-  
+
   /**
    * ===========================================
    * 트랜지션 (Transitions)
@@ -169,8 +195,7 @@
    */
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
-  --transition-slow: 300ms ease;
-  
+
   /**
    * ===========================================
    * Z-인덱스 (Z-Index)
@@ -182,7 +207,26 @@
   --z-modal-backdrop: 400;
   --z-modal: 500;
   --z-tooltip: 600;
-  
+
+  /**
+   * ===========================================
+   * 호버 색상
+   * ===========================================
+   */
+  --color-error-hover: #b91c1c;
+  --color-error-dark: #b91c1c;
+  --color-success-hover: #15803d;
+  --color-warning-hover: #d97706;
+  --color-kakao-hover: #e6cf00;
+  --color-naver-hover: #02b350;
+
+  /**
+   * ===========================================
+   * 오버레이 색상 (Overlay Colors)
+   * ===========================================
+   */
+  --color-overlay-dark: rgba(0, 0, 0, 0.5);
+
   /**
    * ===========================================
    * 소셜 로그인 색상
@@ -195,4 +239,100 @@
   --color-google: #ffffff;
   --color-google-text: #000000;
   --color-google-border: #dadce0;
+
+  /**
+   * ===========================================
+   * Admin 전용 색상
+   * ===========================================
+   */
+  --color-indigo: #4f46e5;
+  --color-indigo-light: #e0e7ff;
+  --color-indigo-lighter: #c7d2fe;
+  --color-indigo-lightest: #eef2ff;
+  --color-violet: #7c3aed;
+  --color-violet-light: #ede9fe;
+  --color-pink: #be185d;
+  --color-pink-light: #fce7f3;
+  --color-orange: #ea580c;
+  --color-orange-light: #fed7aa;
+  --color-yellow-light: #fef9c3;
+  --color-yellow-lighter: #fefce8;
+  --color-yellow-medium: #fde68a;
+  --color-amber-light: #fef3e2;
+  --color-amber-dark: #92400e;
+  --color-red-light: #fecaca;
+  --color-green-light: #bbf7d0;
+  --color-red-500: #ef4444;
+
+/**
+ * ===========================================
+ * 아이콘 크기 (Icon Size)
+ * ===========================================
+ */
+--icon-size-xs: 0.875rem;    /* 14px */
+--icon-size-sm: 1rem;        /* 16px */
+--icon-size-md: 1.125rem;    /* 18px */
+--icon-size-base: 1.25rem;   /* 20px */
+--icon-size-lg: 1.5rem;      /* 24px */
+--icon-size-xl: 1.75rem;     /* 28px */
+--icon-size-2xl: 2rem;       /* 32px */
+
+/**
+ * ===========================================
+ * 요소 크기 (Element Size)
+ * ===========================================
+ */
+--element-size-2xs: 1.5rem;  /* 24px */
+--element-size-xs: 1.75rem;  /* 28px */
+--element-size-sm: 2rem;     /* 32px */
+--element-size-md: 2.25rem;  /* 36px */
+--element-size-base: 2.5rem; /* 40px */
+--element-size-lg: 2.75rem;  /* 44px */
+--element-size-xl: 3rem;     /* 48px */
+--element-size-2xl: 3.25rem; /* 52px */
+--element-size-3xl: 3.5rem;  /* 56px */
+--element-size-3xl-plus: 3.75rem;  /* 60px */
+--element-size-4xl: 4rem;    /* 64px */
+--element-size-4xl-plus: 4.375rem; /* 70px */
+--element-size-5xl: 4.5rem;  /* 72px */
+--element-size-6xl: 5rem;    /* 80px */
+--element-size-7xl: 6.25rem; /* 100px */
+--element-size-8xl: 7.5rem;  /* 120px */
+--element-size-10xl: 10rem;        /* 160px */
+--element-size-12xl: 12.5rem;      /* 200px */
+
+/**
+ * ===========================================
+ * 컨테이너 최대 너비 (Container Max Width)
+ * ===========================================
+ */
+--container-xs: 17.5rem;   /* 280px */
+--container-sm: 18.75rem;  /* 300px */
+--container-md: 20rem;     /* 320px */
+--container-lg: 22.5rem;   /* 360px */
+--container-xl: 25rem;     /* 400px */
+--container-xxl: 27.5rem;  /* 440px */
+
+/**
+ * ===========================================
+ * 기타 크기
+ * ===========================================
+ */
+--size-2xs: 0.25rem;   /* 4px */
+--size-xs: 0.3125rem;  /* 5px */
+--size-sm: 0.375rem;   /* 6px */
+--size-md: 0.5rem;     /* 8px */
+--size-lg: 0.875rem;   /* 14px */
+
+/**
+ * ===========================================
+ * 테두리 두께 (Border Width)
+ * ===========================================
+ */
+--border-width-sm: 0.0625rem;  /* 1px */
+--border-width-md: 0.125rem;   /* 2px */
+--border-width-lg: 0.1875rem;  /* 3px */
+--border-width-xl: 0.25rem;    /* 4px */
+
 }
+

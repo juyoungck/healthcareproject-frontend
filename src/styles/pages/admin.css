@@ -1,0 +1,1931 @@
+/**
+ * admin.css
+ * 관리자 패널 스타일 (통합 정리)
+ */
+
+/* ===========================================
+   레이아웃
+   =========================================== */
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-gray-100);
+}
+
+/* ===========================================
+   사이드바
+   =========================================== */
+
+.admin-sidebar {
+  width: 240px;
+  background-color: var(--color-white);
+  border-right: 1px solid var(--color-gray-200);
+  padding: 20px 0;
+}
+
+.admin-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-gray-500);
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.admin-sidebar-item:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-800);
+}
+
+.admin-sidebar-item.active {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* ===========================================
+   메인 콘텐츠
+   =========================================== */
+
+.admin-main {
+  flex: 1;
+  padding: 24px;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.admin-header-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-gray-800);
+}
+
+.admin-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  background-color: var(--color-white);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-gray-500);
+  transition: all 0.2s;
+}
+
+.admin-back-btn:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-800);
+}
+
+.admin-content {
+  background-color: var(--color-white);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+/* ===========================================
+   섹션 타이틀 & 카운트 (통일)
+   =========================================== */
+
+.admin-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  margin: 0 0 8px 0;
+}
+
+.admin-section-count,
+.admin-section-subtitle {
+  font-size: 14px;
+  color: var(--color-gray-400);
+  margin: 0 0 20px 0;
+}
+
+.admin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+/* ===========================================
+   로딩 / 에러 상태
+   =========================================== */
+
+.admin-loading {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--color-gray-500);
+  font-size: 14px;
+}
+
+.admin-error {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--color-error);
+}
+
+.admin-error p {
+  margin-bottom: 16px;
+}
+
+/* ===========================================
+   대시보드
+   =========================================== */
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.admin-stat-card {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.admin-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.admin-stat-label {
+  font-size: 14px;
+  color: var(--color-gray-500);
+}
+
+.admin-stat-icon.users { color: var(--color-primary); }
+.admin-stat-icon.posts { color: var(--color-success); }
+.admin-stat-icon.trainers { color: var(--color-warning); }
+.admin-stat-icon.reports { color: var(--color-error); }
+.admin-stat-icon.pt { color: var(--color-pt); }
+
+.admin-stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin-bottom: 8px;
+}
+
+.admin-stat-sub {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.stat-active,
+.stat-visible,
+.stat-live {
+  color: var(--color-primary);
+}
+
+.stat-inactive,
+.stat-hidden {
+  color: var(--color-red-500);
+}
+
+.stat-pending {
+  color: var(--color-warning);
+}
+
+.stat-scheduled {
+  color: var(--color-pt);
+}
+
+/* 오늘의 활동 (4개 그리드) */
+.admin-activity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.admin-activity-card {
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.admin-activity-card.blue { background-color: var(--color-workout-light); }
+.admin-activity-card.yellow { background-color: var(--color-warning-light); }
+.admin-activity-card.orange { background-color: var(--color-caution-light); }
+.admin-activity-card.green { background-color: var(--color-success-light); }
+.admin-activity-card.purple { background-color: var(--color-pt-light); }
+
+.admin-activity-value {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.admin-activity-card.blue .admin-activity-value { color: var(--color-primary); }
+.admin-activity-card.yellow .admin-activity-value { color: var(--color-warning); }
+.admin-activity-card.orange .admin-activity-value { color: var(--color-orange); }
+.admin-activity-card.green .admin-activity-value { color: var(--color-success); }
+.admin-activity-card.purple .admin-activity-value { color: var(--color-pt); }
+
+.admin-activity-label {
+  font-size: 14px;
+  color: var(--color-gray-500);
+}
+
+/* 시스템 정보 */
+.admin-system-info {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.admin-system-card {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-system-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background-color: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.admin-system-header svg {
+  color: var(--color-gray-500);
+}
+
+.admin-system-content {
+  padding: 16px 20px;
+}
+
+.admin-system-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.admin-system-row:last-child {
+  border-bottom: none;
+}
+
+.admin-system-key {
+  font-size: 14px;
+  color: var(--color-gray-500);
+}
+
+.admin-system-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-gray-800);
+}
+
+.admin-system-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.admin-system-status.up {
+  color: var(--color-success);
+}
+
+.admin-system-status.down {
+  color: var(--color-error);
+}
+
+/* 플레이스홀더 */
+.admin-placeholder {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--color-gray-400);
+}
+
+/* ===========================================
+   필터 바 (통합)
+   =========================================== */
+
+.admin-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 필터 탭/버튼 (통합) */
+.admin-filter-tabs,
+.admin-filter-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-filter-tab,
+.admin-filter-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 20px;
+  background-color: var(--color-white);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-gray-500);
+  transition: all 0.2s;
+  min-width: 72px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.admin-filter-tab:hover,
+.admin-filter-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.admin-filter-tab.active,
+.admin-filter-btn.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* 고정 크기 필터 탭 (다중 선택용) */
+.admin-filter-tab-fixed {
+  padding: 8px 0;
+  width: 72px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 20px;
+  background-color: var(--color-white);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-gray-500);
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.admin-filter-tab-fixed:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.admin-filter-tab-fixed.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.admin-filter-select {
+  padding: 8px 12px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  background-color: var(--color-white);
+  font-size: 14px;
+  color: var(--color-gray-500);
+  cursor: pointer;
+}
+
+/* 검색 박스 */
+.admin-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  background-color: var(--color-white);
+}
+
+.admin-search-box input {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  width: 200px;
+}
+
+.admin-search-box svg {
+  color: var(--color-gray-400);
+}
+
+/* ===========================================
+   테이블 (통합)
+   =========================================== */
+
+.admin-table-container {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 14px 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.admin-table th {
+  background-color: var(--color-gray-50);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-gray-500);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  font-size: 14px;
+  color: var(--color-gray-800);
+}
+
+.admin-table tbody tr:hover {
+  background-color: var(--color-gray-50);
+}
+
+.admin-table-empty {
+  text-align: center;
+  padding: 60px 0 !important;
+  color: var(--color-gray-400);
+}
+
+/* 테이블 이미지 */
+.admin-table-img {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+  margin: 0 auto;
+}
+
+/* 영상 링크 */
+.admin-video-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  margin: 0 auto;
+}
+
+.admin-video-link:hover {
+  background-color: var(--color-red-light);
+}
+
+/* 테이블 텍스트 스타일 */
+.admin-table-name,
+.admin-table-title {
+  font-weight: 500;
+  color: var(--color-gray-800);
+}
+
+.admin-table-desc,
+.admin-table-reason,
+.admin-bio-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-gray-500);
+}
+
+/* 작성자 정보 (닉네임 + 핸들) */
+.admin-author-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.admin-nickname {
+  font-weight: 500;
+  color: var(--color-gray-800);
+}
+
+.admin-handle {
+  font-size: 12px;
+  color: var(--color-gray-400);
+}
+
+/* 클릭 가능한 행 */
+.admin-clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-clickable-row:hover {
+  background-color: var(--color-gray-100) !important;
+}
+
+/* 고정 행 */
+.pinned-row {
+  background-color: var(--color-yellow-lighter);
+}
+
+.pinned-row:hover {
+  background-color: var(--color-yellow-light) !important;
+}
+
+/* ===========================================
+   상태 뱃지 (통합)
+   =========================================== */
+
+.admin-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 대기중/예약 - 노랑 */
+.admin-status-badge.status-pending,
+.admin-status-badge.status-scheduled {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
+}
+
+/* 활성/승인/공개 - 초록 */
+.admin-status-badge.status-active,
+.admin-status-badge.status-approved,
+.admin-status-badge.status-posted {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+/* 비활성/정지/삭제 - 회색 */
+.admin-status-badge.status-inactive,
+.admin-status-badge.status-stop,
+.admin-status-badge.status-suspended,
+.admin-status-badge.status-deleted {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+
+.admin-status-badge.status-rejected {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+/* 휴면/종료/탈퇴 - 회색 */
+.admin-status-badge.status-sleep,
+.admin-status-badge.status-ended,
+.admin-status-badge.status-ignored,
+.admin-status-badge.status-cancelled,
+.admin-status-badge.status-withdrawn {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+
+/* 차단 - 빨강 */
+.admin-status-badge.status-suspended {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+/* 진행중 - 파랑 */
+.admin-status-badge.status-live {
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
+}
+
+/* 처리완료 - 보라 */
+.admin-status-badge.status-processed {
+  background-color: var(--color-indigo-light);
+  color: var(--color-indigo);
+}
+
+/* 강제종료 - 갈색 */
+.admin-status-badge.status-force-closed {
+  background-color: var(--color-amber-light);
+  color: var(--color-amber-dark);
+}
+
+/* ===========================================
+   역할 뱃지
+   =========================================== */
+
+.admin-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-role-badge.role-user {
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
+}
+
+.admin-role-badge.role-trainer {
+  background-color: var(--color-pt-light);
+  color: var(--color-pt);
+}
+
+.admin-role-badge.role-admin {
+  background-color: var(--color-pink-light);
+  color: var(--color-pink);
+}
+
+/* ===========================================
+   카테고리 뱃지
+   =========================================== */
+
+.admin-category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-category-badge.category-notice {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+.admin-category-badge.category-free {
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
+}
+
+.admin-category-badge.category-question {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
+}
+
+.admin-category-badge.category-info {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+/* 공지 라벨 */
+.admin-notice-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+/* ===========================================
+   타입 뱃지 (신고)
+   =========================================== */
+
+.admin-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-type-badge.type-post {
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
+}
+
+.admin-type-badge.type-comment {
+  background-color: var(--color-pt-light);
+  color: var(--color-pt);
+}
+
+/* ===========================================
+   부위/난이도 뱃지 (운동)
+   =========================================== */
+
+.admin-part-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+
+.admin-level-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-level-badge.level-beginner {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.admin-level-badge.level-intermediate {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
+}
+
+.admin-level-badge.level-advanced {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+/* ===========================================
+   공개/비공개 뱃지 (화상PT)
+   =========================================== */
+
+.admin-public-badge,
+.admin-private-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-public-badge {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.admin-private-badge {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
+}
+
+/* ===========================================
+   알러지 뱃지 (식단)
+   =========================================== */
+
+.admin-allergy-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--color-warning-hover);
+}
+
+.admin-allergy-icon {
+  color: var(--color-warning-hover);
+}
+
+/* ===========================================
+   액션 버튼
+   =========================================== */
+
+.admin-action-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.admin-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: transparent;
+}
+
+/* 보기 - 보라 */
+.admin-action-btn.view {
+  background-color: var(--color-indigo-light);
+  color: var(--color-indigo);
+}
+
+.admin-action-btn.view:hover {
+  background-color: var(--color-indigo-lighter);
+}
+
+/* 승인 - 초록 */
+.admin-action-btn.approve {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.admin-action-btn.approve:hover {
+  background-color: var(--color-green-light);
+}
+
+/* 거절/삭제/위험 - 빨강 */
+.admin-action-btn.reject,
+.admin-action-btn.delete,
+.admin-action-btn.danger {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+.admin-action-btn.reject:hover,
+.admin-action-btn.delete:hover,
+.admin-action-btn.danger:hover {
+  background-color: var(--color-red-light);
+}
+
+/* 차단 - 주황 */
+.admin-action-btn.ban {
+  background-color: var(--color-caution-light);
+  color: var(--color-orange);
+}
+
+.admin-action-btn.ban:hover {
+  background-color: var(--color-orange-light);
+}
+
+/* 차단해제 - 파랑 */
+.admin-action-btn.unban {
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
+}
+
+.admin-action-btn.unban:hover {
+  background-color: var(--color-workout-light);
+}
+
+/* 경고/수정 - 노랑 */
+.admin-action-btn.warning,
+.admin-action-btn.edit {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
+}
+
+.admin-action-btn.warning:hover,
+.admin-action-btn.edit:hover {
+  background-color: var(--color-yellow-medium);
+}
+
+/* 무시/보조 - 회색 */
+.admin-action-btn.ignore,
+.admin-action-btn.secondary {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+
+.admin-action-btn.ignore:hover,
+.admin-action-btn.secondary:hover {
+  background-color: var(--color-gray-200);
+}
+
+/* 핀 - 보라 */
+.admin-action-btn.pin {
+  background-color: var(--color-indigo-light);
+  color: var(--color-indigo);
+}
+
+.admin-action-btn.pin:hover,
+.admin-action-btn.pin.active {
+  background-color: var(--color-indigo-lighter);
+}
+
+/* ===========================================
+   추가 버튼
+   =========================================== */
+
+.admin-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-add-btn:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* ===========================================
+   공통 버튼
+   =========================================== */
+
+.admin-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-btn.primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.admin-btn.primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.admin-btn.secondary {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+
+.admin-btn.secondary:hover {
+  background-color: var(--color-gray-200);
+}
+
+.admin-btn.danger {
+  background-color: var(--color-error);
+  color: var(--color-white);
+}
+
+.admin-btn.danger:hover {
+  background-color: var(--color-error-dark);
+}
+
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===========================================
+   자격증/증빙자료 버튼
+   =========================================== */
+
+.admin-license-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: var(--color-indigo-light);
+  color: var(--color-indigo);
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.admin-license-btn:hover {
+  background-color: var(--color-indigo-lighter);
+}
+
+/* ===========================================
+   모달
+   =========================================== */
+
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-overlay-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.admin-modal-container {
+  background-color: var(--color-white);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.admin-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.admin-modal-close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-gray-400);
+  padding: 4px;
+}
+
+.admin-modal-close:hover {
+  color: var(--color-gray-800);
+}
+
+.admin-modal-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.admin-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-gray-200);
+}
+
+/* ===========================================
+   폼 요소
+   =========================================== */
+
+.admin-form-group {
+  margin-bottom: 20px;
+}
+
+.admin-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.admin-form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-gray-800);
+  margin-bottom: 8px;
+}
+
+.admin-form-input,
+.admin-form-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--color-gray-800);
+  box-sizing: border-box;
+}
+
+.admin-form-input:focus,
+.admin-form-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.admin-form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--color-gray-800);
+  resize: vertical;
+  min-height: 100px;
+  box-sizing: border-box;
+}
+
+.admin-form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* ===========================================
+   영양정보 그리드
+   =========================================== */
+
+.admin-nutrition-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.admin-nutrition-item label {
+  display: block;
+  font-size: 13px;
+  color: var(--color-gray-500);
+  margin-bottom: 6px;
+}
+
+.admin-nutrition-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-nutrition-input input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.admin-nutrition-input span {
+  font-size: 13px;
+  color: var(--color-gray-500);
+  min-width: 30px;
+}
+
+/* ===========================================
+   알러지 옵션
+   =========================================== */
+
+.admin-allergy-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-allergy-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 16px;
+  background-color: var(--color-white);
+  font-size: 13px;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-allergy-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.admin-allergy-btn.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* ===========================================
+   상세 모달 섹션
+   =========================================== */
+
+.admin-detail-section {
+  margin-bottom: 24px;
+}
+
+.admin-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.admin-detail-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  margin-bottom: 12px;
+}
+
+.admin-pt-info-card {
+  background-color: var(--color-gray-50);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.admin-pt-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.admin-pt-info-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  margin: 0;
+}
+
+.admin-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-gray-500);
+}
+
+.admin-detail-row svg {
+  color: var(--color-gray-400);
+  flex-shrink: 0;
+}
+
+.admin-detail-key {
+  min-width: 80px;
+  color: var(--color-gray-500);
+}
+
+.admin-detail-value {
+  color: var(--color-gray-800);
+}
+
+/* ===========================================
+   화상PT 관련
+   =========================================== */
+
+.admin-participant-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-gray-500);
+}
+
+.admin-live-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background-color: var(--color-error-light);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--color-error);
+}
+
+/* ===========================================
+   트레이너 상세 모달
+   =========================================== */
+
+.admin-license-images {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-license-image-item {
+  width: 100%;
+}
+
+.admin-license-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--color-gray-200);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.admin-license-image:hover {
+  opacity: 0.9;
+}
+
+.admin-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 16px;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.admin-download-btn:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.admin-empty-text {
+  text-align: center;
+  color: var(--color-gray-400);
+  padding: 40px 0;
+}
+
+/* ===========================================
+   반응형
+   =========================================== */
+
+@media (max-width: 1200px) {
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-activity-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-gray-200);
+    padding: 12px 0;
+  }
+
+  .admin-sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 12px;
+  }
+
+  .admin-sidebar-item {
+    padding: 8px 16px;
+    white-space: nowrap;
+  }
+
+  .admin-sidebar-item span {
+    display: none;
+  }
+
+  .admin-main {
+    padding: 16px;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-activity-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-search-box {
+    width: 100%;
+  }
+
+  .admin-search-box input {
+    width: 100%;
+  }
+
+  .admin-modal-container {
+    margin: 16px;
+    max-height: calc(100vh - 32px);
+  }
+
+  .admin-nutrition-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===========================================
+   영상 버튼 및 모달
+   =========================================== */
+
+.admin-video-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 6px;
+  background-color: var(--color-white);
+  color: var(--color-error);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0 auto;
+}
+
+.admin-video-btn:hover {
+  background-color: var(--color-error-light);
+  border-color: var(--color-error);
+}
+
+.admin-video-modal {
+  width: 90%;
+  max-width: 800px;
+}
+
+.admin-video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 비율 */
+  background-color: var(--color-black);
+}
+
+.admin-video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* 입장코드 스타일 */
+.admin-entry-code {
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--color-indigo);
+  background: var(--color-indigo-lightest);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* 비활성화 버튼 스타일 */
+.admin-action-btn.disabled,
+.admin-action-btn.delete.disabled,
+.admin-action-btn.danger.disabled {
+  background: var(--color-gray-100) !important;
+  color: var(--color-gray-400) !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-action-btn.disabled:hover,
+.admin-action-btn.delete.disabled:hover,
+.admin-action-btn.danger.disabled:hover {
+  background: var(--color-gray-100) !important;
+  color: var(--color-gray-400) !important;
+}
+
+/* 신고관리 반려 버튼 - 진회색 */
+.admin-action-btn.reject-dark {
+  background: var(--color-gray-300);
+  color: var(--color-gray-600);
+}
+
+.admin-action-btn.reject-dark:hover {
+  background: var(--color-gray-400);
+  color: var(--color-gray-700);
+}
+
+/* 탈퇴된 계정 - 상태 변경 불가 표시 */
+.admin-action-disabled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-gray-400);
+  font-size: var(--font-size-sm);
+}
+
+/* 상세 모달 통일 스타일 */
+.admin-modal-container {
+  max-width: 600px;
+  width: 90%;
+}
+
+
+
+.admin-detail-content {
+  font-size: 14px;
+  color: var(--color-gray-500);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  min-height: 40px;
+}
+
+.admin-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.admin-detail-row svg {
+  color: var(--color-gray-400);
+  flex-shrink: 0;
+}
+
+.admin-detail-key {
+  color: var(--color-gray-500);
+  min-width: 80px;
+}
+
+.admin-detail-value {
+  color: var(--color-gray-800);
+  font-weight: 500;
+}
+
+/* 신고관리 타입 뱃지 */
+.admin-type-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-type-badge.type-post {
+  background: var(--color-workout-light);
+  color: var(--color-primary);
+}
+
+.admin-type-badge.type-comment {
+  background: var(--color-warning-light);
+  color: var(--color-warning-hover);
+}
+
+.admin-type-badge.type-pt_room {
+  background: var(--color-violet-light);
+  color: var(--color-violet);
+}
+
+/* 신고관리 상태 뱃지 */
+.admin-status-badge.status-pending {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.admin-status-badge.status-processed {
+  background: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+
+.admin-status-badge.status-rejected {
+  background: var(--color-error-light);
+  color: var(--color-error);
+}
+
+/* 관리자 헤더 레이아웃 */
+.admin-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-header-left .admin-section-title {
+  margin: 0;
+}
+
+.admin-header-left .admin-section-count {
+  margin: 0;
+  color: var(--color-gray-500);
+  font-size: 14px;
+}
+
+/* ===========================================
+   신고 상세 모달 스타일 (admin.css 끝에 추가)
+   =========================================== */
+
+.report-detail-modal {
+  max-width: 480px;
+}
+
+/* 헤더 레이아웃 */
+.report-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.report-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.report-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 타입 아이콘 */
+.report-type-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.report-type-icon.post {
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
+}
+
+.report-type-icon.comment {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
+}
+
+.report-type-icon.pt_room {
+  background-color: var(--color-pt-light);
+  color: var(--color-pt);
+}
+
+.report-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.report-header-subtitle {
+  font-size: 13px;
+  color: var(--color-gray-400);
+}
+
+/* 프로필 영역 */
+.report-author-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.report-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.report-avatar.post {
+  background-color: var(--color-workout-light);
+  color: var(--color-primary);
+}
+
+.report-avatar.comment {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-hover);
+}
+
+.report-avatar.pt_room {
+  background-color: var(--color-pt-light);
+  color: var(--color-pt);
+}
+
+/* 바디 */
+.report-modal-body {
+  padding: 20px 24px !important;
+}
+
+/* 로딩 */
+.report-detail-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  color: var(--color-gray-400);
+  gap: 12px;
+}
+
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-gray-200);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 삭제된 콘텐츠 */
+.report-deleted-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: var(--color-error-light);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.deleted-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--color-error-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  color: var(--color-error);
+}
+
+.deleted-title {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-error);
+}
+
+.deleted-desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-gray-400);
+}
+
+/* 제목 */
+.report-content-title {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+/* 정보 Row */
+.report-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-gray-500);
+  margin-bottom: 12px;
+}
+
+/* 내용 영역 */
+.report-content-area {
+  background-color: var(--color-gray-50);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.report-content-area p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-gray-600);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 경고 박스 */
+.report-warning-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background-color: var(--color-warning-light);
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--color-amber-dark);
+}
+
+.report-warning-box svg {
+  flex-shrink: 0;
+  color: var(--color-warning-hover);
+}
+
+/* ===========================================
+   이미지 업로드
+   =========================================== */
+
+.admin-image-upload {
+  width: 100%;
+}
+
+.admin-image-upload-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  height: var(--element-size-10xl);
+  border: var(--border-width-md) dashed var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-500);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.admin-image-upload-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.admin-image-upload-btn span {
+  font-size: var(--font-size-sm);
+}
+
+.admin-image-preview {
+  position: relative;
+  width: 100%;
+  height: var(--element-size-10xl);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  border: var(--border-width-sm) solid var(--color-gray-200);
+}
+
+.admin-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-image-remove-btn {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
+  background-color: var(--color-error);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.admin-image-remove-btn:hover {
+  background-color: var(--color-error-dark);
+}

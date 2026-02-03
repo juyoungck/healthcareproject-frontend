@@ -1,0 +1,1804 @@
+/**
+ * plan-exercise.css
+ * 운동 계획 생성 관련 스타일
+ * - 생성 폼
+ * - 로딩 화면
+ * - 결과 화면
+ * - 재생성 모달
+ * - 주간 운동 보기
+ */
+
+/**
+ * ===========================================
+ * 공통 컨테이너
+ * ===========================================
+ */
+
+.exercise-plan-container,
+.exercise-loading-container,
+.exercise-result-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  background-color: var(--color-gray-50);
+}
+
+/**
+ * ===========================================
+ * 생성 폼 - 헤더
+ * ===========================================
+ */
+
+.exercise-plan-header,
+.exercise-result-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  padding: 0 var(--spacing-md);
+  background-color: var(--color-white);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
+  z-index: var(--z-sticky);
+}
+
+.exercise-plan-back-btn,
+.exercise-result-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
+  color: var(--color-gray-700);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.exercise-plan-title,
+.exercise-result-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.exercise-plan-header-spacer,
+.exercise-result-header-spacer {
+  width: var(--element-size-base);
+}
+
+/**
+ * ===========================================
+ * 생성 폼 - 메인 콘텐츠
+ * ===========================================
+ */
+
+.exercise-plan-content {
+  flex: 1;
+  padding: var(--spacing-lg);
+  padding-bottom: var(--element-size-7xl);
+}
+
+/**
+ * 소개 배너
+ */
+.exercise-plan-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.exercise-plan-banner-icon {
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  color: var(--color-primary);
+}
+
+.exercise-plan-banner-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+}
+
+/**
+ * 섹션
+ */
+.exercise-plan-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.exercise-plan-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-xs);
+}
+
+.exercise-plan-section-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-lg);
+}
+
+/**
+ * 요일 선택 그리드
+ */
+.exercise-plan-days-grid {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.exercise-plan-day-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--element-size-xl);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-200);
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-plan-day-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.exercise-plan-day-btn.selected {
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.exercise-plan-selected-info {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  text-align: center;
+}
+
+/**
+ * 고려사항 안내
+ */
+.exercise-plan-notice {
+  padding: var(--spacing-lg);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  border: var(--border-width-sm) solid var(--color-gray-100);
+}
+
+.exercise-plan-notice-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-md);
+}
+
+.exercise-plan-notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-left: var(--spacing-lg);
+  list-style: none;
+}
+
+.exercise-plan-notice-list li {
+  position: relative;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+.exercise-plan-notice-list li::before {
+  content: '';
+  position: absolute;
+  left: -1rem;
+  top: var(--spacing-sm);
+  width: var(--size-2xs);
+  height: var(--size-2xs);
+  background-color: var(--color-gray-400);
+  border-radius: var(--border-radius-full);
+}
+
+/**
+ * ===========================================
+ * 생성 폼 - 푸터
+ * ===========================================
+ */
+
+.exercise-plan-footer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-max-width);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
+  box-sizing: border-box;
+}
+
+.exercise-plan-generate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  height: var(--element-size-2xl);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.exercise-plan-generate-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.exercise-plan-generate-btn:disabled {
+  background-color: var(--color-gray-300);
+  cursor: not-allowed;
+}
+
+/**
+ * ===========================================
+ * 로딩 화면
+ * ===========================================
+ */
+
+.exercise-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+/**
+ * AI 아이콘
+ */
+.exercise-loading-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-6xl);
+  height: var(--element-size-6xl);
+  margin-bottom: var(--spacing-xl);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-full);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/**
+ * 제목 및 설명
+ */
+.exercise-loading-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-md);
+}
+
+.exercise-loading-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-2xl);
+}
+
+/**
+ * 진행 단계
+ */
+.exercise-loading-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-2xl);
+  width: 100%;
+  max-width: var(--container-sm);
+}
+
+.exercise-loading-step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.exercise-loading-step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  border-radius: var(--border-radius-full);
+  flex-shrink: 0;
+}
+
+.exercise-loading-step.completed .exercise-loading-step-icon {
+  color: var(--color-white);
+  background-color: var(--color-primary);
+}
+
+.exercise-loading-step.active .exercise-loading-step-icon {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.exercise-loading-step.pending .exercise-loading-step-icon {
+  background-color: var(--color-gray-200);
+}
+
+.exercise-loading-step-dot {
+  width: var(--size-md);
+  height: var(--size-md);
+  background-color: var(--color-gray-400);
+  border-radius: var(--border-radius-full);
+}
+
+.exercise-loading-step-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  text-align: left;
+}
+
+.exercise-loading-step.pending .exercise-loading-step-text {
+  color: var(--color-gray-400);
+}
+
+.exercise-loading-step.completed .exercise-loading-step-text {
+  color: var(--color-gray-700);
+}
+
+.exercise-loading-step.active .exercise-loading-step-text {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+/**
+ * 스피닝 애니메이션
+ */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/**
+ * TIP 안내
+ */
+.exercise-loading-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-lg);
+  text-align: left;
+  width: 100%;
+  max-width: var(--container-sm);
+}
+
+.exercise-loading-tip-icon {
+  font-size: var(--font-size-md);
+  flex-shrink: 0;
+}
+
+.exercise-loading-tip-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  line-height: 1.5;
+}
+
+/**
+ * ===========================================
+ * 결과 화면
+ * ===========================================
+ */
+
+.exercise-result-content {
+  flex: 1;
+  padding: var(--spacing-lg);
+  padding-bottom: var(--element-size-7xl);
+}
+
+/**
+ * 생성 완료 배너
+ */
+.exercise-result-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+/**
+ * 계획 요약
+ */
+.exercise-result-summary {
+  padding: var(--spacing-lg);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.exercise-result-summary-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-md);
+}
+
+.exercise-result-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+.exercise-result-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+}
+
+.exercise-result-summary-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.exercise-result-summary-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-xs);
+}
+
+/**
+ * 고려된 사항
+ */
+.exercise-result-considerations {
+  padding: var(--spacing-lg);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.exercise-result-considerations-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.exercise-result-considerations-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-left: var(--spacing-lg);
+  list-style: disc;
+}
+
+.exercise-result-considerations-list li {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  line-height: 1.5;
+}
+
+/**
+ * 요일별 운동 목록
+ */
+.exercise-result-daily-plans {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.exercise-result-day-card {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.exercise-result-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.exercise-result-day-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+}
+
+.exercise-result-day-name {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.exercise-result-day-category {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.exercise-result-day-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  color: var(--color-gray-500);
+}
+
+.exercise-result-day-time {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-full);
+}
+
+/**
+ * 운동 목록
+ */
+.exercise-result-exercises {
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.exercise-result-category-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-sm);
+}
+
+.exercise-result-exercise-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+}
+
+.exercise-result-exercise-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-base);
+  height: var(--element-size-base);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-md);
+  flex-shrink: 0;
+}
+
+.exercise-result-exercise-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+}
+
+.exercise-result-exercise-name {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-900);
+}
+
+.exercise-result-exercise-detail {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+/**
+ * 결과 푸터
+ */
+.exercise-result-footer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-max-width);
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
+  box-sizing: border-box;
+}
+
+.exercise-result-regenerate-btn,
+.exercise-result-save-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  height: var(--element-size-xl);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-result-regenerate-btn {
+  color: var(--color-gray-700);
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-300);
+}
+
+.exercise-result-regenerate-btn:hover {
+  background-color: var(--color-gray-50);
+}
+
+.exercise-result-save-btn {
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  border: none;
+}
+
+.exercise-result-save-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/**
+ * ===========================================
+ * 재생성 모달
+ * ===========================================
+ */
+
+.exercise-regenerate-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-overlay-dark);
+  z-index: var(--z-modal);
+  padding: var(--spacing-lg);
+}
+
+.exercise-regenerate-modal {
+  width: 100%;
+  max-width: var(--container-xl);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-xl);
+  overflow: hidden;
+}
+
+.exercise-regenerate-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
+}
+
+.exercise-regenerate-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.exercise-regenerate-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-sm);
+  height: var(--element-size-sm);
+  color: var(--color-gray-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.exercise-regenerate-content {
+  padding: var(--spacing-lg);
+}
+
+.exercise-regenerate-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-lg);
+}
+
+.exercise-regenerate-textarea {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-900);
+  background-color: var(--color-gray-50);
+  border: var(--border-width-sm) solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  resize: none;
+  font-family: inherit;
+}
+
+.exercise-regenerate-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.exercise-regenerate-textarea::placeholder {
+  color: var(--color-gray-400);
+}
+
+.exercise-regenerate-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  padding-top: 0;
+}
+
+.exercise-regenerate-cancel-btn,
+.exercise-regenerate-submit-btn {
+  flex: 1;
+  height: var(--element-size-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-regenerate-cancel-btn {
+  color: var(--color-gray-700);
+  background-color: var(--color-gray-100);
+  border: none;
+}
+
+.exercise-regenerate-cancel-btn:hover {
+  background-color: var(--color-gray-200);
+}
+
+.exercise-regenerate-submit-btn {
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  border: none;
+}
+
+.exercise-regenerate-submit-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 컨테이너
+ * ===========================================
+ */
+
+.exercise-view-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  background-color: var(--color-gray-50);
+}
+
+.exercise-view-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--spacing-lg);
+  padding-bottom: 7.5rem;
+  background-color: var(--color-white);
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 헤더
+ * ===========================================
+ */
+
+.exercise-view-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.exercise-view-back-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--color-gray-600);
+  background: none;
+  border: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.exercise-view-back-btn:hover {
+  color: var(--color-gray-900);
+}
+
+.exercise-view-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.exercise-view-header-spacer {
+  width: var(--element-size-base);
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 요일 탭
+ * ===========================================
+ */
+
+.exercise-view-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.exercise-view-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.exercise-view-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--element-size-lg);
+  aspect-ratio: 1 / 1;
+  padding: var(--spacing-xs);
+  background-color: var(--color-gray-50);
+  border: var(--border-width-md) solid transparent;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-view-tab:hover {
+  background-color: var(--color-gray-100);
+}
+
+.exercise-view-tab.today:not(.selected) {
+  border-color: var(--color-gray-300);
+  background-color: var(--color-white);
+}
+
+.exercise-view-tab.selected {
+  border-color: var(--color-primary);
+  background-color: var(--color-white);
+}
+
+.exercise-view-tab.has-plan .exercise-view-tab-label {
+  font-weight: var(--font-weight-semibold);
+}
+
+.exercise-view-tab.completed {
+  background-color: var(--color-success-light);
+  border-color: var(--color-success);
+}
+
+.exercise-view-tab.completed.selected {
+  background-color: var(--color-success-light);
+  border-color: var(--color-success);
+}
+
+.exercise-view-tab-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+}
+
+.exercise-view-tab.selected .exercise-view-tab-label {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.exercise-view-tab.completed .exercise-view-tab-label {
+  color: var(--color-success);
+}
+
+.exercise-view-tab-progress {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  margin-top: var(--spacing-2xs);
+}
+
+.exercise-view-tab-check {
+  color: var(--color-success);
+  margin-top: var(--spacing-2xs);
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 메인 콘텐츠
+ * ===========================================
+ */
+
+.exercise-view-content {
+  flex: 1;
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 카테고리 헤더
+ * ===========================================
+ */
+
+.exercise-view-category {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.exercise-view-category-icon {
+  color: var(--color-primary);
+}
+
+.exercise-view-category-info {
+  flex: 1;
+}
+
+.exercise-view-category-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-xs);
+}
+
+.exercise-view-category-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 운동 리스트
+ * ===========================================
+ */
+
+.exercise-view-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.exercise-view-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+  border: var(--border-width-md) solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-view-item:hover {
+  border-color: var(--color-gray-300);
+  background-color: var(--color-gray-50);
+}
+
+.exercise-view-item:active {
+  transform: scale(0.98);
+}
+
+/* 완료 상태 */
+.exercise-view-item.completed {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+.exercise-view-item.completed .exercise-view-item-name {
+  color: var(--color-primary-dark);
+}
+
+.exercise-view-item-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  background-color: var(--color-white);
+  border: var(--border-width-md) solid var(--color-gray-300);
+  border-radius: var(--border-radius-xs);
+  color: var(--color-white);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-view-item-check:hover {
+  border-color: var(--color-primary);
+}
+
+.exercise-view-item.completed .exercise-view-item-check {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.exercise-view-item-check-empty {
+  width: 100%;
+  height: 100%;
+}
+
+.exercise-view-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.exercise-view-item-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-2xs);
+}
+
+.exercise-view-item-detail {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.exercise-view-item-arrow {
+  color: var(--color-gray-400);
+  flex-shrink: 0;
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 휴식일
+ * ===========================================
+ */
+
+.exercise-view-rest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+  text-align: center;
+}
+
+.exercise-view-rest-icon {
+  font-size: var(--element-size-xl);
+  margin-bottom: var(--spacing-lg);
+}
+
+.exercise-view-rest-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-700);
+  margin-bottom: var(--spacing-sm);
+}
+
+.exercise-view-rest-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 하단 푸터
+ * ===========================================
+ */
+
+.exercise-view-footer {
+  position: fixed;
+  bottom: var(--bottom-nav-height);
+  left: 0;
+  right: 0;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
+  z-index: var(--z-sticky);
+}
+
+.exercise-view-regenerate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  height: var(--element-size-xl);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-view-regenerate-btn:hover {
+  background-color: var(--color-gray-50);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+/**
+ * ===========================================
+ * 주간 운동 보기 - 요일 탭 (식단과 동일 구조)
+ * ===========================================
+ */
+
+.exercise-view-day-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  overflow-x: auto;
+}
+
+.exercise-view-day-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.exercise-view-day-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--element-size-3xl-plus);
+  height: var(--element-size-3xl-plus);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  border: var(--border-width-sm) solid var(--color-gray-200);
+  background-color: var(--color-white);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.exercise-view-day-tab:hover {
+  background-color: var(--color-gray-100);
+}
+
+/* 오늘 날짜 표시 */
+.exercise-view-day-tab.today {
+  position: relative;
+}
+
+.exercise-view-day-tab.today::after {
+  content: '';
+  position: absolute;
+  bottom: var(--spacing-xs);
+  width: var(--size-2xs);
+  height: var(--size-2xs);
+  border-radius: var(--border-radius-full);
+  background-color: var(--color-primary);
+}
+
+.exercise-view-day-tab.selected {
+  border-width: var(--border-width-md);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-sm);
+}
+
+.exercise-view-day-tab.selected.status-done {
+  border-color: var(--color-success);
+  background-color: var(--color-success-light);
+}
+
+.exercise-view-day-tab.selected.status-planned {
+  border-color: var(--color-workout-incomplete);
+  background-color: var(--color-workout-light);
+}
+
+.exercise-view-day-tab.selected.status-no_status {
+  border-color: var(--color-gray-400);
+  background-color: var(--color-white);
+  opacity: 1;
+}
+
+.exercise-view-day-tab.has-exercise .exercise-view-day-tab-label {
+  font-weight: var(--font-weight-semibold);
+}
+
+.exercise-view-day-tab.completed {
+  background-color: var(--color-success-light);
+  border-color: var(--color-success);
+}
+
+.exercise-view-day-tab.completed.selected {
+  background-color: var(--color-success-light);
+  border-color: var(--color-success);
+}
+
+.exercise-view-day-tab-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-500);
+}
+
+.exercise-view-day-tab.selected .exercise-view-day-tab-label {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.exercise-view-day-tab.completed .exercise-view-day-tab-label {
+  color: var(--color-success);
+}
+
+.exercise-view-day-tab-progress {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  margin-top: var(--spacing-2xs);
+}
+
+.exercise-view-day-tab-check {
+  color: var(--color-success);
+  margin-top: var(--spacing-2xs);
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 카테고리 헤더 (식단과 동일 구조)
+ * ===========================================
+ */
+
+.exercise-view-category {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.exercise-view-category-icon {
+  color: var(--color-primary);
+  margin-left: var(--spacing-sm);
+}
+
+.exercise-view-category-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.exercise-view-category-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.exercise-view-category-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-2xs);
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 운동 리스트 (식단과 동일 구조)
+ * ===========================================
+ */
+
+.exercise-view-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.exercise-view-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+  border: var(--border-width-md) solid var(--color-gray-200);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-view-item:hover {
+  border-color: var(--color-gray-300);
+  background-color: var(--color-gray-50);
+}
+
+.exercise-view-item:active {
+  transform: scale(0.98);
+}
+
+.exercise-view-item.completed {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+.exercise-view-item-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  background-color: var(--color-white);
+  border: var(--border-width-md) solid var(--color-gray-300);
+  border-radius: var(--border-radius-xs);
+  color: var(--color-white);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-view-item-check:hover {
+  border-color: var(--color-primary);
+}
+
+.exercise-view-item.completed .exercise-view-item-check {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.exercise-view-item-check-empty {
+  width: 100%;
+  height: 100%;
+}
+
+.exercise-view-item-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+}
+
+.exercise-view-item-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-2xs);
+}
+
+.exercise-view-item.completed .exercise-view-item-name {
+  color: var(--color-primary);
+}
+
+.exercise-view-item-detail {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.exercise-view-item-arrow {
+  color: var(--color-gray-400);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 휴식일 (식단과 동일 구조)
+ * ===========================================
+ */
+
+.exercise-view-rest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+  text-align: center;
+}
+
+.exercise-view-rest-icon {
+  font-size: var(--element-size-xl);
+  margin-bottom: var(--spacing-lg);
+}
+
+.exercise-view-rest-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-700);
+  margin-bottom: var(--spacing-sm);
+}
+
+.exercise-view-rest-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+}
+
+/**
+ * ===========================================
+ * 주간 운동 보기 - 하단 푸터 (식단과 동일 구조)
+ * ===========================================
+ */
+
+.exercise-view-footer {
+  position: fixed;
+  bottom: var(--bottom-nav-height);
+  left: 0;
+  right: 0;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
+  z-index: var(--z-sticky);
+}
+
+.exercise-view-regenerate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  height: var(--element-size-xl);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+  background-color: var(--color-white);
+  border: var(--border-width-sm) solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.exercise-view-regenerate-btn:hover {
+  background-color: var(--color-gray-50);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+
+/* 로딩 상태 */
+.exercise-plan-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--text-secondary);
+}
+
+/* 추가 요청사항 textarea */
+.exercise-plan-textarea {
+  width: 100%;
+  padding: var(--spacing-lg);
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  background-color: var(--color-white);
+  color: var(--color-gray-900);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.exercise-plan-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.exercise-plan-textarea::placeholder {
+  color: var(--color-gray-400);
+}
+
+/* ===========================================
+ * 부상 정보 섹션
+ * =========================================== */
+
+.exercise-plan-injury-info {
+  background-color: var(--color-warning-light);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.exercise-plan-injury-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.exercise-plan-injury-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-sm) 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.exercise-plan-injury-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--bg-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+.exercise-plan-injury-part {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.exercise-plan-injury-level {
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-xxs, 10px);
+  font-weight: var(--font-weight-medium);
+}
+
+.exercise-plan-injury-level.mild {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.exercise-plan-injury-level.caution {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.exercise-plan-injury-level.severe {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+.exercise-plan-injury-note {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* 날짜 탭 상태별 스타일 */
+.exercise-view-day-tab.status-done {
+  border-color: var(--color-success);
+  background-color: var(--color-success-light);
+}
+
+.exercise-view-day-tab.status-done .exercise-view-day-tab-label {
+  color: var(--color-success);
+}
+
+.exercise-view-day-tab.status-planned {
+  border-color: var(--color-workout-incomplete);
+  background-color: var(--color-primary-light);
+}
+
+.exercise-view-day-tab.status-planned .exercise-view-day-tab-label {
+  color: var(--color-workout-incomplete);
+}
+
+.exercise-view-day-tab.status-no_status {
+  border-color: var(--color-gray-200);
+  background-color: var(--color-gray-50);
+  opacity: 0.6;
+}
+
+
+
+/* 로딩 상태 */
+.exercise-view-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: var(--element-size-12xl);
+  color: var(--color-gray-500);
+}
+
+/* ===== 강도 텍스트 (Result 페이지) ===== */
+
+.exercise-result-exercise-rpe {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-500);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ===== 강도 텍스트 (View 페이지) ===== */
+.exercise-view-item-rpe {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-500);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ========================================
+   온보딩 필요 안내 팝업 스타일
+   ======================================== */
+
+.onboarding-required-popup {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  margin: var(--spacing-lg);
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  min-height: 280px;
+}
+
+.onboarding-required-close {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--gray-100);
+  color: var(--gray-500);
+}
+  
+ .onboarding-required-close:hover {
+  background: var(--gray-200);
+  color: var(--gray-700);
+}
+
+.onboarding-required-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-md);
+}
+
+.onboarding-required-title {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.onboarding-required-desc {
+  font-size: var(--font-sm);
+  color: var(--gray-600);
+  line-height: 1.6;
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.onboarding-required-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-xl);
+  font-size: var(--font-md);
+  font-weight: 500;
+  color: var(--white);
+  background: var(--primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.onboarding-required-btn:hover {
+  background: var(--primary-dark);
+}
+  
+/**
+ * ===========================================
+ * 주간 운동 보기 - 주간 네비게이션
+ * ===========================================
+ */
+
+.exercise-view-week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-white);
+}
+
+.exercise-view-week-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-lg);
+  height: var(--element-size-lg);
+  color: var(--color-gray-600);
+  background-color: var(--color-gray-100);
+  border: none;
+  border-radius: var(--border-radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+  
+.exercise-view-week-nav-btn:hover {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-800);
+}
+
+.exercise-view-week-nav-text {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
+  min-width: 6rem;
+  text-align: center;
+}

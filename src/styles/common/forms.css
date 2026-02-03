@@ -31,6 +31,36 @@
 }
 
 /**
+ * 라벨 + 상태 메시지 행
+ */
+.form-label-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.form-label-row .form-label {
+  margin-bottom: 0;
+}
+
+/**
+ * 라벨 옆 상태 메시지
+ */
+.form-label-status {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+}
+
+.form-label-status.success {
+  color: var(--color-gray-500);
+}
+
+.form-label-status.error {
+  color: var(--color-error);
+}
+
+/**
  * ===========================================
  * 입력 필드
  * ===========================================
@@ -51,13 +81,13 @@
  */
 .form-input {
   width: 100%;
-  height: 48px;
+  height: var(--element-size-xl);
   padding: var(--spacing-md) var(--spacing-lg);
-  padding-left: 44px;
+  padding-left: var(--element-size-lg);
   font-size: var(--font-size-base);
   color: var(--color-gray-900);
   background-color: var(--color-white);
-  border: 1px solid var(--color-gray-300);
+  border: var(--border-width-sm) solid var(--color-gray-300);
   border-radius: var(--border-radius-md);
   transition: all var(--transition-fast);
 }
@@ -74,7 +104,7 @@
  */
 .form-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  box-shadow: 0 0 0 var(--border-width-lg) var(--color-primary-light);
 }
 
 /**
@@ -86,7 +116,7 @@
 }
 
 .form-input.error:focus {
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  box-shadow: 0 0 0 var(--border-width-lg) var(--color-error-light);
 }
 
 /**
@@ -108,10 +138,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
   color: var(--color-gray-400);
   cursor: pointer;
+}
+
+/**
+ * 입력 필드 내부 버튼 (중복확인 등)
+ */
+.form-input-btn {
+  position: absolute;
+  right: var(--spacing-md);
+  height: var(--element-size-sm);
 }
 
 .form-input-toggle:hover {
@@ -141,6 +180,13 @@
   margin-bottom: var(--spacing-md);
 }
 
+.form-error-bottom {
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  margin-top: calc(-1 * var(--spacing-2xs));
+  margin-bottom: var(--spacing-sm);
+}
+
 /**
  * ===========================================
  * 폼 제출 버튼
@@ -149,7 +195,7 @@
 
 .form-submit-btn {
   width: 100%;
-  height: 48px;
+  height: var(--element-size-xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -203,10 +249,6 @@
   color: var(--color-primary);
 }
 
-.form-link-divider {
-  color: var(--color-gray-300);
-}
-
 .form-link-center {
   display: block;
   margin: var(--spacing-md) auto 0;
@@ -243,11 +285,11 @@
 }
 
 .form-agreement-item svg {
-  width: 20px;
-  height: 20px;
-  padding: 2px;
+  width: var(--icon-size-base);
+  height: var(--icon-size-base);
+  padding: var(--spacing-2xs);
   color: var(--color-gray-300);
-  border: 1px solid var(--color-gray-300);
+  border: var(--border-width-sm) solid var(--color-gray-300);
   border-radius: var(--border-radius-xs);
   transition: all var(--transition-fast);
 }
@@ -261,6 +303,40 @@
 .form-agreement-all {
   padding-bottom: var(--spacing-sm);
   margin-bottom: var(--spacing-sm);
-  border-bottom: 1px solid var(--color-gray-200);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-200);
   font-weight: var(--font-weight-medium);
+}
+
+/**
+ * ===========================================
+ * 이메일 인증 안내 박스
+ * 참고: .verify-info, .verify-email, .verify-desc는
+ * modal.css에 정의되어 있으므로 여기서는 제외
+ * ===========================================
+ */
+.verify-notice-box {
+  background-color: var(--color-primary-light, #eff6ff);
+  border: var(--border-width-sm) solid var(--color-primary-lighter, #bfdbfe);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.verify-notice-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary-dark, #1d4ed8);
+  line-height: 1.6;
+  margin: 0;
+  text-align: center;
+}
+
+.verify-notice-text strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+.verify-notice {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-400);
+  text-align: center;
+  margin-top: var(--spacing-md);
 }

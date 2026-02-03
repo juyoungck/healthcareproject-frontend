@@ -1,0 +1,263 @@
+/**
+ * AdminMemberList.tsx
+ * 회원 관리 컴포넌트 (목록 + 상세 모달 통합)
+ * - 전체 회원 목록 조회/검색
+ * - 유형별 필터 (전체/일반/트레이너/관리자)
+ * - 회원 상세 정보 및 차단/강제 탈퇴
+ */
+
+import { useState, useEffect } from 'react';
+import { Search, X, Mail, Calendar, Shield, AtSign } from 'lucide-react';
+import type { AdminUser, UserRole, UserStatus } from '../../../api/types/admin';
+import { getAdminUsers, banUser, unbanUser } from '../../../api/admin';
+import { getApiErrorMessage } from '../../../api/apiError';
+import { formatDateTimeAdmin } from '../../../utils/format';
+import {
+  USER_ROLE_FILTERS,
+  USER_ROLE_LABELS,
+  USER_STATUS_LABELS,
+  USER_STATUS_CLASSES,
+} from '../../../constants/admin';
+
+/**
+ * ===========================================
+ * AdminMemberList 컴포넌트
+ * ===========================================
+ */
+export default function AdminMemberList() {
+  /**
+   * 상태 관리
+   */
+  const [members, setMembers] = useState<AdminUser[]>([]);
+  const [total, setTotal] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filterRole, setFilterRole] = useState<UserRole | 'ALL'>('ALL');
+  const [searchKeyword, setSearchKeyword] = useState('');
+
+  /**
+   * 회원 목록 조회
+   */
+  const fetchMembers = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const params = {
+        role: filterRole !== 'ALL' ? filterRole : undefined,
+        keyword: searchKeyword || undefined,
+      };
+      const response = await getAdminUsers(params);
+      setMembers(response.list);
+      setTotal(response.total);
+    } catch (err) {
+      setError(getApiErrorMessage(err, '회원 목록을 불러오는데 실패했습니다.'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * 초기 로드 및 필터 변경 시 재조회
+   */
+  useEffect(() => {
+    fetchMembers();
+  }, [filterRole]);
+
+  /**
+   * 검색 핸들러 (엔터키 또는 버튼 클릭)
+   */
+  const handleSearch = () => {
+    fetchMembers();
+  };
+
+  /**
+   * 검색어 입력 핸들러 (엔터키)
+   */
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  /**
+   * 차단 처리 핸들러
+   */
+  const handleBan = async (userId: number) => {
+    if (!confirm('해당 회원을 차단하시겠습니까?')) return;
+
+    try {
+      await banUser(userId);
+      setMembers((prev) =>
+        prev.map((member) =>
+          member.userId === userId ? { ...member, status: 'SUSPENDED' as UserStatus } : member
+        )
+      );
+      alert('회원이 차단되었습니다.');
+    } catch (err) {
+      alert(getApiErrorMessage(err, '회원 차단에 실패했습니다.'));
+    }
+  };
+
+  /**
+   * 차단 해제 핸들러
+   */
+  const handleUnban = async (userId: number) => {
+    if (!confirm('해당 회원의 차단을 해제하시겠습니까?')) return;
+
+    try {
+      await unbanUser(userId);
+      setMembers((prev) =>
+        prev.map((member) =>
+          member.userId === userId ? { ...member, status: 'ACTIVE' as UserStatus } : member
+        )
+      );
+      alert('차단이 해제되었습니다.');
+    } catch (err) {
+      alert(getApiErrorMessage(err, '차단 해제에 실패했습니다.'));
+    }
+  };
+
+  /**
+   * 로딩 상태
+   */
+  if (isLoading) {
+    return (
+      <div className="admin-member-page">
+        <h2 className="admin-section-title">회원 관리</h2>
+        <div className="admin-loading">로딩 중...</div>
+      </div>
+    );
+  }
+
+  /**
+   * 에러 상태
+   */
+  if (error) {
+    return (
+      <div className="admin-member-page">
+        <h2 className="admin-section-title">회원 관리</h2>
+        <div className="admin-error">
+          <p>{error}</p>
+          <button onClick={fetchMembers} className="admin-btn primary">
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="admin-member-page">
+      {/* 헤더 영역 - 타이틀, 카운트, 검색 */}
+      <div className="admin-section-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 className="admin-section-title" style={{ margin: 0 }}>회원 관리</h2>
+          <span className="admin-section-count" style={{ margin: 0 }}>전체 {total}명</span>
+        </div>
+        <div className="admin-search-box">
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="닉네임 또는 이메일 검색"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+          />
+        </div>
+      </div>
+
+      {/* 필터 영역 */}
+      <div className="admin-filter-bar">
+        <div className="admin-filter-group">
+          {/* 역할 필터 */}
+          <div className="admin-filter-tabs">
+            {USER_ROLE_FILTERS.map((filter) => (
+              <button
+                key={filter.value}
+                className={`admin-filter-tab-fixed ${filterRole === filter.value ? 'active' : ''}`}
+                onClick={() => setFilterRole(filter.value)}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 테이블 */}
+      <div className="admin-table-container">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>회원</th>
+              <th>이메일</th>
+              <th>가입일</th>
+              <th>유형</th>
+              <th>상태</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            {members.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="admin-table-empty">
+                  회원이 없습니다.
+                </td>
+              </tr>
+            ) : (
+              members.map((member) => (
+                <tr key={member.userId}>
+                  <td>{member.userId}</td>
+                  <td>
+                    <div className="admin-author-info">
+                      <span className="admin-nickname">{member.nickname}</span>
+                      <span className="admin-handle">@{member.handle}</span>
+                    </div>
+                  </td>
+                  <td>{member.email}</td>
+                  <td>{formatDateTimeAdmin(member.createdAt)}</td>
+                  <td>
+                    <span className={`admin-role-badge role-${member.role.toLowerCase()}`}>
+                      {USER_ROLE_LABELS[member.role]}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`admin-status-badge ${USER_STATUS_CLASSES[member.status]}`}>
+                      {USER_STATUS_LABELS[member.status]}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="admin-action-buttons">
+                      {member.status === 'WITHDRAWN' ? (
+                        /* 탈퇴된 계정은 상태 변경 불가 */
+                        <span className="admin-action-disabled">-</span>
+                      ) : member.status === 'SUSPENDED' ? (
+                        <button
+                          className="admin-action-btn delete disabled"
+                          onClick={() => handleUnban(member.userId)}
+                          title="활성화"
+                        >
+                          <X size={16} />
+                        </button>
+                      ) : (
+                        <button
+                          className="admin-action-btn delete"
+                          onClick={() => handleBan(member.userId)}
+                          title="비활성화"
+                        >
+                          <X size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

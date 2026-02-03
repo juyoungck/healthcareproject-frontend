@@ -1,0 +1,421 @@
+/**
+ * settings.css
+ * 설정 페이지 스타일
+ */
+
+/**
+ * ===========================================
+ * 설정 페이지 컨테이너
+ * ===========================================
+ */
+
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  background-color: var(--color-gray-50);
+  position: relative;
+  overflow-y: auto;
+}
+
+/**
+ * ===========================================
+ * 헤더
+ * ===========================================
+ */
+
+.settings-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-max-width);
+  height: var(--header-height);
+  background-color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+  z-index: var(--z-fixed);
+}
+
+.settings-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  height: 100%;
+}
+
+.settings-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: var(--app-max-width);
+  height: var(--header-height);
+  background: none;
+  border: none;
+  color: var(--color-gray-700);
+  cursor: pointer;
+}
+
+.settings-title {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+  color: var(--color-gray-900);
+}
+
+/**
+ * ===========================================
+ * 메인 콘텐츠
+ * ===========================================
+ */
+
+.settings-main {
+  flex: 1;
+  padding: calc(var(--header-height) + var(--spacing-lg)) var(--spacing-lg) var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/**
+ * ===========================================
+ * 섹션
+ * ===========================================
+ */
+
+.settings-section {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.settings-section-title {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-500);
+  background-color: var(--color-gray-50);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
+}
+
+/**
+ * ===========================================
+ * 설정 리스트
+ * ===========================================
+ */
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: none;
+  border: none;
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+.settings-item:hover {
+  background-color: var(--color-gray-50);
+}
+
+.settings-item-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.settings-item-icon {
+  color: var(--color-gray-500);
+}
+
+.settings-item-label {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-900);
+}
+
+.settings-item-value {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.settings-item-arrow {
+  color: var(--color-gray-400);
+}
+
+/**
+ * 폼 설명 텍스트
+ */
+.form-description {
+  color: var(--color-gray-600);
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+}
+
+/**
+ * 성공 메시지
+ */
+.form-success {
+  color: var(--color-diet);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/**
+ * 링크 버튼 중앙 정렬
+ */
+.form-link-center {
+  display: block;
+  text-align: center;
+  margin-top: var(--spacing-md);
+}
+
+/**
+ * 위험 항목 (회원탈퇴)
+ */
+.settings-item-danger .settings-item-icon,
+.settings-item-danger .settings-item-label {
+  color: var(--color-error);
+}
+
+/**
+ * ===========================================
+ * 회원탈퇴 모달
+ * ===========================================
+ */
+
+.settings-withdraw-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: calc(100% - var(--spacing-xl) * 2);
+  max-width: var(--container-md);
+  padding: var(--spacing-xl);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  text-align: center;
+}
+
+.settings-withdraw-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-4xl);
+  height: var(--element-size-4xl);
+  background-color: var(--color-error-light);
+  border-radius: var(--border-radius-full);
+  color: var(--color-error);
+}
+
+.settings-withdraw-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.settings-withdraw-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  line-height: var(--line-height-relaxed);
+}
+
+.settings-withdraw-password {
+  width: 100%;
+  margin-bottom: var(--spacing-md);
+}
+
+.settings-withdraw-password .form-input-wrapper {
+  width: 100%;
+}
+
+.settings-withdraw-password .form-input {
+  width: 100%;
+  text-align: left;
+}
+
+.settings-withdraw-error {
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  text-align: left;
+}
+
+.settings-withdraw-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  width: 100%;
+  margin-top: var(--spacing-sm);
+}
+
+.settings-withdraw-btn {
+  flex: 1;
+  height: var(--element-size-xl);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.settings-withdraw-btn.cancel {
+  color: var(--color-gray-700);
+  background-color: var(--color-gray-100);
+}
+
+.settings-withdraw-btn.cancel:hover {
+  background-color: var(--color-gray-200);
+}
+
+.settings-withdraw-btn.confirm {
+  color: var(--color-white);
+  background-color: var(--color-error);
+}
+
+.settings-withdraw-btn.confirm:hover {
+  background-color: var(--color-error-dark);
+}
+
+/**
+ * 회원탈퇴 확인 문구
+ */
+.settings-withdraw-confirm {
+  width: 100%;
+  margin-bottom: var(--spacing-lg);
+}
+
+.settings-withdraw-confirm-label {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-sm);
+  text-align: center;
+}
+
+.settings-withdraw-confirm-label strong {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+/**
+ * ===========================================
+ * 비활성화 항목
+ * ===========================================
+ */
+
+.settings-item-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.settings-item-disabled:hover {
+  background-color: transparent;
+}
+
+.settings-item-badge {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  background-color: var(--color-gray-100);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-full);
+}
+
+/**
+ * ===========================================
+ * 약관/정책 모달
+ * ===========================================
+ */
+
+.settings-policy-modal {
+  display: flex;
+  flex-direction: column;
+  width: 95%;
+  max-width: var(--app-max-width);
+  max-height: 85vh;
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.settings-policy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
+  flex-shrink: 0;
+}
+
+.settings-policy-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.settings-policy-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-lg);
+  height: var(--element-size-lg);
+  background: none;
+  border: none;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  border-radius: var(--border-radius-md);
+  transition: background-color var(--transition-fast);
+}
+
+.settings-policy-close:hover {
+  background-color: var(--color-gray-100);
+}
+
+.settings-policy-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  line-height: var(--line-height-relaxed);
+}
+
+.settings-policy-content h3 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.settings-policy-content h3:first-child {
+  margin-top: 0;
+}
+
+.settings-policy-content p {
+  margin-bottom: var(--spacing-md);
+  white-space: pre-line;
+}
+
+.settings-policy-date {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  text-align: right;
+}
