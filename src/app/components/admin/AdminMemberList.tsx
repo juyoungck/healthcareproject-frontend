@@ -230,19 +230,22 @@ export default function AdminMemberList() {
                   </td>
                   <td>
                     <div className="admin-action-buttons">
-                      {member.status !== 'SUSPENDED' ? (
+                      {member.status === 'WITHDRAWN' ? (
+                        /* 탈퇴된 계정은 상태 변경 불가 */
+                        <span className="admin-action-disabled">-</span>
+                      ) : member.status === 'SUSPENDED' ? (
                         <button
-                          className="admin-action-btn delete"
-                          onClick={() => handleBan(member.userId)}
-                          title="비활성화"
+                          className="admin-action-btn delete disabled"
+                          onClick={() => handleUnban(member.userId)}
+                          title="활성화"
                         >
                           <X size={16} />
                         </button>
                       ) : (
                         <button
-                          className="admin-action-btn delete disabled"
-                          onClick={() => handleUnban(member.userId)}
-                          title="활성화"
+                          className="admin-action-btn delete"
+                          onClick={() => handleBan(member.userId)}
+                          title="비활성화"
                         >
                           <X size={16} />
                         </button>

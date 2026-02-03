@@ -108,7 +108,7 @@ export default function WithdrawModal({ onClose, onSuccess }: WithdrawModalProps
           <button
             className="settings-withdraw-btn confirm"
             onClick={handleWithdraw}
-            disabled={isWithdrawing || confirmText !== WITHDRAW_CONFIRM_TEXT}
+            disabled={isWithdrawing}
           >
             {isWithdrawing ? '처리중...' : '탈퇴하기'}
           </button>
