@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react';
 import {
   Users,
   FileText,
-  UserCheck,
+  AlertTriangle,
   Video,
   Server,
   CheckCircle,
@@ -123,10 +123,10 @@ export default function AdminDashboard() {
 
         <div className="admin-stat-card">
           <div className="admin-stat-header">
-            <span className="admin-stat-label">트레이너 신청</span>
-            <UserCheck size={24} className="admin-stat-icon trainers" />
+            <span className="admin-stat-label">미처리 신고</span>
+            <AlertTriangle size={24} className="admin-stat-icon reports" />
           </div>
-          <div className="admin-stat-value">{stats?.waitTrainer ?? 0}</div>
+          <div className="admin-stat-value">{stats?.waitReport ?? 0}</div>
           <div className="admin-stat-sub">
             <span className="stat-pending">대기중</span>
           </div>
@@ -155,6 +155,14 @@ export default function AdminDashboard() {
         <div className="admin-activity-card green">
           <div className="admin-activity-value">{stats?.todayPost ?? 0}</div>
           <div className="admin-activity-label">새 게시글</div>
+        </div>
+        <div className="admin-activity-card purple">
+          <div className="admin-activity-value">{stats?.waitTrainer ?? 0}</div>
+          <div className="admin-activity-label">트레이너 승인 대기</div>
+        </div>
+        <div className="admin-activity-card orange">
+          <div className="admin-activity-value">{stats?.todayReport ?? 0}</div>
+          <div className="admin-activity-label">오늘 신고</div>
         </div>
       </div>
 

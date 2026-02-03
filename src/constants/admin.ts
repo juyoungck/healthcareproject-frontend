@@ -18,7 +18,7 @@ import type { AllergyType } from '../api/types/me';
  * 화상PT 상태 (컴포넌트에서 사용하는 실제 값)
  * ===========================================
  */
-export type PTRoomStatusValue = 'LIVE' | 'SCHEDULED' | 'ENDED' | 'RESERVED' | 'CANCELLED' | 'FORCE_CLOSED';
+export type PTRoomStatusValue = 'LIVE' | 'SCHEDULED' | 'ENDED' | 'CANCELLED' | 'FORCE_CLOSED';
 
 /**
  * ===========================================
@@ -64,25 +64,21 @@ export const USER_ROLE_LABELS: Record<UserRole, string> = {
 /** 회원 상태 라벨 */
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   ACTIVE: '활성',
-  STOP: '비활성',
-  SUSPENDED: '비활성',
-  SLEEP: '휴면',
+  SUSPENDED: '차단',
+  WITHDRAWN: '탈퇴',
 };
 
 /** 화상PT 상태 라벨 */
 export const PT_ROOM_STATUS_LABELS: Record<PTRoomStatusValue, string> = {
   LIVE: '진행중',
   SCHEDULED: '예약',
-  RESERVED: '예약',
   ENDED: '종료',
-  CANCELLED: '종료',
+  CANCELLED: '취소',
   FORCE_CLOSED: '강제종료',
 };
 
 /** 화상PT 방 타입 라벨 */
 export const PT_ROOM_TYPE_LABELS: Record<string, string> = {
-  PERSONAL: '개인',
-  GROUP: '그룹',
   LIVE: '실시간',
   RESERVED: '예약',
 };
@@ -110,18 +106,16 @@ export const REPORT_STATUS_CLASSES: Record<ReportStatus, string> = {
 /** 회원 상태 CSS 클래스 */
 export const USER_STATUS_CLASSES: Record<UserStatus, string> = {
   ACTIVE: 'status-active',
-  STOP: 'status-inactive',
-  SUSPENDED: 'status-inactive',
-  SLEEP: 'status-sleep',
+  SUSPENDED: 'status-suspended',
+  WITHDRAWN: 'status-withdrawn',
 };
 
 /** 화상PT 상태 CSS 클래스 */
 export const PT_ROOM_STATUS_CLASSES: Record<PTRoomStatusValue, string> = {
   LIVE: 'status-live',
   SCHEDULED: 'status-scheduled',
-  RESERVED: 'status-scheduled',
   ENDED: 'status-ended',
-  CANCELLED: 'status-ended',
+  CANCELLED: 'status-cancelled',
   FORCE_CLOSED: 'status-force-closed',
 };
 

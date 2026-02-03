@@ -194,54 +194,6 @@
 }
 
 /**
- * 칼로리 영역
- */
-.food-detail-calories {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-xl);
-  padding: var(--spacing-lg);
-  background-color: var(--color-diet-light);
-  border-radius: var(--border-radius-md);
-}
-
-/**
- * 칼로리 라벨 (100g당 / 100ml당)
- */
-.food-detail-calories-label {
-  font-size: var(--font-size-sm);
-  color: var(--color-gray-600);
-}
-
-/**
- * 칼로리 메인 값
- */
-.food-detail-calories-main {
-  display: flex;
-  align-items: baseline;
-  gap: var(--spacing-xs);
-}
-
-/**
- * 칼로리 숫자
- */
-.food-detail-calories-value {
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-diet);
-}
-
-/**
- * 칼로리 단위
- */
-.food-detail-calories-unit {
-  font-size: var(--font-size-lg);
-  color: var(--color-gray-500);
-}
-
-/**
  * 영양소 영역
  */
 .food-detail-nutrients {
@@ -263,40 +215,69 @@
 }
 
 /**
- * 영양소 그리드
+ * 영양소 행 (가로 정렬)
  */
-.food-detail-nutrients-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
+.food-detail-nutrient-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
 }
 
-/**
- * 개별 영양소
- */
-.food-detail-nutrient {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-xs);
+.food-detail-nutrient-row:last-child {
+  border-bottom: none;
 }
 
 /**
  * 영양소 라벨
  */
 .food-detail-nutrient-label {
-  font-size: var(--font-size-xs);
-  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
 }
 
 /**
  * 영양소 값
  */
 .food-detail-nutrient-value {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--color-gray-800);
+}
+
+/**
+ * ===========================================
+ * 알레르기 정보 영역
+ * ===========================================
+ */
+
+.food-detail-allergy {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
+}
+
+.food-detail-allergy-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-sm);
+}
+
+.food-detail-allergy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.food-detail-allergy-tag {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-error);
+  background-color: var(--color-error-lightest);
+  border-radius: var(--border-radius-full);
 }
 
 /**

@@ -180,6 +180,7 @@
 .admin-stat-icon.users { color: var(--color-primary); }
 .admin-stat-icon.posts { color: var(--color-success); }
 .admin-stat-icon.trainers { color: var(--color-warning); }
+.admin-stat-icon.reports { color: var(--color-error); }
 .admin-stat-icon.pt { color: var(--color-pt); }
 
 .admin-stat-value {
@@ -214,10 +215,10 @@
   color: var(--color-pt);
 }
 
-/* 오늘의 활동 (2개 그리드) */
+/* 오늘의 활동 (4개 그리드) */
 .admin-activity-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 32px;
 }
@@ -232,6 +233,7 @@
 .admin-activity-card.yellow { background-color: var(--color-warning-light); }
 .admin-activity-card.orange { background-color: var(--color-caution-light); }
 .admin-activity-card.green { background-color: var(--color-success-light); }
+.admin-activity-card.purple { background-color: var(--color-pt-light); }
 
 .admin-activity-value {
   font-size: 36px;
@@ -243,6 +245,7 @@
 .admin-activity-card.yellow .admin-activity-value { color: var(--color-warning); }
 .admin-activity-card.orange .admin-activity-value { color: var(--color-orange); }
 .admin-activity-card.green .admin-activity-value { color: var(--color-success); }
+.admin-activity-card.purple .admin-activity-value { color: var(--color-pt); }
 
 .admin-activity-label {
   font-size: 14px;
@@ -611,12 +614,20 @@
   color: var(--color-error);
 }
 
-/* 휴면/종료 - 회색 */
+/* 휴면/종료/탈퇴 - 회색 */
 .admin-status-badge.status-sleep,
 .admin-status-badge.status-ended,
-.admin-status-badge.status-ignored {
+.admin-status-badge.status-ignored,
+.admin-status-badge.status-cancelled,
+.admin-status-badge.status-withdrawn {
   background-color: var(--color-gray-100);
   color: var(--color-gray-500);
+}
+
+/* 차단 - 빨강 */
+.admin-status-badge.status-suspended {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 /* 진행중 - 파랑 */
@@ -1358,6 +1369,10 @@
 
 @media (max-width: 1200px) {
   .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-activity-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }

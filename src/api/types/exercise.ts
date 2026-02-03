@@ -44,8 +44,8 @@ export interface ExerciseListParams {
   cursor?: number;
   limit?: number;
   keyword?: string;
-  bodyPart?: BodyPart,
-  difficulty?: Difficulty;
+  bodyParts?: BodyPart[];
+  difficulties?: Difficulty[];
 }
 
 /**

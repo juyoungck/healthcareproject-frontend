@@ -17,7 +17,7 @@ export interface FoodListItem {
   foodId: number;
   name: string;
   imageUrl: string;
-  allergyCodes: string;
+  allergies: string;
   calories?: number;
   carbs?: number;
   protein?: number;
@@ -56,6 +56,7 @@ export interface FoodDetail {
   foodId: number;
   name: string;
   imageUrl: string;
+  allergies: string;
   calories: number;
   nutritionUnit: string;
   nutritionAmount: number;
