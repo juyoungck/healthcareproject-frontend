@@ -26,7 +26,7 @@ import {
   Flag
 } from 'lucide-react';
 import { useJanus, RoomEndReason } from '../../../hooks/pt/useJanus';
-import { leavePTRoom, updatePTRoomStatus, getPTRoomParticipants, kickPTParticipant } from '../../../api/pt';
+import { leavePTRoom, updatePTRoomStatus, getPTRoomParticipants, kickPTParticipant, getPTRoomDetail } from '../../../api/pt';
 import { extractAxiosError } from '../../../api/apiError';
 import type { GetPTRoomDetailResponse, PTParticipantUser } from '../../../api/types/pt';
 import ReportModal from '../common/ReportModal';
@@ -185,13 +185,30 @@ export default function VideoCallRoom({
     const axiosError = err as { response?: { status?: number } };
     /** 403 에러 처리 */
     if (axiosError.response?.status === 403) {
-      /* 이미 방 종료 처리된 경우 무시 (트레이너가 종료한 경우) */
+      /* 이미 방 종료 처리된 경우 무시 */
       if (roomEndedRef.current) return;
-
-      /* 방 종료가 아닌 경우 강퇴로 처리 */
       roomEndedRef.current = true;
-      disconnect();
-      setRoomEndReason('KICKED');
+
+      /* 방 상태 확인하여 종료/강퇴 구분 */
+      try {
+        const roomDetail = await getPTRoomDetail(room.ptRoomId);
+        disconnect();
+
+        if (roomDetail.status === 'ENDED') {
+          /* 방이 정상 종료됨 */
+          setRoomEndReason('TRAINER_LEFT');
+        } else if (roomDetail.status === 'FORCE_CLOSED') {
+          /* 관리자에 의해 강제 종료됨 */
+          setRoomEndReason('ADMIN_CLOSED');
+        } else {
+          /* 방은 진행중인데 403 = 강퇴됨 */
+          setRoomEndReason('KICKED');
+        }
+      } catch {
+        /* 방 조회도 실패하면 강퇴로 처리 */
+        disconnect();
+        setRoomEndReason('KICKED');
+      }
     }
   }
 };
