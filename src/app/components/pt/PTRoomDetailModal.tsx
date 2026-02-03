@@ -13,8 +13,6 @@ import {
   Lock,
   Video,
   Calendar,
-  Copy,
-  Check,
   Flag
 } from 'lucide-react';
 import type { PTRoomListItem, GetPTRoomDetailResponse } from '../../../api/types/pt';
@@ -73,7 +71,6 @@ export default function PTRoomDetailModal({
    */
   const [entryCode, setEntryCode] = useState('');
   const [codeError, setCodeError] = useState('');
-  const [isCopied, setIsCopied] = useState(false);
   const [showCodePopup, setShowCodePopup] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
 
@@ -131,22 +128,6 @@ export default function PTRoomDetailModal({
     setShowCodePopup(false);
     setEntryCode('');
     setCodeError('');
-  };
-
-  /**
-   * 링크 복사 핸들러
-   */
-  const handleCopyLink = async () => {
-    const baseUrl = window.location.origin;
-    const shareLink = `${baseUrl}/pt/room/${room.ptRoomId}`;
-    
-    try {
-      await navigator.clipboard.writeText(shareLink);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch {
-      /* 클립보드 접근 실패 시 무시 */
-    }
   };
 
   /**
@@ -347,15 +328,6 @@ export default function PTRoomDetailModal({
                 </button>
               </>
             )}
-
-            {/* 링크 공유 */}
-            <button 
-              className="pt-action-btn secondary"
-              onClick={handleCopyLink}
-            >
-              {isCopied ? <Check size={20} /> : <Copy size={20} />}
-              {isCopied ? '복사됨!' : '링크 복사'}
-            </button>
 
             {/* 입장 코드 팝업 */}
             {showCodePopup && (

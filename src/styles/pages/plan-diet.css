@@ -1424,25 +1424,77 @@
 
 .diet-plan-textarea {
   width: 100%;
-  padding: var(--spacing-md);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
+  padding: var(--spacing-lg);
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-base);
   font-family: inherit;
   resize: vertical;
-  min-height: 80px;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  transition: border-color 0.2s ease;
+  min-height: 100px;
+  background-color: var(--color-white);
+  color: var(--color-gray-900);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
 .diet-plan-textarea:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--color-diet);
+  box-shadow: 0 0 0 3px var(--color-diet-light);
 }
 
 .diet-plan-textarea::placeholder {
-  color: var(--text-tertiary);
+  color: var(--color-gray-400);
+}
+
+/* ===========================================
+ * 고려사항 안내
+ * =========================================== */
+
+.diet-plan-notice {
+  padding: var(--spacing-lg);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  border: var(--border-width-sm) solid var(--color-gray-100);
+}
+
+.diet-plan-notice-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-md);
+}
+
+.diet-plan-notice-title svg {
+  color: var(--color-diet);
+}
+
+.diet-plan-notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-left: var(--spacing-lg);
+  list-style: none;
+}
+
+.diet-plan-notice-list li {
+  position: relative;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+.diet-plan-notice-list li::before {
+  content: '';
+  position: absolute;
+  left: -1rem;
+  top: var(--spacing-sm);
+  width: var(--size-2xs);
+  height: var(--size-2xs);
+  background-color: var(--color-diet);
+  border-radius: var(--border-radius-full);
 }
 
 /* ===========================================
@@ -1535,29 +1587,6 @@
   align-items: center;
   height: 200px;
   color: var(--text-secondary);
-}
-
-/* 추가 요청사항 textarea */
-.diet-plan-textarea {
-  width: 100%;
-  padding: var(--spacing-md);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-family: inherit;
-  resize: vertical;
-  min-height: 80px;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.diet-plan-textarea:focus {
-  outline: none;
-  border-color: var(--primary-color);
-}
-
-.diet-plan-textarea::placeholder {
-  color: var(--text-tertiary);
 }
 
 /* 날짜 탭 상태별 스타일 */

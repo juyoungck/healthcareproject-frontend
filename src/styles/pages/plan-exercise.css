@@ -1534,24 +1534,27 @@
 /* 추가 요청사항 textarea */
 .exercise-plan-textarea {
   width: 100%;
-  padding: var(--spacing-md);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
+  padding: var(--spacing-lg);
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-base);
   font-family: inherit;
   resize: vertical;
-  min-height: 80px;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
+  min-height: 100px;
+  background-color: var(--color-white);
+  color: var(--color-gray-900);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
 .exercise-plan-textarea:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .exercise-plan-textarea::placeholder {
-  color: var(--text-tertiary);
+  color: var(--color-gray-400);
 }
 
 /* ===========================================

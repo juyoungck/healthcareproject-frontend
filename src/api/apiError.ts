@@ -84,7 +84,13 @@ export const extractAxiosError = (
         const errorData = data.error as { code?: string; message?: string };
         const code = errorData.code || 'UNKNOWN';
         /* 서버 메시지 우선, 없으면 errorCodes.ts에서 조회 */
-        const message = errorData.message || getErrorMessage(code, fallback);
+        let message = errorData.message || getErrorMessage(code, fallback);
+
+        /* AUTH-009 (이용 정지) 특별 처리 - 추가 안내 문구 */
+        if (code === 'AUTH-009') {
+          message = '이용이 정지된 계정입니다. 자세한 내용은 고객센터에 문의해주세요.';
+        }
+
         return { code, message };
       }
       
@@ -92,7 +98,13 @@ export const extractAxiosError = (
       if ('code' in data) {
         const directData = data as { code?: string; message?: string };
         const code = directData.code || 'UNKNOWN';
-        const message = directData.message || getErrorMessage(code, fallback);
+        let message = directData.message || getErrorMessage(code, fallback);
+
+        /* AUTH-009 (이용 정지) 특별 처리 - 추가 안내 문구 */
+        if (code === 'AUTH-009') {
+          message = '이용이 정지된 계정입니다. 자세한 내용은 고객센터에 문의해주세요.';
+        }
+
         return { code, message };
       }
     }

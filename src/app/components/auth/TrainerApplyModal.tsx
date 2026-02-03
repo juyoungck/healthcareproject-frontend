@@ -226,12 +226,12 @@ export default function TrainerApplyModal({
         </div>
 
         {/* 푸터 */}
-        <div className="modal-footer">
+        <div className="trainer-apply-footer">
           <button className="btn-secondary" onClick={onClose} disabled={isSubmitting}>
             취소
           </button>
-          <button 
-            className="btn-primary"  onClick={handleSubmit} disabled={isSubmitting}>
+          <button
+            className="btn-primary" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? '신청 중...' : '신청하기'}
           </button>
         </div>

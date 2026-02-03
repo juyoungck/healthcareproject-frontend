@@ -875,3 +875,220 @@
 .month-calendar-marker.memo.complete {
   background-color: var(--color-yellow-400);
 }
+
+/**
+ * ===========================================
+ * 캘린더 통계 페이지 (CalendarStatsPage)
+ * ===========================================
+ */
+
+/**
+ * 컨테이너
+ */
+.calendar-stats-container {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  min-height: 100%;
+}
+
+/**
+ * 헤더
+ */
+.calendar-stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  padding: 0 var(--spacing-sm);
+}
+
+.calendar-stats-back-btn {
+  width: var(--spacing-2xl);
+  height: var(--spacing-2xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-600);
+  border-radius: var(--border-radius-full);
+  transition: all var(--transition-fast);
+}
+
+.calendar-stats-back-btn:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-900);
+}
+
+/**
+ * 년/월 네비게이션
+ */
+.calendar-stats-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.calendar-stats-nav-btn {
+  width: var(--spacing-2xl);
+  height: var(--spacing-2xl);
+  border-radius: var(--border-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-600);
+  transition: all var(--transition-fast);
+}
+
+.calendar-stats-nav-btn:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-900);
+}
+
+.calendar-stats-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+}
+
+/**
+ * 로딩 상태
+ */
+.calendar-stats-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl);
+  color: var(--color-gray-500);
+  font-size: var(--font-size-sm);
+}
+
+/**
+ * 섹션
+ */
+.calendar-stats-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.calendar-stats-section-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-200);
+}
+
+/**
+ * 원형 프로그레스 그리드
+ */
+.calendar-stats-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.calendar-stats-progress-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-lg);
+}
+
+.calendar-stats-progress-circle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-stats-progress-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-stats-progress-percentage {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.calendar-stats-progress-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2xs);
+}
+
+.calendar-stats-progress-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-700);
+}
+
+.calendar-stats-progress-detail {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}
+
+/**
+ * 요약 섹션
+ */
+.calendar-stats-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.calendar-stats-summary-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+}
+
+.calendar-stats-summary-icon {
+  width: var(--spacing-2xl);
+  height: var(--spacing-2xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-full);
+  color: var(--color-white);
+}
+
+.calendar-stats-summary-item.workout .calendar-stats-summary-icon {
+  background-color: var(--color-workout);
+}
+
+.calendar-stats-summary-item.diet .calendar-stats-summary-icon {
+  background-color: var(--color-diet);
+}
+
+.calendar-stats-summary-item.pt .calendar-stats-summary-icon {
+  background-color: var(--color-pt);
+}
+
+.calendar-stats-summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+}
+
+.calendar-stats-summary-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}
+
+.calendar-stats-summary-value {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+}

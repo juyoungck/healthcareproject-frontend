@@ -72,6 +72,11 @@ export default function VideoCallRoom({
   const remoteVideoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
 
   /**
+   * 방 종료 상태 추적 (403 에러와 WebRTC 이벤트 간 race condition 방지)
+   */
+  const roomEndedRef = useRef<boolean>(false);
+
+  /**
    * Janus 훅 사용
    * janusRoomKey는 LIVE 상태일 때 백엔드에서 할당됨
    */
@@ -116,6 +121,9 @@ export default function VideoCallRoom({
       /** WebRTC 에러는 UI에서 connectionStatus로 처리 */
     },
     onRoomDestroyed: (reason) => {
+      /* 방 종료 플래그 설정 (403 에러보다 먼저 처리되도록) */
+      roomEndedRef.current = true;
+
       if (!isTrainer) {
         setRoomEndReason(reason);
       } else {
@@ -138,6 +146,8 @@ export default function VideoCallRoom({
   const [kickTargetUser, setKickTargetUser] = useState<PTParticipantUser | null>(null);
   const [showKickConfirm, setShowKickConfirm] = useState(false);
   const [isKicking, setIsKicking] = useState(false);
+  const [showKickSuccess, setShowKickSuccess] = useState(false);
+  const [kickedUserName, setKickedUserName] = useState<string>('');
 
   /* 참여자 프로필 정보 */
   const [participantProfiles, setParticipantProfiles] = useState<Map<string, PTParticipantUser>>(new Map());
@@ -173,8 +183,13 @@ export default function VideoCallRoom({
     setParticipantProfiles(profileMap);
   } catch (err) {
     const axiosError = err as { response?: { status?: number } };
-    /** 403 에러 = 강퇴되었거나 방에서 제외됨 */
+    /** 403 에러 처리 */
     if (axiosError.response?.status === 403) {
+      /* 이미 방 종료 처리된 경우 무시 (트레이너가 종료한 경우) */
+      if (roomEndedRef.current) return;
+
+      /* 방 종료가 아닌 경우 강퇴로 처리 */
+      roomEndedRef.current = true;
       disconnect();
       setRoomEndReason('KICKED');
     }
@@ -345,8 +360,11 @@ export default function VideoCallRoom({
       });
       setParticipantProfiles(profileMap);
 
+      /* 강퇴 성공 알림 표시 */
+      setKickedUserName(kickTargetUser.nickname);
       setShowKickConfirm(false);
       setKickTargetUser(null);
+      setShowKickSuccess(true);
     } catch (error) {
       const { code, message } = extractAxiosError(error, '강퇴에 실패했습니다.');
       if (code === 'COMMON-001') {
@@ -941,6 +959,29 @@ export default function VideoCallRoom({
                   disabled={isKicking}
                 >
                   {isKicking ? '강퇴 중...' : '강퇴하기'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 강퇴 성공 알림 팝업 (트레이너용) */}
+        {showKickSuccess && (
+          <div className="modal-overlay" style={{ zIndex: 'var(--z-modal)' }}>
+            <div className="vc-leave-popup">
+              <div className="vc-leave-popup-icon kick">
+                <UserX size={32} />
+              </div>
+              <h3 className="vc-leave-popup-title">강퇴 완료</h3>
+              <p className="vc-leave-popup-desc">
+                <strong>"{kickedUserName}"</strong>님이 강퇴되었습니다.
+              </p>
+              <div className="vc-leave-popup-actions">
+                <button
+                  className="vc-leave-popup-btn confirm"
+                  onClick={() => setShowKickSuccess(false)}
+                >
+                  확인
                 </button>
               </div>
             </div>

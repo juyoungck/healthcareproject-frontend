@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Utensils, TrendingUp, TrendingDown, Minus, X } from 'lucide-react';
+import { ArrowLeft, Utensils, TrendingUp, TrendingDown, Minus, X, Calendar } from 'lucide-react';
 import { getProfile, getAllergies } from '../../../api/me';
 import type { GoalType } from '../../../api/types/me';
 import { ALLERGY_OPTIONS_WITH_NONE } from '../../../constants/me';
@@ -307,6 +307,20 @@ export default function PlanDietCreate({
             onChange={(e) => setAdditionalNote(e.target.value)}
             rows={3}
           />
+        </section>
+
+        {/* 고려사항 안내 */}
+        <section className="diet-plan-notice">
+          <h3 className="diet-plan-notice-title">
+            <Calendar size={18} />
+            계획 생성 시 고려사항
+          </h3>
+          <ul className="diet-plan-notice-list">
+            <li>온보딩 시 입력한 신체 정보 (키, 몸무게)</li>
+            <li>선택한 식단 목표 (벌크업/다이어트/체중유지)</li>
+            <li>알레르기 및 식이 제한 사항</li>
+            <li>하루 권장 칼로리 및 영양소 배분</li>
+          </ul>
         </section>
       </main>
 

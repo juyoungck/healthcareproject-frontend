@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback } from 'react';
 /**
  * 탭 타입 정의
  */
-export type TabType = 'home' | 'exercise' | 'diet' | 'pt' | 'board' | 'exerciseView' | 'dietView' | 'calendar';
+export type TabType = 'home' | 'exercise' | 'diet' | 'pt' | 'board' | 'exerciseView' | 'dietView' | 'calendar' | 'calendarStats';
 
 /**
  * 서브페이지 타입 정의
@@ -94,6 +94,7 @@ export function useDashboardNavigation({
       case 'pt': return '화상PT';
       case 'board': return '게시판';
       case 'calendar': return '캘린더';
+      case 'calendarStats': return '월간 통계';
       default: return '운동운동';
     }
   }, [activeTab]);

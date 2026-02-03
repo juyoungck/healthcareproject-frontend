@@ -21,6 +21,7 @@ import {
 import type { DashboardStats, VersionInfo, HealthInfo } from '../../../api/types/admin';
 import { getAdminDashboard, getVersion, getHealth } from '../../../api/admin';
 import { getApiErrorMessage } from '../../../api/apiError';
+import { formatDateTimeAdmin } from '../../../utils/format';
 
 /**
  * ===========================================
@@ -197,7 +198,7 @@ export default function AdminDashboard() {
             </div>
             <div className="admin-system-row">
               <span className="admin-system-key">빌드</span>
-              <span className="admin-system-value">{versionInfo?.buildTime ?? '-'}</span>
+              <span className="admin-system-value">{formatDateTimeAdmin(versionInfo?.buildTime ?? null)}</span>
             </div>
             <div className="admin-system-row">
               <span className="admin-system-key">환경</span>

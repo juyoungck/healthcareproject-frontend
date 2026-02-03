@@ -232,15 +232,8 @@
   white-space: nowrap;
 }
 
-.board-item-comment-count {
-  flex-shrink: 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-primary);
-  font-weight: var(--font-weight-medium);
-}
-
 /**
- * 메타 정보 (작성자 | 날짜 | 조회수)
+ * 메타 정보 (작성자 | 날짜 | 조회수 | 댓글)
  */
 .board-item-meta {
   display: flex;

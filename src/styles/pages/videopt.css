@@ -140,6 +140,16 @@
   color: var(--color-private);
 }
 
+.pt-status-badge.cancelled {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-600);
+}
+
+.pt-status-badge.force-closed {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
 /**
  * LIVE 아이콘 애니메이션
  */

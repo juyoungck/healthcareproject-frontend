@@ -38,6 +38,8 @@ interface MonthCalendarProps {
   onNavigateToDiet?: (dateStr: string) => void;
   /** 화상PT 상세 페이지 이동 핸들러 */
   onNavigateToPT?: () => void;
+  /** 통계 페이지 이동 핸들러 */
+  onNavigateToStats?: () => void;
 }
 
 /**
@@ -51,6 +53,7 @@ export default function MonthCalendar({
   onNavigateToWorkout,
   onNavigateToDiet,
   onNavigateToPT,
+  onNavigateToStats,
 }: MonthCalendarProps) {
   /**
    * ===========================================
@@ -212,7 +215,10 @@ export default function MonthCalendar({
         </div>
 
         {/* 통계 버튼 */}
-        <button className="month-calendar-stats-btn">
+        <button
+          className="month-calendar-stats-btn"
+          onClick={onNavigateToStats}
+        >
           <BarChart2 size={20} />
         </button>
       </div>

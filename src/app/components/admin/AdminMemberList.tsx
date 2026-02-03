@@ -90,7 +90,7 @@ export default function AdminMemberList() {
       await banUser(userId);
       setMembers((prev) =>
         prev.map((member) =>
-          member.userId === userId ? { ...member, status: 'STOP' as UserStatus } : member
+          member.userId === userId ? { ...member, status: 'SUSPENDED' as UserStatus } : member
         )
       );
       alert('회원이 차단되었습니다.');
@@ -230,7 +230,7 @@ export default function AdminMemberList() {
                   </td>
                   <td>
                     <div className="admin-action-buttons">
-                      {(member.status !== 'STOP' && member.status !== 'SUSPENDED') ? (
+                      {member.status !== 'SUSPENDED' ? (
                         <button
                           className="admin-action-btn delete"
                           onClick={() => handleBan(member.userId)}

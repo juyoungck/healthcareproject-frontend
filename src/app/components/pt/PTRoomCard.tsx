@@ -56,7 +56,7 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
         </span>
       );
     }
-    
+
     if (room.status === 'SCHEDULED') {
       return (
         <span className="pt-status-badge reserved">
@@ -72,7 +72,23 @@ export default function PTRoomCard({ room, onClick }: PTRoomCardProps) {
         </span>
       );
     }
-    
+
+    if (room.status === 'CANCELLED') {
+      return (
+        <span className="pt-status-badge cancelled">
+          취소됨
+        </span>
+      );
+    }
+
+    if (room.status === 'FORCE_CLOSED') {
+      return (
+        <span className="pt-status-badge force-closed">
+          강제종료
+        </span>
+      );
+    }
+
     return null;
   };
 

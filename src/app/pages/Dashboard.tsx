@@ -15,6 +15,7 @@ import PlanDietPage from './PlanDietPage';
 import PlanDietViewPage from '../components/plan/PlanDietViewPage';
 import WeekCalendar from '../components/calendar/WeekCalendar';
 import CalendarPage from './CalendarPage';
+import CalendarStatsPage from './CalendarStatsPage';
 import MyPage from './MyPage';
 
 /* 커스텀 훅 */
@@ -276,6 +277,13 @@ export default function Dashboard({
               setActiveTab('dietView');
             }}
             onNavigateToPT={() => handleNavigateToPT('live')}
+            onNavigateToStats={() => setActiveTab('calendarStats')}
+          />
+        );
+      case 'calendarStats':
+        return (
+          <CalendarStatsPage
+            onNavigateBack={() => setActiveTab('calendar')}
           />
         );
       default:

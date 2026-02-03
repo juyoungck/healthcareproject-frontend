@@ -245,9 +245,6 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
                   <div className="board-item-content">
                     <div className="board-item-row">
                       <span className="board-item-title">{post.title}</span>
-                      {post.commentCount > 0 && (
-                        <span className="board-item-comment-count">[{post.commentCount}]</span>
-                      )}
                     </div>
                     <div className="board-item-meta">
                       <span>{post.nickname}</span>
@@ -255,6 +252,8 @@ export default function BoardList({ onSelectPost, onWritePost }: BoardListProps)
                       <span>{formatDateWithTime(post.createdAt)}</span>
                       <span className="board-item-divider">|</span>
                       <span>조회 {post.viewCount}</span>
+                      <span className="board-item-divider">|</span>
+                      <span>댓글 {post.commentCount}</span>
                     </div>
                   </div>
                 </button>

@@ -67,6 +67,7 @@ export default function AdminPTList() {
   /** 강제종료 모달 */
   const [isForceEndModalOpen, setIsForceEndModalOpen] = useState(false);
   const [forceEndTargetId, setForceEndTargetId] = useState<number | null>(null);
+  const [forceEndTargetStatus, setForceEndTargetStatus] = useState<PTRoomStatusValue | null>(null);
   const [forceEndReason, setForceEndReason] = useState('');
 
   /**
@@ -126,8 +127,9 @@ export default function AdminPTList() {
   /**
    * 강제 종료 모달 열기
    */
-  const openForceEndModal = (ptRoomId: number) => {
+  const openForceEndModal = (ptRoomId: number, status: PTRoomStatusValue) => {
     setForceEndTargetId(ptRoomId);
+    setForceEndTargetStatus(status);
     setForceEndReason('');
     setIsForceEndModalOpen(true);
   };
@@ -137,8 +139,11 @@ export default function AdminPTList() {
    */
   const handleForceEnd = async () => {
     if (!forceEndTargetId) return;
+    const isScheduled = forceEndTargetStatus === 'SCHEDULED';
+    const actionLabel = isScheduled ? '예약 취소' : '강제 종료';
+
     if (!forceEndReason.trim()) {
-      alert('강제 종료 사유를 입력해주세요.');
+      alert(`${actionLabel} 사유를 입력해주세요.`);
       return;
     }
 
@@ -149,9 +154,9 @@ export default function AdminPTList() {
       setIsForceEndModalOpen(false);
       setIsDetailModalOpen(false);
       fetchPTRooms();
-      alert('화상PT가 강제 종료되었습니다.');
+      alert(isScheduled ? '화상PT 예약이 취소되었습니다.' : '화상PT가 강제 종료되었습니다.');
     } catch (err) {
-      alert(getApiErrorMessage(err, '화상PT 강제 종료에 실패했습니다.'));
+      alert(getApiErrorMessage(err, `화상PT ${actionLabel}에 실패했습니다.`));
     }
   };
 
@@ -295,9 +300,9 @@ export default function AdminPTList() {
                         <button
                           className={`admin-action-btn ${isEnded ? 'delete disabled' : 'delete'}`}
                           onClick={() => {
-                            if (!isEnded) openForceEndModal(room.ptRoomId);
+                            if (!isEnded) openForceEndModal(room.ptRoomId, room.status);
                           }}
-                          title={isEnded ? '종료됨' : '강제종료'}
+                          title={isEnded ? '종료됨' : room.status === 'SCHEDULED' ? '예약취소' : '강제종료'}
                           disabled={isEnded}
                         >
                           <XCircle size={16} />
@@ -328,6 +333,7 @@ export default function AdminPTList() {
           onConfirm={handleForceEnd}
           reason={forceEndReason}
           setReason={setForceEndReason}
+          status={forceEndTargetStatus}
         />
       )}
     </div>
@@ -342,7 +348,7 @@ export default function AdminPTList() {
 interface PTDetailModalProps {
   room: AdminPTRoom;
   onClose: () => void;
-  onForceEnd: (ptRoomId: number) => void;
+  onForceEnd: (ptRoomId: number, status: PTRoomStatusValue) => void;
 }
 
 function PTDetailModal({ room, onClose, onForceEnd }: PTDetailModalProps) {
@@ -451,8 +457,8 @@ function PTDetailModal({ room, onClose, onForceEnd }: PTDetailModalProps) {
             닫기
           </button>
           {(room.status === 'LIVE' || room.status === 'SCHEDULED' || room.status === 'RESERVED') && (
-            <button className="admin-btn danger" onClick={() => onForceEnd(room.ptRoomId)}>
-              강제 종료
+            <button className="admin-btn danger" onClick={() => onForceEnd(room.ptRoomId, room.status)}>
+              {room.status === 'SCHEDULED' ? '예약 취소' : '강제 종료'}
             </button>
           )}
         </div>
@@ -471,9 +477,12 @@ interface ForceEndModalProps {
   onConfirm: () => void;
   reason: string;
   setReason: (reason: string) => void;
+  status: PTRoomStatusValue | null;
 }
 
-function ForceEndModal({ onClose, onConfirm, reason, setReason }: ForceEndModalProps) {
+function ForceEndModal({ onClose, onConfirm, reason, setReason, status }: ForceEndModalProps) {
+  const isScheduled = status === 'SCHEDULED';
+  const actionLabel = isScheduled ? '예약 취소' : '강제 종료';
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -484,7 +493,7 @@ function ForceEndModal({ onClose, onConfirm, reason, setReason }: ForceEndModalP
     <div className="admin-modal-overlay" onClick={handleOverlayClick}>
       <div className="admin-modal-container" style={{ maxWidth: '450px' }}>
         <div className="admin-modal-header">
-          <h3 className="admin-modal-title">강제 종료</h3>
+          <h3 className="admin-modal-title">{actionLabel}</h3>
           <button className="admin-modal-close" onClick={onClose}>
             <X size={24} />
           </button>
@@ -492,15 +501,18 @@ function ForceEndModal({ onClose, onConfirm, reason, setReason }: ForceEndModalP
 
         <div className="admin-modal-content">
           <p style={{ marginBottom: '16px', color: '#666' }}>
-            화상PT를 강제 종료하시겠습니까?<br />
-            모든 참여자의 연결이 끊어집니다.
+            {isScheduled ? (
+              <>화상PT 예약을 취소하시겠습니까?</>
+            ) : (
+              <>화상PT를 강제 종료하시겠습니까?<br />모든 참여자의 연결이 끊어집니다.</>
+            )}
           </p>
-          
+
           <div className="admin-form-group">
-            <label className="admin-form-label">종료 사유 *</label>
+            <label className="admin-form-label">{isScheduled ? '취소' : '종료'} 사유 *</label>
             <textarea
               className="admin-form-textarea"
-              placeholder="강제 종료 사유를 입력해주세요"
+              placeholder={`${actionLabel} 사유를 입력해주세요`}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
@@ -511,10 +523,10 @@ function ForceEndModal({ onClose, onConfirm, reason, setReason }: ForceEndModalP
 
         <div className="admin-modal-footer">
           <button className="admin-btn secondary" onClick={onClose}>
-            취소
+            닫기
           </button>
           <button className="admin-btn danger" onClick={onConfirm}>
-            강제 종료
+            {actionLabel}
           </button>
         </div>
       </div>

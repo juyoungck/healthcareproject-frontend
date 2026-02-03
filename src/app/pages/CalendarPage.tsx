@@ -22,6 +22,8 @@ interface CalendarPageProps {
   onNavigateToDiet?: (dateStr: string) => void;
   /** 화상PT 상세 페이지 이동 핸들러 */
   onNavigateToPT?: () => void;
+  /** 통계 페이지 이동 핸들러 */
+  onNavigateToStats?: () => void;
 }
 
 /**
@@ -35,6 +37,7 @@ export default function CalendarPage({
   onNavigateToWorkout,
   onNavigateToDiet,
   onNavigateToPT,
+  onNavigateToStats,
 }: CalendarPageProps) {
   return (
     <div className="calendar-page">
@@ -43,6 +46,7 @@ export default function CalendarPage({
         onNavigateToWorkout={onNavigateToWorkout}
         onNavigateToDiet={onNavigateToDiet}
         onNavigateToPT={onNavigateToPT}
+        onNavigateToStats={onNavigateToStats}
       />
     </div>
   );
