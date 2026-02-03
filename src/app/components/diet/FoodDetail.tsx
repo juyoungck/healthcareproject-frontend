@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { X, Loader } from 'lucide-react';
 import { getFoodDetail } from '../../../api/food';
 import { getApiErrorMessage } from '../../../api/apiError';
+import { getAllergyLabel } from '../../../utils/label';
 import type { FoodDetail as FoodDetailType } from '../../../api/types/food';
 
 /**
@@ -115,27 +116,42 @@ export default function FoodDetail({ foodId, onClose }: FoodDetailProps) {
               />
             </div>
 
-            {/* 칼로리 정보 */}
-            <div className="food-detail-calories">
-              <span className="food-detail-calories-value">{food.calories}</span>
-              <span className="food-detail-calories-unit">kcal / {getNutritionLabel()}</span>
-            </div>
-
-            {/* 영양소 정보 */}
+            {/* 영양 정보 (가로 정렬) */}
             <div className="food-detail-nutrients">
-              <div className="food-detail-nutrient">
+              <div className="food-detail-nutrients-header">
+                {getNutritionLabel()} 기준
+              </div>
+              <div className="food-detail-nutrient-row">
+                <span className="food-detail-nutrient-label">칼로리</span>
+                <span className="food-detail-nutrient-value">{food.calories}kcal</span>
+              </div>
+              <div className="food-detail-nutrient-row">
                 <span className="food-detail-nutrient-label">탄수화물</span>
                 <span className="food-detail-nutrient-value">{food.carbs}g</span>
               </div>
-              <div className="food-detail-nutrient">
+              <div className="food-detail-nutrient-row">
                 <span className="food-detail-nutrient-label">단백질</span>
                 <span className="food-detail-nutrient-value">{food.proteins}g</span>
               </div>
-              <div className="food-detail-nutrient">
+              <div className="food-detail-nutrient-row">
                 <span className="food-detail-nutrient-label">지방</span>
                 <span className="food-detail-nutrient-value">{food.fats}g</span>
               </div>
             </div>
+
+            {/* 알레르기 정보 */}
+            {food.allergies && (
+              <div className="food-detail-allergy">
+                <span className="food-detail-allergy-label">알레르기 정보</span>
+                <div className="food-detail-allergy-tags">
+                  {food.allergies.split(',').map((allergy, index) => (
+                    <span key={index} className="food-detail-allergy-tag">
+                      {getAllergyLabel(allergy.trim())}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

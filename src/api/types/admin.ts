@@ -31,7 +31,7 @@ export interface PaginatedResponse<T> {
 export type UserRole = 'USER' | 'TRAINER' | 'ADMIN';
 
 /** 회원 상태 */
-export type UserStatus = 'ACTIVE' | 'STOP' | 'SLEEP' | 'SUSPENDED';
+export type UserStatus = 'ACTIVE' | 'SUSPENDED' | 'WITHDRAWN';
 
 /** 회원 데이터 (관리자용) */
 export interface AdminUser {
@@ -278,15 +278,17 @@ export interface DashboardStats {
   totalPost: number;
   publicPost: number;
   hiddenPost: number;
-  /* 트레이너 신청 */
+  /* 트레이너 승인 대기 */
   waitTrainer: number;
+  /* 신고 현황 */
+  waitReport: number;
+  todayReport: number;
   /* 화상PT 현황 */
   totalPt: number;
   livePt: number;
   reservedPt: number;
   /* 오늘의 활동 */
   todayJoin: number;
-  todayTrainerApp: number;
   todayPost: number;
 }
 

@@ -63,7 +63,7 @@ export function useExerciseList(): UseExerciseListReturn {
 
   /**
    * 운동 목록 조회 (첫 페이지)
-   * - 다중 선택 시 각 필터별 병렬 API 호출 후 결과 병합
+   * - 다중 선택 시 배열로 한 번에 요청
    */
   const fetchExercises = useCallback(async (reset = false) => {
     if (reset) {
@@ -75,92 +75,19 @@ export function useExerciseList(): UseExerciseListReturn {
     setError('');
 
     try {
-      let allItems: ExerciseListItem[] = [];
-      let finalHasNext = false;
-      let finalNextCursor: number | null = null;
-
       const bodyPartsArray = Array.from(selectedBodyParts);
       const difficultiesArray = Array.from(selectedDifficulties);
 
-      /** 다중 선택 조합 생성 (부위 x 난이도) */
-      const hasMultipleBodyParts = bodyPartsArray.length > 1;
-      const hasMultipleDifficulties = difficultiesArray.length > 1;
-      const hasSingleBodyPart = bodyPartsArray.length === 1;
-      const hasSingleDifficulty = difficultiesArray.length === 1;
+      const response = await getExercises({
+        limit: 10,
+        keyword: searchQuery || undefined,
+        bodyParts: bodyPartsArray.length > 0 ? bodyPartsArray : undefined,
+        difficulties: difficultiesArray.length > 0 ? difficultiesArray : undefined,
+      });
 
-      /** 병렬 API 호출이 필요한 경우 */
-      if (hasMultipleBodyParts || hasMultipleDifficulties) {
-        const requests: Promise<{ items: ExerciseListItem[]; hasNext: boolean; nextCursor: number | null }>[] = [];
-
-        /** 다중 부위 + 다중 난이도: 모든 조합에 대해 호출 */
-        if (hasMultipleBodyParts && hasMultipleDifficulties) {
-          bodyPartsArray.forEach(bodyPart => {
-            difficultiesArray.forEach(difficulty => {
-              requests.push(getExercises({
-                limit: 10,
-                keyword: searchQuery || undefined,
-                bodyPart,
-                difficulty,
-              }));
-            });
-          });
-        }
-        /** 다중 부위 + 단일/전체 난이도 */
-        else if (hasMultipleBodyParts) {
-          bodyPartsArray.forEach(bodyPart => {
-            requests.push(getExercises({
-              limit: 10,
-              keyword: searchQuery || undefined,
-              bodyPart,
-              difficulty: hasSingleDifficulty ? difficultiesArray[0] : undefined,
-            }));
-          });
-        }
-        /** 단일/전체 부위 + 다중 난이도 */
-        else if (hasMultipleDifficulties) {
-          difficultiesArray.forEach(difficulty => {
-            requests.push(getExercises({
-              limit: 10,
-              keyword: searchQuery || undefined,
-              bodyPart: hasSingleBodyPart ? bodyPartsArray[0] : undefined,
-              difficulty,
-            }));
-          });
-        }
-
-        const responses = await Promise.all(requests);
-
-        /** 결과 병합 및 중복 제거 */
-        const seenIds = new Set<number>();
-        responses.forEach(response => {
-          response.items.forEach(item => {
-            if (!seenIds.has(item.exerciseId)) {
-              seenIds.add(item.exerciseId);
-              allItems.push(item);
-            }
-          });
-          if (response.hasNext) finalHasNext = true;
-          if (response.nextCursor && (!finalNextCursor || response.nextCursor < finalNextCursor)) {
-            finalNextCursor = response.nextCursor;
-          }
-        });
-      } else {
-        /** 단일/전체 선택: 단일 API 호출 */
-        const response = await getExercises({
-          limit: 10,
-          keyword: searchQuery || undefined,
-          bodyPart: hasSingleBodyPart ? bodyPartsArray[0] : undefined,
-          difficulty: hasSingleDifficulty ? difficultiesArray[0] : undefined,
-        });
-
-        allItems = response.items;
-        finalHasNext = response.hasNext;
-        finalNextCursor = response.nextCursor;
-      }
-
-      setExercises(allItems);
-      setNextCursor(finalNextCursor);
-      setHasNext(finalHasNext);
+      setExercises(response.items);
+      setNextCursor(response.nextCursor);
+      setHasNext(response.hasNext);
     } catch (err) {
       setError(getApiErrorMessage(err, '운동 목록을 불러오는데 실패했습니다.'));
     } finally {
@@ -170,7 +97,7 @@ export function useExerciseList(): UseExerciseListReturn {
 
   /**
    * 운동 목록 추가 조회 (무한 스크롤)
-   * - 다중 선택 시에도 병렬 호출로 처리
+   * - 다중 선택 시 배열로 한 번에 요청
    */
   const fetchMoreExercises = useCallback(async () => {
     if (isLoadingMore || !hasNext || nextCursor === null) return;
@@ -178,104 +105,26 @@ export function useExerciseList(): UseExerciseListReturn {
     setIsLoadingMore(true);
 
     try {
-      let newItems: ExerciseListItem[] = [];
-      let finalHasNext = false;
-      let finalNextCursor: number | null = null;
-
       const bodyPartsArray = Array.from(selectedBodyParts);
       const difficultiesArray = Array.from(selectedDifficulties);
 
-      /** 다중 선택 조합 생성 (부위 x 난이도) */
-      const hasMultipleBodyParts = bodyPartsArray.length > 1;
-      const hasMultipleDifficulties = difficultiesArray.length > 1;
-      const hasSingleBodyPart = bodyPartsArray.length === 1;
-      const hasSingleDifficulty = difficultiesArray.length === 1;
+      const response = await getExercises({
+        cursor: nextCursor,
+        limit: 10,
+        keyword: searchQuery || undefined,
+        bodyParts: bodyPartsArray.length > 0 ? bodyPartsArray : undefined,
+        difficulties: difficultiesArray.length > 0 ? difficultiesArray : undefined,
+      });
 
-      /** 기존 ID 수집 (중복 방지) */
-      const existingIds = new Set(exercises.map(e => e.exerciseId));
-
-      /** 병렬 API 호출이 필요한 경우 */
-      if (hasMultipleBodyParts || hasMultipleDifficulties) {
-        const requests: Promise<{ items: ExerciseListItem[]; hasNext: boolean; nextCursor: number | null }>[] = [];
-
-        /** 다중 부위 + 다중 난이도: 모든 조합에 대해 호출 */
-        if (hasMultipleBodyParts && hasMultipleDifficulties) {
-          bodyPartsArray.forEach(bodyPart => {
-            difficultiesArray.forEach(difficulty => {
-              requests.push(getExercises({
-                cursor: nextCursor,
-                limit: 10,
-                keyword: searchQuery || undefined,
-                bodyPart,
-                difficulty,
-              }));
-            });
-          });
-        }
-        /** 다중 부위 + 단일/전체 난이도 */
-        else if (hasMultipleBodyParts) {
-          bodyPartsArray.forEach(bodyPart => {
-            requests.push(getExercises({
-              cursor: nextCursor,
-              limit: 10,
-              keyword: searchQuery || undefined,
-              bodyPart,
-              difficulty: hasSingleDifficulty ? difficultiesArray[0] : undefined,
-            }));
-          });
-        }
-        /** 단일/전체 부위 + 다중 난이도 */
-        else if (hasMultipleDifficulties) {
-          difficultiesArray.forEach(difficulty => {
-            requests.push(getExercises({
-              cursor: nextCursor,
-              limit: 10,
-              keyword: searchQuery || undefined,
-              bodyPart: hasSingleBodyPart ? bodyPartsArray[0] : undefined,
-              difficulty,
-            }));
-          });
-        }
-
-        const responses = await Promise.all(requests);
-
-        /** 결과 병합 및 중복 제거 */
-        responses.forEach(response => {
-          response.items.forEach(item => {
-            if (!existingIds.has(item.exerciseId)) {
-              existingIds.add(item.exerciseId);
-              newItems.push(item);
-            }
-          });
-          if (response.hasNext) finalHasNext = true;
-          if (response.nextCursor && (!finalNextCursor || response.nextCursor < finalNextCursor)) {
-            finalNextCursor = response.nextCursor;
-          }
-        });
-      } else {
-        /** 단일/전체 선택: 단일 API 호출 */
-        const response = await getExercises({
-          cursor: nextCursor,
-          limit: 10,
-          keyword: searchQuery || undefined,
-          bodyPart: hasSingleBodyPart ? bodyPartsArray[0] : undefined,
-          difficulty: hasSingleDifficulty ? difficultiesArray[0] : undefined,
-        });
-
-        newItems = response.items;
-        finalHasNext = response.hasNext;
-        finalNextCursor = response.nextCursor;
-      }
-
-      setExercises(prev => [...prev, ...newItems]);
-      setNextCursor(finalNextCursor);
-      setHasNext(finalHasNext);
+      setExercises(prev => [...prev, ...response.items]);
+      setNextCursor(response.nextCursor);
+      setHasNext(response.hasNext);
     } catch {
       /** 추가 로딩 실패는 조용히 처리 */
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, hasNext, nextCursor, searchQuery, selectedBodyParts, selectedDifficulties, exercises]);
+  }, [isLoadingMore, hasNext, nextCursor, searchQuery, selectedBodyParts, selectedDifficulties]);
 
   /**
    * 실시간 검색 (debounce 300ms) - 필터/검색어 변경 시 자동 재조회
