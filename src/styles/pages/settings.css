@@ -311,3 +311,111 @@
   color: var(--color-danger);
   font-weight: 600;
 }
+
+/**
+ * ===========================================
+ * 비활성화 항목
+ * ===========================================
+ */
+
+.settings-item-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.settings-item-disabled:hover {
+  background-color: transparent;
+}
+
+.settings-item-badge {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  background-color: var(--color-gray-100);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-full);
+}
+
+/**
+ * ===========================================
+ * 약관/정책 모달
+ * ===========================================
+ */
+
+.settings-policy-modal {
+  display: flex;
+  flex-direction: column;
+  width: 95%;
+  max-width: var(--app-max-width);
+  max-height: 85vh;
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.settings-policy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border-bottom: var(--border-width-sm) solid var(--color-gray-100);
+  flex-shrink: 0;
+}
+
+.settings-policy-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+.settings-policy-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--element-size-lg);
+  height: var(--element-size-lg);
+  background: none;
+  border: none;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  border-radius: var(--border-radius-md);
+  transition: background-color var(--transition-fast);
+}
+
+.settings-policy-close:hover {
+  background-color: var(--color-gray-100);
+}
+
+.settings-policy-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  line-height: var(--line-height-relaxed);
+}
+
+.settings-policy-content h3 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.settings-policy-content h3:first-child {
+  margin-top: 0;
+}
+
+.settings-policy-content p {
+  margin-bottom: var(--spacing-md);
+  white-space: pre-line;
+}
+
+.settings-policy-date {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-width-sm) solid var(--color-gray-100);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  text-align: right;
+}

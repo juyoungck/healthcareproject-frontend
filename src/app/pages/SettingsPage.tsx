@@ -3,8 +3,9 @@
  * 설정 페이지 컴포넌트
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { getSocialConnections } from '../../api/auth';
 import {
   ArrowLeft,
   ChevronRight,
@@ -16,9 +17,12 @@ import {
   LogOut,
   UserX,
   Key,
+  X,
 } from 'lucide-react';
 import PasswordChangeModal from '../components/settings/PasswordChangeModal';
 import WithdrawModal from '../components/settings/WithdrawModal';
+import { TERMS_OF_SERVICE, TERMS_EFFECTIVE_DATE } from '../../data/terms';
+import { PRIVACY_POLICY, PRIVACY_EFFECTIVE_DATE } from '../../data/privacy';
 
 /**
  * Props 타입 정의
@@ -40,6 +44,27 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
   /** 모달 상태 */
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+  /** 소셜 로그인 여부 (비밀번호 없는 경우) */
+  const [hasPassword, setHasPassword] = useState(true);
+
+  /**
+   * 소셜 연결 정보 조회
+   */
+  useEffect(() => {
+    const fetchSocialConnections = async () => {
+      try {
+        const response = await getSocialConnections();
+        setHasPassword(response.hasPassword);
+      } catch {
+        /* 조회 실패 시 기본값 유지 */
+      }
+    };
+
+    fetchSocialConnections();
+  }, []);
 
   /**
    * 로그아웃 핸들러
@@ -67,22 +92,6 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
     onLogout();
   };
 
-  /**
-   * 약관 페이지 열기
-   * TODO: 실제 약관 페이지 또는 모달로 연결
-   */
-  const openTerms = () => {
-    alert('이용약관 페이지로 이동합니다.');
-  };
-
-  const openPrivacy = () => {
-    alert('개인정보 처리방침 페이지로 이동합니다.');
-  };
-
-  const openContact = () => {
-    alert('문의하기 페이지로 이동합니다.');
-  };
-
   return (
     <div className="settings-page">
       {/* 헤더 */}
@@ -102,13 +111,13 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
         <section className="settings-section">
           <h3 className="settings-section-title">앱 설정</h3>
           <div className="settings-list">
-            <button className="settings-item">
+            <div className="settings-item settings-item-disabled">
               <div className="settings-item-left">
                 <Bell size={20} className="settings-item-icon" />
                 <span className="settings-item-label">알림 설정</span>
               </div>
-              <ChevronRight size={20} className="settings-item-arrow" />
-            </button>
+              <span className="settings-item-badge">준비중</span>
+            </div>
           </div>
         </section>
 
@@ -116,14 +125,14 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
         <section className="settings-section">
           <h3 className="settings-section-title">약관 및 정책</h3>
           <div className="settings-list">
-            <button className="settings-item" onClick={openTerms}>
+            <button className="settings-item" onClick={() => setShowTermsModal(true)}>
               <div className="settings-item-left">
                 <FileText size={20} className="settings-item-icon" />
                 <span className="settings-item-label">이용약관</span>
               </div>
               <ChevronRight size={20} className="settings-item-arrow" />
             </button>
-            <button className="settings-item" onClick={openPrivacy}>
+            <button className="settings-item" onClick={() => setShowPrivacyModal(true)}>
               <div className="settings-item-left">
                 <Shield size={20} className="settings-item-icon" />
                 <span className="settings-item-label">개인정보 처리방침</span>
@@ -144,13 +153,13 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
               </div>
               <span className="settings-item-value">1.0.0</span>
             </div>
-            <button className="settings-item" onClick={openContact}>
+            <div className="settings-item settings-item-disabled">
               <div className="settings-item-left">
                 <Mail size={20} className="settings-item-icon" />
                 <span className="settings-item-label">문의하기</span>
               </div>
-              <ChevronRight size={20} className="settings-item-arrow" />
-            </button>
+              <span className="settings-item-badge">준비중</span>
+            </div>
           </div>
         </section>
 
@@ -158,13 +167,23 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
         <section className="settings-section">
           <h3 className="settings-section-title">계정</h3>
           <div className="settings-list">
-            <button className="settings-item" onClick={() => setShowPasswordModal(true)}>
-              <div className="settings-item-left">
-                <Key size={20} className="settings-item-icon" />
-                <span className="settings-item-label">비밀번호 변경</span>
+            {hasPassword ? (
+              <button className="settings-item" onClick={() => setShowPasswordModal(true)}>
+                <div className="settings-item-left">
+                  <Key size={20} className="settings-item-icon" />
+                  <span className="settings-item-label">비밀번호 변경</span>
+                </div>
+                <ChevronRight size={20} className="settings-item-arrow" />
+              </button>
+            ) : (
+              <div className="settings-item settings-item-disabled">
+                <div className="settings-item-left">
+                  <Key size={20} className="settings-item-icon" />
+                  <span className="settings-item-label">비밀번호 변경</span>
+                </div>
+                <span className="settings-item-badge">소셜 로그인</span>
               </div>
-              <ChevronRight size={20} className="settings-item-arrow" />
-            </button>
+            )}
             <button className="settings-item" onClick={handleLogout}>
               <div className="settings-item-left">
                 <LogOut size={20} className="settings-item-icon" />
@@ -195,6 +214,52 @@ export default function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
           onClose={() => setShowWithdrawModal(false)}
           onSuccess={handleWithdrawSuccess}
         />
+      )}
+
+      {/* 이용약관 모달 */}
+      {showTermsModal && (
+        <div className="modal-overlay" onClick={() => setShowTermsModal(false)}>
+          <div className="settings-policy-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="settings-policy-header">
+              <h2 className="settings-policy-title">이용약관</h2>
+              <button className="settings-policy-close" onClick={() => setShowTermsModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="settings-policy-content">
+              {TERMS_OF_SERVICE.map((section, index) => (
+                <div key={index}>
+                  <h3>{section.title}</h3>
+                  <p>{section.content}</p>
+                </div>
+              ))}
+              <p className="settings-policy-date">시행일: {TERMS_EFFECTIVE_DATE}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 개인정보 처리방침 모달 */}
+      {showPrivacyModal && (
+        <div className="modal-overlay" onClick={() => setShowPrivacyModal(false)}>
+          <div className="settings-policy-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="settings-policy-header">
+              <h2 className="settings-policy-title">개인정보 처리방침</h2>
+              <button className="settings-policy-close" onClick={() => setShowPrivacyModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="settings-policy-content">
+              {PRIVACY_POLICY.map((section, index) => (
+                <div key={index}>
+                  <h3>{section.title}</h3>
+                  <p>{section.content}</p>
+                </div>
+              ))}
+              <p className="settings-policy-date">시행일: {PRIVACY_EFFECTIVE_DATE}</p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
