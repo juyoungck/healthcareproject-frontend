@@ -9,9 +9,10 @@
  * 수정/삭제는 백엔드 미구현으로 등록만 가능
  */
 
-import { useState, useEffect } from 'react';
-import { Plus, X, Trash2, Video } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, X, Trash2, Video, Upload } from 'lucide-react';
 import apiClient from '../../../api/client';
+import { uploadFile } from '../../../api/upload';
 import type {
   ExerciseListItem,
   ExerciseListParams,
@@ -404,10 +405,50 @@ function ExerciseModal({ onClose, onSave }: ExerciseModalProps) {
   const [difficulty, setDifficulty] = useState<Difficulty>('BEGINNER');
   const [description, setDescription] = useState('');
   const [precautions, setPrecautions] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
 
-  const handleSave = () => {
+  /** 이미지 업로드 관련 상태 */
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  /**
+   * 이미지 파일 선택 핸들러
+   */
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('파일 크기가 10MB를 초과합니다.');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드 가능합니다.');
+      return;
+    }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  /**
+   * 이미지 삭제 핸들러
+   */
+  const handleImageRemove = () => {
+    setImageFile(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSave = async () => {
     if (!name.trim()) {
       alert('운동명을 입력해주세요.');
       return;
@@ -417,13 +458,27 @@ function ExerciseModal({ onClose, onSave }: ExerciseModalProps) {
       return;
     }
 
+    let uploadedImageUrl: string | undefined;
+
+    if (imageFile) {
+      setIsUploading(true);
+      try {
+        uploadedImageUrl = await uploadFile(imageFile, 'EXERCISE');
+      } catch (err) {
+        alert(getApiErrorMessage(err, '이미지 업로드에 실패했습니다.'));
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
     onSave({
       name: name.trim(),
       bodyPart,
       difficulty,
       description: description.trim(),
       precautions: precautions.trim(),
-      imageUrl: imageUrl.trim() || undefined,
+      imageUrl: uploadedImageUrl,
       youtubeUrl: youtubeUrl.trim() || undefined,
     });
   };
@@ -511,14 +566,37 @@ function ExerciseModal({ onClose, onSave }: ExerciseModalProps) {
           </div>
 
           <div className="admin-form-group">
-            <label className="admin-form-label">이미지 URL</label>
-            <input
-              type="text"
-              className="admin-form-input"
-              placeholder="https://example.com/image.jpg"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-            />
+            <label className="admin-form-label">이미지</label>
+            <div className="admin-image-upload">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                style={{ display: 'none' }}
+              />
+              {imagePreview ? (
+                <div className="admin-image-preview">
+                  <img src={imagePreview} alt="미리보기" />
+                  <button
+                    type="button"
+                    className="admin-image-remove-btn"
+                    onClick={handleImageRemove}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="admin-image-upload-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload size={24} />
+                  <span>이미지 선택</span>
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="admin-form-group">
@@ -535,11 +613,11 @@ function ExerciseModal({ onClose, onSave }: ExerciseModalProps) {
 
         {/* 푸터 */}
         <div className="admin-modal-footer">
-          <button className="admin-btn secondary" onClick={onClose}>
+          <button className="admin-btn secondary" onClick={onClose} disabled={isUploading}>
             취소
           </button>
-          <button className="admin-btn primary" onClick={handleSave}>
-            등록
+          <button className="admin-btn primary" onClick={handleSave} disabled={isUploading}>
+            {isUploading ? '업로드 중...' : '등록'}
           </button>
         </div>
       </div>

@@ -15,7 +15,7 @@ import apiClient from './client';
 /**
  * 업로드 타입
  */
-export type UploadType = 'PROFILE' | 'POST' | 'TRAINER';
+export type UploadType = 'PROFILE' | 'POST' | 'TRAINER' | 'EXERCISE' | 'FOOD';
 
 /**
  * Presigned URL 요청 DTO
@@ -69,6 +69,8 @@ const ALLOWED_EXTENSIONS: Record<UploadType, string[]> = {
     'jpg', 'jpeg', 'png', 'gif', 'webp',
     'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'hwp'
   ],
+  EXERCISE: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+  FOOD: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
 };
 
 /**
@@ -89,6 +91,8 @@ const ALLOWED_MIME_TYPES: Record<UploadType, string[]> = {
     'application/x-hwp',
     'application/haansofthwp',
   ],
+  EXERCISE: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+  FOOD: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
 };
 
 /**
