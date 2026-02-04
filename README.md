@@ -4,6 +4,12 @@ AI 맞춤 운동 및 식단 추천 서비스를 제공하는 프론트엔드 프
 
 ---
 
+## Demo
+
+- 서비스: 추가 예정
+
+---
+
 ## 주요 기능
 
 - 인증/계정
@@ -49,11 +55,18 @@ npm install
 npm run dev
 ```
 
-빌드 및 프리뷰:
+빌드:
 
 ```bash
-npm run build
-npm run preview
+npm run build          # 프로덕션 빌드
+npm run build:dev      # 개발 환경 빌드
+npm run build:prod     # 프로덕션 빌드 (build와 동일)
+```
+
+로컬 프리뷰:
+
+```bash
+npm run preview        # 빌드 결과물 로컬 확인
 ```
 
 ---
@@ -201,20 +214,29 @@ src/
 
 ---
 
-## Related Repositories
+## 관련 저장소
 
 - **Backend**: https://github.com/Ozymandias089/healthcareproject-backend
 - **Frontend**: https://github.com/juyoungck/healthcareproject-frontend
 
 ---
 
-## 문서 (Notion)
+## 문서 (Notion, Google Sheets)
 
 - 기획: [Notion 링크](https://www.notion.so/2ed86ae7d29d819abb0feb29665b07f5)
+- 요구사항 분석: [Google Sheets 링크](https://docs.google.com/spreadsheets/d/1H7atLbovfqtVw2OyD002Y94dBTw3mCqxEZTNq7g5na8/edit?gid=0#gid=0)
+- API 명세서: [Notion 링크](https://www.notion.so/API-2ed86ae7d29d818f8ad1d3ab28d59e9d)
 
 ---
 
-## Contributors
+## 프로젝트 정보
+
+- 개발 기간: 2025.01 ~ 2025.02
+- 팀 구성: Frontend 3명, Backend 3명
+
+---
+
+## 팀원
 
 | Name       | GitHub                                             | Role          | Responsibility                                                                                                                                               |
 |------------|----------------------------------------------------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -225,6 +247,13 @@ src/
 | **안태호** | [@saesamn](https://github.com/saesamn)             | Backend       | Feature development(Board, PT, Admin)                                                                                                                        |
 | **이현성** | [@HyunsEEE](https://github.com/HyunsEEE)           | Backend       | UI/UX design & implementation(Exercises), Feature development(Workout, Calendar, Admin, S3)                                                                  |
 
+---
+
+## 브라우저 지원
+
+- Chrome (권장)
+- Safari
+- Edge
 
 ---
 
