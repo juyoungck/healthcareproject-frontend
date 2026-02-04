@@ -210,7 +210,7 @@ src/
 
 ## 문서 (Notion)
 
-- 기획: [Notion 링크](notion.so/)
+- 기획: [Notion 링크](https://www.notion.so/2ed86ae7d29d819abb0feb29665b07f5)
 
 ---
 
@@ -218,9 +218,10 @@ src/
 
 | Name    | GitHub                                             | Role         | Responsibility                                                                                                                              |
 |---------|----------------------------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| **김주영** | [@juyoungck](https://github.com/juyoungck)         | Frontend PM  | UI, UX, API integration                                                                                                                     |
-| **박중건** | [@qkrwndrjs613](https://github.com/qkrwndrjs613)   | Frontend     | UI, UX, API integration                                                                                                                     |
-| **백승진** | [@SeungjinB](https://github.com/SeungjinB)         | Frontend     | UI, UX, API integration                                                                                                                     |
+| **김주영** | [@juyoungck](https://github.com/juyoungck)         | Frontend PM  | UI/UX design & implementation, REST API integration, Frontend code refactoring & review, Frontend deployment, Development scheduling        
+                                     |
+| **박중건** | [@qkrwndrjs613](https://github.com/qkrwndrjs613)   | Frontend     | UI/UX design & implementation, REST API integration                                                                                                                     |
+| **백승진** | [@SeungjinB](https://github.com/SeungjinB)         | Frontend     | UI/UX design & implementation, REST API integration                                                                                                                     |
 | **최영훈** | [@Ozymandias089](https://github.com/Ozymandias089) | Backend Lead | Architecture & system design, Infrastructure setup, Backend core modules (Auth, ME, PT, Calendar, Diet, Workout), AI integration, PR review |
 | **안태호** | [@saesamn](https://github.com/saesamn)             | Backend      | Feature development(Board, PT, Admin)                                                                                                       |
 | **이현성** | [@HyunsEEE](https://github.com/HyunsEEE)           | Backend      | Feature development(Workout, Calendar, Admin, S3)                                                                                           |
