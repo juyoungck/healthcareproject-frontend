@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { AlertTriangle, X, Eye, User, FileText, MessageSquare, Video, Users, AlertCircle, Calendar, Lock, Globe } from 'lucide-react';
+import { AlertTriangle, X, Eye, User, FileText, MessageSquare, Video, Users, AlertCircle, Calendar, Lock } from 'lucide-react';
 import type { Report, ReportStatus, ReportType, ReportDetailData } from '../../../api/types/admin';
 import { getAdminReports, processReport, rejectReport, getAdminCommentDetail } from '../../../api/admin';
 import apiClient from '../../../api/client';
@@ -23,7 +23,6 @@ import {
   REPORT_STATUS_CLASSES,
   PT_ROOM_STATUS_LABELS,
   PT_ROOM_TYPE_LABELS,
-  PT_ROOM_STATUS_CLASSES,
 } from '../../../constants/admin';
 
 /**
@@ -335,6 +334,15 @@ function ReportDetailModal({ type, data, loading, onClose }: ReportDetailModalPr
     return stripHtml(content);
   };
 
+  /** 화상PT 상태 → 배지 CSS 클래스 매핑 */
+  const PT_STATUS_BADGE_MAP: Record<string, string> = {
+    LIVE: 'live',
+    SCHEDULED: 'reserved',
+    ENDED: 'ended',
+    CANCELLED: 'cancelled',
+    FORCE_CLOSED: 'force-closed',
+  };
+
   /** 프로필 정보 가져오기 */
   const getAuthorInfo = () => {
     if (!data) return { nickname: '', handle: '' };
@@ -404,9 +412,16 @@ function ReportDetailModal({ type, data, loading, onClose }: ReportDetailModalPr
               {type === 'POST' && (
                 <>
                   <h4 className="report-content-title">{data.title}</h4>
-                  <div className="report-content-area">
-                    <p>{getCleanContent(data.content) || '(내용 없음)'}</p>
-                  </div>
+                  {data.content ? (
+                    <div
+                      className="report-content-area"
+                      dangerouslySetInnerHTML={{ __html: data.content }}
+                    />
+                  ) : (
+                    <div className="report-content-area">
+                      <p>(내용 없음)</p>
+                    </div>
+                  )}
                 </>
               )}
 
@@ -420,33 +435,47 @@ function ReportDetailModal({ type, data, loading, onClose }: ReportDetailModalPr
               {/* 화상PT */}
               {type === 'PT_ROOM' && (
                 <>
-                  <h4 className="report-content-title">{data.title}</h4>
-                  <div className="report-info-row">
-                    <Video size={16} />
-                    <span>{PT_ROOM_TYPE_LABELS[data.roomType] || data.roomType}</span>
-                  </div>
-                  <div className="report-info-row">
-                    <AlertCircle size={16} />
-                    <span className={`admin-status-badge ${PT_ROOM_STATUS_CLASSES[data.status] || ''}`}>
-                      {PT_ROOM_STATUS_LABELS[data.status] || data.status}
-                    </span>
-                  </div>
-                  <div className="report-info-row">
-                    {data.isPrivate ? <Lock size={16} /> : <Globe size={16} />}
-                    <span>{data.isPrivate ? '비공개' : '공개'}</span>
-                  </div>
-                  <div className="report-info-row">
-                    <Users size={16} />
-                    <span>정원 {data.maxParticipants}명</span>
-                  </div>
-                  {data.scheduledAt && (
-                    <div className="report-info-row">
-                      <Calendar size={16} />
-                      <span>{formatDateTimeAdmin(data.scheduledAt)}</span>
+                  {/* 제목 + 상태 배지 */}
+                  <div className="pt-detail-header">
+                    <h4 className="report-content-title" style={{ margin: 0 }}>{data.title}</h4>
+                    <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                      {data.isPrivate && (
+                        <span className="pt-status-badge private">
+                          <Lock size={10} />
+                          비공개
+                        </span>
+                      )}
+                      <span className={`pt-status-badge ${PT_STATUS_BADGE_MAP[data.status] || ''}`}>
+                        {data.status === 'LIVE' && <span className="pt-live-dot" />}
+                        {PT_ROOM_STATUS_LABELS[data.status] || data.status}
+                      </span>
                     </div>
+                  </div>
+
+                  {/* 설명 */}
+                  {data.description && (
+                    <p className="pt-detail-description">{data.description}</p>
                   )}
-                  <div className="report-content-area">
-                    <p>{data.description || '(설명 없음)'}</p>
+
+                  {/* 상세 정보 */}
+                  <div className="pt-detail-info-list">
+                    <div className="pt-detail-info-item">
+                      <Video className="pt-detail-info-icon" />
+                      <span className="pt-detail-info-label">방 타입</span>
+                      <span className="pt-detail-info-value">{PT_ROOM_TYPE_LABELS[data.roomType] || data.roomType}</span>
+                    </div>
+                    <div className="pt-detail-info-item">
+                      <Users className="pt-detail-info-icon" />
+                      <span className="pt-detail-info-label">정원</span>
+                      <span className="pt-detail-info-value">최대 {data.maxParticipants}명</span>
+                    </div>
+                    {data.scheduledAt && (
+                      <div className="pt-detail-info-item">
+                        <Calendar className="pt-detail-info-icon" />
+                        <span className="pt-detail-info-label">일시</span>
+                        <span className="pt-detail-info-value">{formatDateTimeAdmin(data.scheduledAt)}</span>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
