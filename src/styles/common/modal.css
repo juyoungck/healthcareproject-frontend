@@ -25,6 +25,11 @@
   animation: fadeIn 0.2s ease;
 }
 
+/* 모달 위에 표시되는 오버레이 (약관 등) */
+.modal-overlay-top {
+  z-index: calc(var(--z-modal) + 100);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

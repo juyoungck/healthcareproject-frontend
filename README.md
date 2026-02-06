@@ -1,6 +1,12 @@
-# 운동운동 (health-fitness-app)
+# 루틴어때? (health-fitness-app)
 
 AI 맞춤 운동 및 식단 추천 서비스를 제공하는 프론트엔드 프로젝트입니다. 온보딩으로 수집한 사용자 정보(신체, 목표, 알레르기, 부상 등)를 기반으로 운동/식단 계획을 생성하고, 캘린더/게시판/화상 PT/관리자 기능까지 포함합니다.
+
+---
+
+## Demo
+
+- 서비스: 추가 예정
 
 ---
 
@@ -49,11 +55,18 @@ npm install
 npm run dev
 ```
 
-빌드 및 프리뷰:
+빌드:
 
 ```bash
-npm run build
-npm run preview
+npm run build          # 프로덕션 빌드
+npm run build:dev      # 개발 환경 빌드
+npm run build:prod     # 프로덕션 빌드 (build와 동일)
+```
+
+로컬 프리뷰:
+
+```bash
+npm run preview        # 빌드 결과물 로컬 확인
 ```
 
 ---
@@ -201,31 +214,46 @@ src/
 
 ---
 
-## Related Repositories
+## 관련 저장소
 
 - **Backend**: https://github.com/Ozymandias089/healthcareproject-backend
 - **Frontend**: https://github.com/juyoungck/healthcareproject-frontend
 
 ---
 
-## 문서 (Notion)
+## 문서 (Notion, Google Sheets)
 
 - 기획: [Notion 링크](https://www.notion.so/2ed86ae7d29d819abb0feb29665b07f5)
+- 요구사항 분석: [Google Sheets 링크](https://docs.google.com/spreadsheets/d/1H7atLbovfqtVw2OyD002Y94dBTw3mCqxEZTNq7g5na8/edit?gid=0#gid=0)
+- API 명세서: [Notion 링크](https://www.notion.so/API-2ed86ae7d29d818f8ad1d3ab28d59e9d)
 
 ---
 
-## Contributors
+## 프로젝트 정보
 
-| Name    | GitHub                                             | Role         | Responsibility                                                                                                                              |
-|---------|----------------------------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| **김주영** | [@juyoungck](https://github.com/juyoungck)         | Frontend PM  | UI/UX design & implementation, REST API integration, Frontend code refactoring & review, Frontend deployment, Development scheduling        
-                                     |
-| **박중건** | [@qkrwndrjs613](https://github.com/qkrwndrjs613)   | Frontend     | UI/UX design & implementation, REST API integration                                                                                                                     |
-| **백승진** | [@SeungjinB](https://github.com/SeungjinB)         | Frontend     | UI/UX design & implementation, REST API integration                                                                                                                     |
-| **최영훈** | [@Ozymandias089](https://github.com/Ozymandias089) | Backend Lead | Architecture & system design, Infrastructure setup, Backend core modules (Auth, ME, PT, Calendar, Diet, Workout), AI integration, PR review |
-| **안태호** | [@saesamn](https://github.com/saesamn)             | Backend      | Feature development(Board, PT, Admin)                                                                                                       |
-| **이현성** | [@HyunsEEE](https://github.com/HyunsEEE)           | Backend      | Feature development(Workout, Calendar, Admin, S3)                                                                                           |
+- 개발 기간: 2025.01 ~ 2025.02
+- 팀 구성: Frontend 3명, Backend 3명
 
+---
+
+## 팀원
+
+| Name       | GitHub                                             | Role          | Responsibility                                                                                                                                               |
+|------------|----------------------------------------------------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **김주영** | [@juyoungck](https://github.com/juyoungck)         | Frontend Lead | UI/UX design & implementation(Main, Auth, ME, PT, S3), REST API integration, Frontend code refactoring & review, Frontend deployment, Development scheduling |
+| **박중건** | [@qkrwndrjs613](https://github.com/qkrwndrjs613)   | Frontend      | UI/UX design & implementation(Admin, AI Plan, Board), REST API integration                                                                                   |
+| **백승진** | [@SeungjinB](https://github.com/SeungjinB)         | Frontend      | UI/UX design & implementation(Foods, Calendar, Report), REST API integration                                                                                 |
+| **최영훈** | [@Ozymandias089](https://github.com/Ozymandias089) | Backend Lead  | Architecture & system design, Infrastructure setup, Backend core modules (Auth, ME, PT, Calendar, Diet, Workout), AI integration, PR review                  |
+| **안태호** | [@saesamn](https://github.com/saesamn)             | Backend       | Feature development(Board, PT, Admin)                                                                                                                        |
+| **이현성** | [@HyunsEEE](https://github.com/HyunsEEE)           | Backend       | UI/UX design & implementation(Exercises), Feature development(Workout, Calendar, Admin, S3)                                                                  |
+
+---
+
+## 브라우저 지원
+
+- Chrome (권장)
+- Safari
+- Edge
 
 ---
 

@@ -12,6 +12,8 @@ import { signup, checkEmail, saveTokens } from '../../../api/auth';
 import { extractAxiosError, getApiErrorMessage } from '../../../api/apiError';
 import { formatPhoneNumber } from '../../../utils/format';
 import { PASSWORD_REGEX, EMAIL_REGEX, NICKNAME_MAX_LENGTH, PHONE_MAX_LENGTH } from '../../../constants/validation';
+import { TERMS_OF_SERVICE, TERMS_EFFECTIVE_DATE } from '../../../data/terms';
+import { PRIVACY_POLICY, PRIVACY_EFFECTIVE_DATE } from '../../../data/privacy';
 
 /* 공통 컴포넌트 */
 import EmailVerifyForm from './EmailVerifyForm';
@@ -72,6 +74,12 @@ export default function SignupModal({
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
+
+  /**
+   * 약관 모달 상태
+   */
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   /**
    * 이메일 인증 훅
@@ -361,24 +369,42 @@ export default function SignupModal({
                 <Check size={16} className={agreeAll ? 'checked' : ''} />
                 <span>전체 동의</span>
               </label>
-              <label className="form-agreement-item">
-                <input
-                  type="checkbox"
-                  checked={agreeTerms}
-                  onChange={(e) => handleTermsChange(e.target.checked)}
-                />
-                <Check size={16} className={agreeTerms ? 'checked' : ''} />
-                <span>[필수] 서비스 이용약관</span>
-              </label>
-              <label className="form-agreement-item">
-                <input
-                  type="checkbox"
-                  checked={agreePrivacy}
-                  onChange={(e) => handlePrivacyChange(e.target.checked)}
-                />
-                <Check size={16} className={agreePrivacy ? 'checked' : ''} />
-                <span>[필수] 개인정보 처리방침</span>
-              </label>
+              <div className="form-agreement-item">
+                <label className="form-agreement-label">
+                  <input
+                    type="checkbox"
+                    checked={agreeTerms}
+                    onChange={(e) => handleTermsChange(e.target.checked)}
+                  />
+                  <Check size={16} className={agreeTerms ? 'checked' : ''} />
+                  <span>[필수] 서비스 이용약관</span>
+                </label>
+                <button
+                  type="button"
+                  className="form-agreement-view"
+                  onClick={() => setShowTermsModal(true)}
+                >
+                  보기
+                </button>
+              </div>
+              <div className="form-agreement-item">
+                <label className="form-agreement-label">
+                  <input
+                    type="checkbox"
+                    checked={agreePrivacy}
+                    onChange={(e) => handlePrivacyChange(e.target.checked)}
+                  />
+                  <Check size={16} className={agreePrivacy ? 'checked' : ''} />
+                  <span>[필수] 개인정보 처리방침</span>
+                </label>
+                <button
+                  type="button"
+                  className="form-agreement-view"
+                  onClick={() => setShowPrivacyModal(true)}
+                >
+                  보기
+                </button>
+              </div>
             </div>
 
             {error && <p className="form-error">{error}</p>}
@@ -443,6 +469,52 @@ export default function SignupModal({
           </div>
         )}
       </div>
+
+      {/* 이용약관 모달 */}
+      {showTermsModal && (
+        <div className="modal-overlay modal-overlay-top" onClick={() => setShowTermsModal(false)}>
+          <div className="settings-policy-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="settings-policy-header">
+              <h2 className="settings-policy-title">이용약관</h2>
+              <button className="settings-policy-close" onClick={() => setShowTermsModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="settings-policy-content">
+              {TERMS_OF_SERVICE.map((section, index) => (
+                <div key={index}>
+                  <h3>{section.title}</h3>
+                  <p>{section.content}</p>
+                </div>
+              ))}
+              <p className="settings-policy-date">시행일: {TERMS_EFFECTIVE_DATE}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 개인정보 처리방침 모달 */}
+      {showPrivacyModal && (
+        <div className="modal-overlay modal-overlay-top" onClick={() => setShowPrivacyModal(false)}>
+          <div className="settings-policy-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="settings-policy-header">
+              <h2 className="settings-policy-title">개인정보 처리방침</h2>
+              <button className="settings-policy-close" onClick={() => setShowPrivacyModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="settings-policy-content">
+              {PRIVACY_POLICY.map((section, index) => (
+                <div key={index}>
+                  <h3>{section.title}</h3>
+                  <p>{section.content}</p>
+                </div>
+              ))}
+              <p className="settings-policy-date">시행일: {PRIVACY_EFFECTIVE_DATE}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
