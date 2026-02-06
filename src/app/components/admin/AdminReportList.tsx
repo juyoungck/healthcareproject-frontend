@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { AlertTriangle, X, Eye, User, FileText, MessageSquare, Video, Users, AlertCircle } from 'lucide-react';
+import { AlertTriangle, X, Eye, User, FileText, MessageSquare, Video, Users, AlertCircle, Calendar, Lock, Globe } from 'lucide-react';
 import type { Report, ReportStatus, ReportType, ReportDetailData } from '../../../api/types/admin';
 import { getAdminReports, processReport, rejectReport, getAdminCommentDetail } from '../../../api/admin';
 import apiClient from '../../../api/client';
@@ -21,6 +21,9 @@ import {
   REPORT_TYPE_CLASSES,
   REPORT_STATUS_LABELS,
   REPORT_STATUS_CLASSES,
+  PT_ROOM_STATUS_LABELS,
+  PT_ROOM_TYPE_LABELS,
+  PT_ROOM_STATUS_CLASSES,
 } from '../../../constants/admin';
 
 /**
@@ -74,6 +77,10 @@ export default function AdminReportList() {
             trainer: room.trainer,
             description: room.description || '',
             maxParticipants: room.maxParticipants,
+            roomType: room.roomType,
+            status: room.status,
+            isPrivate: room.isPrivate,
+            scheduledAt: room.scheduledAt,
           });
         } catch {
           setDetailData(null);
@@ -360,9 +367,6 @@ function ReportDetailModal({ type, data, loading, onClose }: ReportDetailModalPr
           <div className="report-header-right">
             {data && (
               <div className="report-author-profile">
-                <div className={`report-avatar ${type?.toLowerCase()}`}>
-                  <User size={16} />
-                </div>
                 <div className="admin-author-info" style={{ alignItems: 'flex-end' }}>
                   <span className="admin-nickname">{authorInfo.nickname}</span>
                   {authorInfo.handle && <span className="admin-handle">@{authorInfo.handle}</span>}
@@ -418,9 +422,29 @@ function ReportDetailModal({ type, data, loading, onClose }: ReportDetailModalPr
                 <>
                   <h4 className="report-content-title">{data.title}</h4>
                   <div className="report-info-row">
+                    <Video size={16} />
+                    <span>{PT_ROOM_TYPE_LABELS[data.roomType] || data.roomType}</span>
+                  </div>
+                  <div className="report-info-row">
+                    <AlertCircle size={16} />
+                    <span className={`admin-status-badge ${PT_ROOM_STATUS_CLASSES[data.status] || ''}`}>
+                      {PT_ROOM_STATUS_LABELS[data.status] || data.status}
+                    </span>
+                  </div>
+                  <div className="report-info-row">
+                    {data.isPrivate ? <Lock size={16} /> : <Globe size={16} />}
+                    <span>{data.isPrivate ? '비공개' : '공개'}</span>
+                  </div>
+                  <div className="report-info-row">
                     <Users size={16} />
                     <span>정원 {data.maxParticipants}명</span>
                   </div>
+                  {data.scheduledAt && (
+                    <div className="report-info-row">
+                      <Calendar size={16} />
+                      <span>{formatDateTimeAdmin(data.scheduledAt)}</span>
+                    </div>
+                  )}
                   <div className="report-content-area">
                     <p>{data.description || '(설명 없음)'}</p>
                   </div>
