@@ -155,6 +155,10 @@ export interface ReportDetailPTRoom {
   trainer: ReportDetailTrainer | null;
   description: string;
   maxParticipants: number;
+  roomType: string;
+  status: string;
+  isPrivate: boolean;
+  scheduledAt: string | null;
 }
 
 /** 신고 상세 - 댓글 */
