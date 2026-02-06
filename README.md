@@ -6,7 +6,8 @@ AI 맞춤 운동 및 식단 추천 서비스를 제공하는 프론트엔드 프
 
 ## Demo
 
-- 서비스: 추가 예정
+- 서비스: [Live Demo](https://db28yxapzeaks.cloudfront.net/)
+- 시연 영상: [Demo video](https://youtu.be/WshVK-iNtmU) (Korean)
 
 ---
 
