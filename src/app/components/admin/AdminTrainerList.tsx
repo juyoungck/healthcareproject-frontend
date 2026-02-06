@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Eye, Check, X, Download } from 'lucide-react';
+import { Eye, Check, X, Download, FileText } from 'lucide-react';
 import type { TrainerApplicant } from '../../../api/types/admin';
 import { getTrainerPending, approveTrainer, rejectTrainer } from '../../../api/admin';
 import { getApiErrorMessage } from '../../../api/apiError';
@@ -237,6 +237,12 @@ function TrainerDetailModal({
     }
   };
 
+  /** URL에서 파일명 추출 */
+  const getFileName = (url: string): string => {
+    const path = url.split('?')[0];
+    return path.split('/').pop() || 'unknown';
+  };
+
   return (
     <div className="admin-modal-overlay" onClick={handleOverlayClick}>
       <div className="admin-modal-container">
@@ -248,43 +254,47 @@ function TrainerDetailModal({
           </button>
         </div>
 
-        {/* 콘텐츠 - 증빙자료 이미지 */}
+        {/* 콘텐츠 - 증빙자료 파일 목록 */}
         <div className="admin-modal-content">
           {applicant.licenceUrl.length === 0 ? (
             <p className="admin-empty-text">등록된 증빙자료가 없습니다.</p>
           ) : (
-            <div className="admin-license-images">
-              {applicant.licenceUrl.map((url, index) => (
-                <div key={index} className="admin-license-image-item">
-                  <img
-                    src={url}
-                    alt={`증빙자료 ${index + 1}`}
-                    className="admin-license-image"
-                    onClick={() => window.open(url, '_blank')}
-                  />
-                  <button
-                    className="admin-download-btn"
-                    onClick={async () => {
-                      try {
-                        const response = await fetch(url);
-                        const blob = await response.blob();
-                        const downloadUrl = window.URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = downloadUrl;
-                        link.download = `증빙자료_${index + 1}.${url.split('.').pop()?.split('?')[0] || 'jpg'}`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        window.URL.revokeObjectURL(downloadUrl);
-                      } catch (err) {
-                        alert(getApiErrorMessage(err, '파일 다운로드에 실패했습니다.'));
-                      }
-                    }}
-                  >
-                    <Download size={16} /> 다운로드
-                  </button>
-                </div>
-              ))}
+            <div className="admin-license-file-list">
+              {applicant.licenceUrl.map((url, index) => {
+                const fileName = getFileName(url);
+                return (
+                  <div key={index} className="admin-license-file-item">
+                    <div
+                      className="admin-license-file-info"
+                      onClick={() => window.open(url, '_blank')}
+                    >
+                      <FileText size={16} />
+                      <span>{index + 1}. {fileName}</span>
+                    </div>
+                    <button
+                      className="admin-download-btn-sm"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(url);
+                          const blob = await response.blob();
+                          const downloadUrl = window.URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = downloadUrl;
+                          link.download = fileName;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          window.URL.revokeObjectURL(downloadUrl);
+                        } catch (err) {
+                          alert(getApiErrorMessage(err, '파일 다운로드에 실패했습니다.'));
+                        }
+                      }}
+                    >
+                      <Download size={14} />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
