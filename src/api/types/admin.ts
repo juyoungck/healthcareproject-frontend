@@ -126,7 +126,9 @@ export type ReportStatus = 'PENDING' | 'PROCESSED' | 'REJECTED';
 /** 신고 데이터 */
 export interface Report {
   reportId: number;
+  reporterName: string;
   reporterHandle: string;
+  targetAuthorName: string;
   targetAuthorHandle: string;
   type: ReportType;
   targetId: number;

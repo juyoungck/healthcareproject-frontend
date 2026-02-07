@@ -7,7 +7,7 @@ AI 맞춤 운동 및 식단 추천 서비스를 제공하는 프론트엔드 프
 ## Demo
 
 - 서비스: [Live Demo](https://db28yxapzeaks.cloudfront.net/)
-- 시연 영상: [Demo video](https://youtu.be/WshVK-iNtmU) (Korean)
+- 시연 영상: [Demo Video](https://youtu.be/WshVK-iNtmU) (Korean)
 
 ---
 
@@ -227,7 +227,7 @@ src/
 - 기획: [Notion 링크](https://www.notion.so/2ed86ae7d29d819abb0feb29665b07f5)
 - 요구사항 분석: [Google Sheets 링크](https://docs.google.com/spreadsheets/d/1H7atLbovfqtVw2OyD002Y94dBTw3mCqxEZTNq7g5na8/edit?gid=0#gid=0)
 - UI 설계도: [Figma 링크](https://www.figma.com/design/vJwa1lPoxFQ7pajWibXFep/%EB%A3%A8%ED%8B%B4%EC%96%B4%EB%96%84--UI-%EC%84%A4%EA%B3%84%EB%8F%84?node-id=0-1&p=f)
-- API 명세서: [Notion 링크](https://www.notion.so/API-2ed86ae7d29d818f8ad1d3ab28d59e9d)
+- API 명세서: [Notion 링크](https://www.notion.so/2ed86ae7d29d814d8c6de1e46dfbca75?v=2ed86ae7d29d81d9bed1000c8a373c19)
 
 ---
 
