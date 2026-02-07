@@ -237,8 +237,18 @@ export default function AdminReportList() {
               reportList.map((report) => (
                 <tr key={report.reportId}>
                   <td>{report.reportId}</td>
-                  <td>@{report.reporterHandle}</td>
-                  <td>@{report.targetAuthorHandle}</td>
+                  <td>
+                    <div className="admin-author-info">
+                        <span className="admin-nickname">{report.reporterName}</span>
+                        <span className="admin-handle">@{report.reporterHandle}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="admin-author-info">
+                        <span className="admin-nickname">{report.targetAuthorName}</span>
+                        <span className="admin-handle">@{report.targetAuthorHandle}</span>
+                    </div>
+                  </td>
                   <td>{formatDateTimeAdmin(report.createdAt)}</td>
                   <td className="admin-table-reason">{report.reason}</td>
                   <td>
