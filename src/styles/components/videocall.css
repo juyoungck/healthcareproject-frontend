@@ -251,16 +251,7 @@
   border-color: var(--color-pt);
 }
 
-.vc-sub-video-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--element-size-base);
-  height: var(--element-size-base);
-  background-color: var(--color-gray-700);
-  border-radius: var(--border-radius-full);
-  color: var(--color-gray-400);
-}
+/* 서브 비디오 플레이스홀더 - 아이콘/이미지를 감싸는 원형 스타일 (중복 정의 제거) */
 
 .vc-sub-video-name {
   position: absolute;
