@@ -54,7 +54,7 @@ interface UseJanusReturn {
   participants: JanusParticipant[];
 
   /* 액션 */
-  connect: () => void;
+  connect: () => Promise<void>;
   disconnect: () => void;
   toggleAudio: () => void;
   toggleMic: () => void;
@@ -133,6 +133,19 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
         onError?.(error);
       },
 
+      /**
+       * 원격 참가자의 미디어 상태 변경 감지
+       * Janus에서 muteVideo/unmuteVideo 호출 시 이 콜백이 호출됨
+       */
+      mediaState: (medium: string, on: boolean) => {
+        if (medium === 'video') {
+          console.log(`원격 참가자 ${id} 비디오 상태:`, on ? '켜짐' : '꺼짐');
+          setParticipants(prev => prev.map(p =>
+            p.id === `remote-${id}` ? { ...p, isVideoOff: !on } : p
+          ));
+        }
+      },
+
       onmessage: (msg: any, jsep: any) => {
         if (jsep) {
           const feed = feedsRef.current.get(id);
@@ -154,7 +167,7 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
       onremotestream: (stream: MediaStream) => {
         const isTrainerParticipant = display.startsWith('[트레이너]');
 
-        /* 참가자 목록에 추가 */
+        /* 참가자 목록에 추가 (초기 상태는 비디오 켜짐으로 설정, mediaState에서 업데이트) */
         setParticipants(prev => {
           const exists = prev.find(p => p.id === `remote-${id}`);
           if (exists) {
@@ -170,7 +183,7 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
             isTrainer: isTrainerParticipant,
             isAudioMuted: false,
             isMicMuted: false,
-            isVideoOff: false
+            isVideoOff: false  /* mediaState 콜백에서 실제 상태 업데이트 */
           }];
         });
       },
@@ -186,10 +199,29 @@ export function useJanus({ roomId, displayName, trainerName, onError, onRoomDest
   /**
    * Janus 연결
    */
-  const connect = useCallback(() => {
+  const connect = useCallback(async () => {
     if (connectionStatus === 'connecting' || connectionStatus === 'connected') return;
 
     setConnectionStatus('connecting');
+
+    /* 미디어 권한 사전 요청 */
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      /* 권한 획득 후 스트림 해제 (Janus가 다시 요청함) */
+      stream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+      const error = err as DOMException;
+      if (error.name === 'NotAllowedError') {
+        setConnectionStatus('failed');
+        onError?.('카메라/마이크 권한이 필요합니다. 브라우저 설정에서 권한을 허용해주세요.');
+        return;
+      } else if (error.name === 'NotFoundError') {
+        setConnectionStatus('failed');
+        onError?.('카메라 또는 마이크를 찾을 수 없습니다.');
+        return;
+      }
+      /* 다른 에러는 Janus에서 처리 */
+    }
 
     /* Janus 초기화 */
     window.Janus.init({

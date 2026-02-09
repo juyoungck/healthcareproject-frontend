@@ -623,7 +623,7 @@ export default function VideoCallRoom({
               <video
                 key={`main-${mainParticipant.id}`}
                 ref={(el) => {
-                  if (el && mainParticipant.stream) {
+                  if (el && mainParticipant.stream && el.srcObject !== mainParticipant.stream) {
                     el.srcObject = mainParticipant.stream;
                   }
                 }}
@@ -634,14 +634,14 @@ export default function VideoCallRoom({
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
-                  display: localStream ? 'block' : 'none'
+                  display: mainParticipant.stream && !mainParticipant.isVideoOff ? 'block' : 'none'
                 }}
               />
             )
           ) : null}
 
-          {/* 스트림 없을 때 플레이스홀더 */}
-          {(!mainParticipant || (mainParticipant.isLocal ? !localStream || isVideoOff : !mainParticipant.stream)) && (
+          {/* 스트림 없거나 비디오 off일 때 플레이스홀더 */}
+          {(!mainParticipant || (mainParticipant.isLocal ? !localStream || isVideoOff : !mainParticipant.stream || mainParticipant.isVideoOff)) && (
             <div className="vc-video-placeholder">
               {mainParticipant && getParticipantProfileImage(mainParticipant) ? (
                 <img
@@ -705,7 +705,7 @@ export default function VideoCallRoom({
                     <video
                       key={`sub-${participant.id}`}
                       ref={(el) => {
-                        if (el && participant.stream) {
+                        if (el && participant.stream && el.srcObject !== participant.stream) {
                           el.srcObject = participant.stream;
                         }
                       }}
@@ -716,10 +716,10 @@ export default function VideoCallRoom({
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        display: participant.stream ? 'block' : 'none'
+                        display: participant.stream && !participant.isVideoOff ? 'block' : 'none'
                       }}
                     />
-                    {!participant.stream && (
+                    {(!participant.stream || participant.isVideoOff) && (
                       <div className="vc-sub-video-placeholder">
                         {getParticipantProfileImage(participant) ? (
                           <img
