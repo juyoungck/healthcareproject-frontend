@@ -126,7 +126,9 @@ export type ReportStatus = 'PENDING' | 'PROCESSED' | 'REJECTED';
 /** 신고 데이터 */
 export interface Report {
   reportId: number;
+  reporterName: string;
   reporterHandle: string;
+  targetAuthorName: string;
   targetAuthorHandle: string;
   type: ReportType;
   targetId: number;
@@ -155,6 +157,10 @@ export interface ReportDetailPTRoom {
   trainer: ReportDetailTrainer | null;
   description: string;
   maxParticipants: number;
+  roomType: string;
+  status: string;
+  isPrivate: boolean;
+  scheduledAt: string | null;
 }
 
 /** 신고 상세 - 댓글 */

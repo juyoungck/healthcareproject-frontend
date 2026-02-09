@@ -112,7 +112,7 @@ export default function LandingPage({ onLogin, onSignupComplete }: LandingPagePr
         {/* 로고 및 타이틀 */}
         <div className="landing-logo">
           <Dumbbell className="landing-logo-icon" />
-          <h1 className="landing-title">운동운동</h1>
+          <h1 className="landing-title">루틴어때?</h1>
         </div>
 
         {/* 메인 슬로건 */}
@@ -153,7 +153,7 @@ export default function LandingPage({ onLogin, onSignupComplete }: LandingPagePr
       {/* 서비스 소개 섹션 */}
       <section id="features" className="landing-features">
         <h3 className="landing-features-title">
-          왜 운동운동인가요?
+          왜 루틴어때? 인가요?
         </h3>
         
         {/* 기능 카드 목록 */}
@@ -189,7 +189,7 @@ export default function LandingPage({ onLogin, onSignupComplete }: LandingPagePr
       {/* 푸터 */}
       <footer className="landing-footer">
         <p className="landing-footer-text">
-          © 2024 운동운동. All rights reserved.
+          © 2026 루틴어때?. All rights reserved.
         </p>
       </footer>
 

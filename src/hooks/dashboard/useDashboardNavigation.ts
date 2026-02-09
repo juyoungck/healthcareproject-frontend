@@ -86,7 +86,7 @@ export function useDashboardNavigation({
   /** 탭별 헤더 타이틀 */
   const getHeaderTitle = useCallback((): string => {
     switch (activeTab) {
-      case 'home': return '운동운동';
+      case 'home': return '루틴어때?';
       case 'exercise': return '운동';
       case 'exerciseView': return '주간운동';
       case 'diet': return '식단';
@@ -95,7 +95,7 @@ export function useDashboardNavigation({
       case 'board': return '게시판';
       case 'calendar': return '캘린더';
       case 'calendarStats': return '월간 통계';
-      default: return '운동운동';
+      default: return '루틴어때?';
     }
   }, [activeTab]);
 

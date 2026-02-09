@@ -16,7 +16,6 @@ import { createNotice, deletePost, restorePost } from '../../../api/admin';
 import apiClient from '../../../api/client';
 import { getApiErrorMessage } from '../../../api/apiError';
 import { formatDateTimeAdmin } from '../../../utils/format';
-import { stripHtml } from '../../../utils/html';
 import {
   POST_CATEGORY_FILTERS,
   POST_CATEGORY_LABELS,
@@ -466,12 +465,6 @@ function PostDetailModal({ post, isLoading, onClose }: PostDetailModalProps) {
     }
   };
 
-  /** 내용에서 HTML 태그 제거 */
-  const getCleanContent = (content: string | undefined): string => {
-    if (!content) return '(내용 없음)';
-    return stripHtml(content) || '(내용 없음)';
-  };
-
   return (
     <div className="admin-modal-overlay" onClick={handleOverlayClick}>
       <div className="admin-modal-container" style={{ maxWidth: '700px' }}>
@@ -521,15 +514,22 @@ function PostDetailModal({ post, isLoading, onClose }: PostDetailModalProps) {
           {/* 구분선 */}
           <hr style={{ border: 'none', borderTop: '1px solid #e0e0e0', marginBottom: '20px' }} />
 
-          {/* 내용 */}
-          <div style={{
-            minHeight: '200px',
-            lineHeight: '1.7',
-            color: '#333',
-            whiteSpace: 'pre-wrap'
-          }}>
-            {isLoading ? '로딩 중...' : getCleanContent(post.content)}
-          </div>
+          {/* 내용 (HTML 렌더링 - 이미지 포함) */}
+          {isLoading ? (
+            <div style={{ minHeight: '200px', lineHeight: '1.7', color: '#333' }}>
+              로딩 중...
+            </div>
+          ) : post.content ? (
+            <div
+              className="admin-post-content"
+              style={{ minHeight: '200px', lineHeight: '1.7', color: '#333' }}
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
+          ) : (
+            <div style={{ minHeight: '200px', lineHeight: '1.7', color: '#333' }}>
+              (내용 없음)
+            </div>
+          )}
         </div>
 
         {/* 푸터 */}

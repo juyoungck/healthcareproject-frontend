@@ -307,6 +307,30 @@
   font-weight: var(--font-weight-medium);
 }
 
+.form-agreement-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  flex: 1;
+}
+
+.form-agreement-view {
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  background: none;
+  border: var(--border-width-sm) solid var(--color-gray-300);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.form-agreement-view:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
 /**
  * ===========================================
  * 이메일 인증 안내 박스
